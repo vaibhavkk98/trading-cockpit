@@ -374,6 +374,29 @@ def get_open_trades_with_live_data() -> List[Dict[str, Any]]:
     return rows
 
 
+def get_open_trades_persisted() -> List[Dict[str, Any]]:
+    """Load durable position state without requesting a current market price."""
+    rows = []
+    for trade in get_open_trades():
+        attr = trade.attribution
+        rows.append({"id": trade.id, "symbol": trade.symbol, "sector": trade.sector,
+            "entry_date": trade.entry_date.strftime("%Y-%m-%d %H:%M") if trade.entry_date else "", "entry_price": trade.entry_price,
+            "quantity": trade.quantity, "position_value": trade.position_value or trade.entry_price * trade.quantity,
+            "stop_loss": trade.stop_loss, "target": trade.target, "current_price": None, "price_status": "PRICE_NOT_REFRESHED",
+            "unrealized_pnl_inr": None, "unrealized_pnl_pct": None, "strategy_used": trade.strategy_used,
+            "tech_score": attr.tech_score if attr else .85, "fund_score": attr.fund_score if attr else 7., "sent_score": attr.sent_score if attr else 0.,
+            "reasoning": attr.agent_reasoning if attr else "", "risk_contract_version": trade.risk_contract_version,
+            "allocation_status": trade.allocation_status, "opportunity_reference": trade.opportunity_reference,
+            "risk_reference_type": trade.risk_reference_type, "risk_reference_value": trade.risk_reference_value,
+            "risk_reference_available": bool(trade.risk_reference_available) if trade.risk_contract_version else False,
+            "reference_risk_per_share": trade.reference_risk_per_share, "reference_risk_rupees": trade.reference_risk_rupees,
+            "executable_stop_enabled": bool(trade.executable_stop_enabled) if trade.risk_contract_version else False,
+            "initial_executable_stop": trade.initial_executable_stop, "executable_risk_per_share": trade.executable_risk_per_share,
+            "executable_risk_rupees": trade.executable_risk_rupees, "gap_risk_possible": bool(trade.gap_risk_possible) if trade.risk_contract_version else False,
+            "target_status": trade.target_status or "NOT_AVAILABLE", "risk_metadata_status": "AVAILABLE" if trade.risk_contract_version else "RISK_METADATA_NOT_AVAILABLE"})
+    return rows
+
+
 def get_agent_analytics_summary() -> Dict[str, Any]:
     """Retained lightweight analytics interface for existing callers."""
     closed = get_closed_trades()

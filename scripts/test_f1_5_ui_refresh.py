@@ -42,7 +42,7 @@ def run():
     assert all("target_price" not in row and "risk_reward_ratio" not in row and "composite_score" not in row for row in decisions)
 
     assert allocation_display("ALLOCATED") == ("Allocated", "good")
-    assert allocation_display("QUALIFIED_NOT_ALLOCATED_CAPITAL_CAP", "CAPITAL_CAP")[0] == "Not allocated · capacity"
+    assert allocation_display("QUALIFIED_NOT_ALLOCATED_CAPITAL_CAP", "CAPITAL_CAP")[0] == "Capacity"
     assert display_value("NOT_AVAILABLE") == "Not available"
     assert display_value("NOT_APPLICABLE") == "—"
     assert display_value(float("nan")) == "Not available"

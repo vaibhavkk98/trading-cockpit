@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
+from functools import lru_cache
 import json, re, urllib.request, xml.etree.ElementTree as ET
 
 CHANNELS={'GEOPOLITICAL':['risk_off','oil','trade','supply_chain'],'MONETARY_POLICY':['rates','liquidity','currency','inflation'],'FISCAL_POLICY':['regulation','growth','inflation'],'ECONOMIC_GROWTH':['growth','inflation','currency'],'FINANCIAL_SYSTEM':['credit','liquidity','risk_off'],'COMMODITY_ENERGY':['oil','inflation','supply_chain'],'TRADE_POLICY':['trade','supply_chain','inflation'],'TECHNOLOGY_SYSTEMIC':['technology','supply_chain','regulation'],'PUBLIC_HEALTH_NATURAL_DISASTER':['risk_off','growth','supply_chain'],'GLOBAL_MARKET_STRESS':['risk_off','liquidity','credit']}
@@ -54,11 +55,17 @@ def build_payload(diagnostics, raw, events):
  note='Market Risk Context unavailable because source coverage was insufficient.' if level=='NOT_AVAILABLE' else ('No material broad-market external risk identified from checked sources.' if level=='NORMAL' else 'Broad external risk is elevated. Overnight realized losses may exceed defined technical stop risk.')
  return {'overall_level':level,'generated_at':now(),'source_coverage_status':coverage,'coverage_groups_achieved':sorted(groups),'coverage_groups_required':sorted(required),'successful_source_checks':successful,'failed_source_checks':sum(d['check_status']=='FAILED' for d in diagnostics),'raw_item_count':len(raw),'active_event_count':sum(e['status']=='ACTIVE' for e in events),'high_materiality_count':sum(e['materiality'] in ['HIGH','SEVERE'] for e in events),'categories':{c:sum(e['category']==c for e in events) for c in KEYWORDS},'top_events':top,'gap_risk_note':note,'informational_only':True}
 
+@lru_cache(maxsize=8)
+def _load_market_risk_snapshot(project_root_text):
+ root=Path(project_root_text) if project_root_text else Path(__file__).resolve().parent; research=root/'data'/'research'
+ payload=json.loads((research/'c2_live_market_risk_payload.json').read_text())
+ diagnostics=json.loads((research/'c2_source_check_diagnostics.json').read_text())
+ return payload,diagnostics
+
 def get_market_risk_context_for_ui(project_root=None, max_age_hours=6):
  """Read the latest backend snapshot only; never fetches or changes decisions."""
- root=Path(project_root) if project_root else Path(__file__).resolve().parent; research=root/'data'/'research'
  try:
-  payload=json.loads((research/'c2_live_market_risk_payload.json').read_text());diagnostics=json.loads((research/'c2_source_check_diagnostics.json').read_text())
+  payload,diagnostics=_load_market_risk_snapshot(str(project_root) if project_root else None);payload=dict(payload)
   generated=datetime.fromisoformat(payload['generated_at'].replace('Z','+00:00'));age=(datetime.now(timezone.utc)-generated.astimezone(timezone.utc)).total_seconds()/60
   payload['snapshot_age_minutes']=max(0,round(age));payload['snapshot_stale']=age>max_age_hours*60;payload['source_diagnostics']=diagnostics
   return payload

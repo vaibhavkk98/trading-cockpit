@@ -40,6 +40,17 @@ from event_intelligence import EventIntelligenceService
 from market_risk_live import get_market_risk_context_for_ui
 from live_decision_adapter import assemble_live_decisions, summarize_live_portfolio_risk
 from operational_runtime import PRODUCT_VERSION, SCAN_FAILED, SCAN_NOT_RUN, SCAN_PARTIAL, SCAN_RUNNING, SCAN_SUCCESS, initial_scan_state, log_event, scan_freshness, utc_now
+from interaction_architecture import (
+    candidate_identity,
+    compact_allocation,
+    current_scan_identity,
+    default_signal_rows,
+    initial_workspace_state,
+    ordered_decisions,
+    reconcile_selection,
+    select_candidate,
+    short_strategy_name,
+)
 from ui_components import (
     allocation_display,
     apply_theme,
@@ -60,7 +71,7 @@ from ui_components import (
 # PAGE CONFIGURATION & PRESENTATION THEME
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Nifty 500 Trading Cockpit MVP",
+    page_title="Trading Cockpit V1.1",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -82,6 +93,26 @@ def get_adapters():
     }
 
 adapters = get_adapters()
+
+
+@st.cache_data(show_spinner=False)
+def load_historical_performance(project_root):
+    """Frozen research artifacts are process-cached, not reparsed on navigation."""
+    perf_file = os.path.join(project_root, "data", "mvp", "performance_report.json")
+    equity_file = os.path.join(project_root, "data", "mvp", "equity_curve.csv")
+    perf = json.loads(open(perf_file, "r").read()) if os.path.exists(perf_file) else {}
+    equity = pd.read_csv(equity_file) if os.path.exists(equity_file) else pd.DataFrame()
+    return perf, equity
+
+
+def hydrate_portfolio(force=False, positions=None):
+    """Session workspace avoids database/provider reads on ordinary UI reruns."""
+    if force or not st.session_state.get("portfolio_loaded"):
+        st.session_state["portfolio_positions"] = positions if positions is not None else adapters["execution"].get_open_positions()
+        st.session_state["portfolio_summary"] = adapters["execution"].get_portfolio_summary()
+        st.session_state["portfolio_snapshots"] = adapters["execution"].get_portfolio_snapshots()
+        st.session_state["portfolio_loaded"] = True
+    return st.session_state["portfolio_positions"], st.session_state["portfolio_summary"]
 
 # Session State Config Defaults
 if "sizing_mode" not in st.session_state:
@@ -115,6 +146,9 @@ if "diag_info" not in st.session_state:
     st.session_state["diag_info"] = {}
 if "scan_state" not in st.session_state:
     st.session_state["scan_state"] = initial_scan_state()
+for workspace_key, workspace_value in initial_workspace_state().items():
+    if workspace_key not in st.session_state:
+        st.session_state[workspace_key] = workspace_value
 
 # Candidate dictionaries are session-persisted by Streamlit.  Invalidate any
 # payload produced by the pre-Step-11.1 contract, which lacked canonical
@@ -126,14 +160,21 @@ if st.session_state.get("candidate_contract_version") != COCKPIT_CANDIDATE_CONTR
     st.session_state["regime_info"] = None
     st.session_state["diag_info"] = {}
     st.session_state["last_analysis_date"] = None
+    st.session_state["qualified_candidates"] = []
+    st.session_state["live_decisions"] = []
+    st.session_state["selected_opportunity_id"] = None
     st.session_state["candidate_contract_version"] = COCKPIT_CANDIDATE_CONTRACT_VERSION
+
+open_positions, persisted_portfolio_summary = hydrate_portfolio()
+if "database_health" not in st.session_state:
+    st.session_state["database_health"] = adapters["execution"].database_diagnostics()
 
 # Compact application shell
 st.markdown(
     f"""
     <div class="tc-header">
       <div><div class="tc-title">Trading Cockpit</div><div class="tc-subtitle">Paper-trading decision support · Manual execution only</div></div>
-      <div class="tc-meta">{status_badge('Paper trading', 'neutral')} &nbsp; {status_badge('ML inactive', 'unavailable')}<br/>Latest completed EOD data</div>
+      <div class="tc-meta">{status_badge('Paper mode', 'neutral')} &nbsp; {status_badge('ML inactive', 'unavailable')}<br/>Latest completed EOD data</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -214,9 +255,13 @@ if run_analysis_btn:
         st.session_state["last_analysis_date"] = str(analysis_date)
         st.session_state["shortlist_df"] = shortlist_df
         st.session_state["allocated_candidates"] = allocated_candidates
+        st.session_state["qualified_candidates"] = allocated_candidates
+        st.session_state["live_decisions"] = assemble_live_decisions(allocated_candidates)
         st.session_state["regime_info"] = regime_info
         st.session_state["diag_info"] = diag_info
+        reconcile_selection(st.session_state, st.session_state["live_decisions"], scan_state)
         adapters["execution"].save_portfolio_snapshot("ANALYSIS_COMPLETED")
+        hydrate_portfolio(force=True)
       except Exception as exc:
         scan_state.update({"status": SCAN_FAILED, "scan_completed_at": utc_now(), "error_summary": type(exc).__name__})
         st.session_state["scan_state"] = scan_state
@@ -236,15 +281,20 @@ tab_today, tab_signals, tab_portfolio, tab_details, tab_performance, tab_setting
 ])
 
 regime_info = st.session_state.get("regime_info") or {"regime": "BULLISH", "status_text": "Bullish (Nifty +1.46% > 50 EMA)", "close": 24250.0, "ema50": 23900.0, "data_as_of": str(analysis_date)}
-all_candidates = st.session_state.get("allocated_candidates") or []
+all_candidates = st.session_state.get("qualified_candidates") or st.session_state.get("allocated_candidates") or []
 
 # Differentiate Candidate Statuses cleanly
 selected_candidates = [c for c in all_candidates if c.get('status') == 'ALLOCATED' or c.get('is_selected', False)]
 qualified_unallocated = [c for c in all_candidates if c.get('status') == 'QUALIFIED — CAPITAL CAP' or (c.get('is_qualified', False) and not c.get('is_selected', False))]
 rejected_candidates = [c for c in all_candidates if c.get('status', '').startswith('REJECTED')]
 
-open_positions = adapters["execution"].get_open_positions()
-live_qualified_decisions = assemble_live_decisions(all_candidates)
+open_positions, persisted_portfolio_summary = hydrate_portfolio()
+live_qualified_decisions = st.session_state.get("live_decisions") or []
+if not live_qualified_decisions and all_candidates:
+    # Backwards-compatible session recovery for an existing pre-V1.1 scan.
+    live_qualified_decisions = assemble_live_decisions(all_candidates)
+    st.session_state["live_decisions"] = live_qualified_decisions
+reconcile_selection(st.session_state, live_qualified_decisions, st.session_state["scan_state"])
 selected_candidates = [c for c in live_qualified_decisions if c.get("allocation_status") == "ALLOCATED"]
 qualified_unallocated = [c for c in live_qualified_decisions if c.get("allocation_status") != "ALLOCATED"]
 
@@ -263,6 +313,54 @@ def render_market_risk_context():
                 st.markdown(f"[Source]({event['source_reference']})")
         for source in context.get("source_diagnostics", []):
             st.caption(f"{display_value(source.get('source_name'), 'Source')}: {display_value(source.get('check_status'))}")
+
+
+@st.cache_data(ttl=900, show_spinner=False)
+def load_selected_chart(symbol, as_of_date):
+    """One symbol chart at a time; cached independently of selection reruns."""
+    return adapters["market_data"].get_symbol_chart_data(symbol, as_of_date=as_of_date)
+
+
+@st.fragment
+def render_signals_workbench():
+    """Local filters rerun this workbench only; decisions come from session state."""
+    decisions = ordered_decisions(st.session_state.get("live_decisions") or [])
+    if not decisions:
+        render_empty_state("No qualified signals", "Run today's analysis to view qualified opportunities here.")
+        return
+    f1, f2, f3, f4 = st.columns([2, 1.2, 1.2, 1.2])
+    strategies = sorted({candidate.get("strategy") for candidate in decisions if candidate.get("strategy")})
+    with f1:
+        chosen_strategies = st.multiselect("Strategy", strategies, default=strategies, key="signal_strategy_filter")
+    with f2:
+        allocation_filter = st.selectbox("Allocation", ["All", "Allocated", "Capacity", "Cash", "Duplicate"], key="signal_allocation_filter")
+    with f3:
+        symbol_filter = st.text_input("Symbol search", placeholder="e.g. RELIANCE", key="signal_symbol_filter")
+    with f4:
+        stop_filter = st.selectbox("Executable stop", ["All", "Available", "Not available"], key="signal_stop_filter")
+    filtered = [candidate for candidate in decisions if candidate.get("strategy") in chosen_strategies]
+    if allocation_filter != "All":
+        filtered = [candidate for candidate in filtered if compact_allocation(candidate) == allocation_filter.upper()]
+    if symbol_filter:
+        filtered = [candidate for candidate in filtered if symbol_filter.upper() in str(candidate.get("symbol", "")).upper()]
+    if stop_filter != "All":
+        filtered = [candidate for candidate in filtered if bool(candidate.get("executable_stop_enabled")) == (stop_filter == "Available")]
+    filtered = ordered_decisions(filtered)
+    st.caption(f"Showing {len(filtered)} of {len(decisions)} qualified opportunities · strict priority order")
+    rows = default_signal_rows(filtered, {"volume": format_volume, "price": format_price, "percent": format_percent})
+    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    if filtered:
+        labels = {f"#{candidate.get('opportunity_priority_rank')} · {candidate.get('symbol')} · {short_strategy_name(candidate.get('strategy'))}": candidate for candidate in filtered}
+        chosen_label = st.selectbox("Inspect opportunity", list(labels), key="signal_selected_label")
+        chosen = labels[chosen_label]
+        selected_id = candidate_identity(chosen, st.session_state["scan_state"])
+        if st.session_state.get("selected_opportunity_id") != selected_id:
+            st.session_state["selected_opportunity_id"] = selected_id
+        if st.button("Open selected Trade Details", key="open_selected_trade_details"):
+            # This is an intentional, cheap app rerun to synchronize the other
+            # tab. Session-held scan/portfolio state prevents provider work.
+            st.rerun()
+        st.caption("Selection is held for Trade Details. No universe scan, price refresh, or database write occurs here.")
 
 # Date Semantics Notice
 actual_data_date = regime_info.get('data_as_of')
@@ -294,7 +392,7 @@ with tab_today:
         for c in selected_candidates
     )
 
-    today_portfolio = adapters["execution"].get_portfolio_summary()
+    today_portfolio = persisted_portfolio_summary
     live_risk_summary = summarize_live_portfolio_risk(open_positions)
     p1, p2, p3, p4, p5, p6 = st.columns(6)
     with p1:
@@ -304,7 +402,7 @@ with tab_today:
     with p3:
         render_metric_card("Open positions", f"{len(open_positions)} / 10", "Paper positions")
     with p4:
-        render_metric_card("Reference heat", live_risk_summary["reference_heat_pct"], "Informational", "unavailable")
+        render_metric_card("Reference heat", live_risk_summary["reference_heat_pct"], f"Coverage {live_risk_summary['positions_with_reference']} / {len(open_positions)} · Informational", "unavailable")
     with p5:
         render_metric_card("Qualified today", tot_qualified_cnt, "All qualified opportunities")
     with p6:
@@ -317,12 +415,10 @@ with tab_today:
         render_section_header("Scan status", "Current session")
         scan_state = st.session_state["scan_state"]
         freshness = scan_freshness(scan_state)
-        state_label = {SCAN_NOT_RUN: "No scan yet", SCAN_RUNNING: "Scanning universe…", SCAN_SUCCESS: "Scan complete", SCAN_PARTIAL: "Scan partial", SCAN_FAILED: "Scan failed"}.get(scan_state.get("status"), "Not available")
+        state_label = {SCAN_NOT_RUN: "Not run", SCAN_RUNNING: "Running", SCAN_SUCCESS: "Success", SCAN_PARTIAL: "Partial success", SCAN_FAILED: "Failed"}.get(scan_state.get("status"), "Not available")
         freshness_label = "Current" if freshness == "CURRENT" else "Stale" if freshness == "STALE" else "Not available"
-        render_context_card("Analysis freshness", freshness_label, f"{state_label} · Completed: {display_value(scan_state.get('scan_completed_at'))}", "good" if freshness == "CURRENT" else "warn" if freshness == "STALE" else "unavailable")
-        render_context_card("Scan coverage", f"{scan_state.get('symbols_succeeded', 0)} / {scan_state.get('symbols_requested', 0)} histories", f"Data unavailable: {scan_state.get('symbols_failed', 0)} · Qualified: {scan_state.get('qualified_count', 0)}", "neutral")
-        render_context_card("Qualification rule", "Volume + price confirmation", "Volume Ratio 20 ≥ 2.0× and Close above EMA20.", "neutral", "Binding")
-        render_context_card("Defined stop risk", format_currency(defined_stop_risk) if defined_stop_risk_available else "Not available", "Only for validated executable-stop strategies.", "neutral")
+        render_context_card("Analysis status", state_label, f"Completed: {display_value(scan_state.get('scan_completed_at'))}", "good" if freshness == "CURRENT" else "warn" if freshness == "STALE" else "unavailable", freshness_label)
+        render_context_card("Coverage", f"{scan_state.get('symbols_succeeded', 0)} / {scan_state.get('symbols_requested', 0)} histories", f"{scan_state.get('symbols_failed', 0)} unavailable · {scan_state.get('qualified_count', 0)} qualified", "neutral")
 
     # Sector Allocation Breakdown (Informational)
     if selected_candidates:
@@ -347,27 +443,19 @@ with tab_today:
         st.write(f"- **Qualified Candidates — Capital Cap (Unallocated)**: `{len(qualified_unallocated)}`")
         st.write(f"- **Rejected Candidates**: `{len(rejected_candidates)}` (Failed volume ratio < 2.0x, Close <= EMA20, or regime)")
 
-    render_section_header("Today's opportunities", "All qualified opportunities, ordered by causal Volume Ratio 20", "Binding allocation", "neutral")
+    render_section_header("Today's opportunities", "All qualified opportunities ordered by Opportunity Priority", "Preview", "neutral")
     if not live_qualified_decisions:
         if st.session_state.get("last_analysis_date"):
             render_empty_state("No qualified opportunities", "The latest scan completed without a qualified setup.")
         else:
             render_empty_state("No scan yet", "Run today's analysis to populate qualified opportunities.")
     else:
-        opportunity_rows = []
-        for candidate in live_qualified_decisions:
-            allocation_label, _ = allocation_display(candidate.get("allocation_status"), candidate.get("allocation_reason_code"))
-            opportunity_rows.append({
-                "Priority": candidate.get("opportunity_priority_rank", "Not available"),
-                "Symbol": candidate.get("symbol", "Not available"),
-                "Strategy": candidate.get("strategy", "Not available"),
-                "Allocation": allocation_label,
-                "Volume Ratio": format_volume(candidate.get("volume_ratio_20")),
-                "Reference Risk": format_percent(candidate.get("reference_risk_pct_equity")),
-                "Heat Added": format_percent(candidate.get("candidate_reference_heat_add_pct")),
-            })
+        opportunity_rows = default_signal_rows(
+            ordered_decisions(live_qualified_decisions)[:6],
+            {"volume": format_volume, "price": format_price, "percent": format_percent},
+        )
         st.dataframe(pd.DataFrame(opportunity_rows), width="stretch", hide_index=True)
-        st.caption("Use Trade Details to inspect an opportunity's setup, Trade Risk, portfolio impact, and descriptive historical context.")
+        st.caption("Showing the first 6 of all qualified opportunities. View all qualified opportunities in Signals.")
 
     render_section_header("Allocation summary", "Existing portfolio constraints; no new allocation policy")
     allocation_counts = {"Allocated": 0, "Insufficient cash": 0, "Duplicate": 0, "Capacity": 0}
@@ -387,23 +475,19 @@ with tab_today:
             render_metric_card(label, count, "Qualified opportunities", "good" if label == "Allocated" and count else "neutral")
 
     if selected_candidates:
-        render_section_header("Paper trade", "Explicit action only", "Manual", "neutral")
-        db_health = adapters["execution"].database_diagnostics()
+        render_section_header("Paper trade", "Explicit manual record only", "Manual", "neutral")
+        db_health = st.session_state["database_health"]
         if db_health.get("database_status") != "AVAILABLE":
             st.error("Paper-trade storage is unavailable. No paper trade can be recorded until database connectivity is restored.")
-        trade_col, action_col = st.columns([3, 1])
-        with trade_col:
+        with st.form("paper_trade_record_form", clear_on_submit=False):
             sel_sym = st.selectbox("Allocated opportunity", [candidate["symbol"] for candidate in selected_candidates], key="paper_trade_symbol")
-        match_cand = next((candidate for candidate in selected_candidates if candidate["symbol"] == sel_sym), None)
-        if match_cand:
-            stop_text = format_price(match_cand.get("initial_executable_stop")) if match_cand.get("executable_stop_enabled") else "Not validated for this strategy"
-            render_context_card("Paper-trade confirmation", f"{match_cand['symbol']} · {match_cand['strategy']}", f"Entry {format_price(match_cand.get('entry_price'))} · Quantity {display_value(match_cand.get('quantity'))} · Position value {format_currency(match_cand.get('suggested_position_size'))} · Reference risk {display_value(match_cand.get('risk_reference_value'))} · Executable stop {stop_text} · Target not available", "neutral", "Paper trade only")
-        confirm_paper_trade = st.checkbox("I confirm this is a manual paper-trade record", key="confirm_paper_trade")
-        with action_col:
-            st.write("")
-            exec_btn = st.button("Record paper trade", type="primary", width="stretch", disabled=not confirm_paper_trade or db_health.get("database_status") != "AVAILABLE")
+            confirm_paper_trade = st.checkbox("I confirm this is a manual paper-trade record", key="confirm_paper_trade")
+            exec_btn = st.form_submit_button("Record paper trade", type="primary", disabled=db_health.get("database_status") != "AVAILABLE")
         if exec_btn and sel_sym:
-            if match_cand:
+            match_cand = next((candidate for candidate in selected_candidates if candidate["symbol"] == sel_sym), None)
+            if not confirm_paper_trade:
+                st.error("Confirm the manual paper-trade record before submitting.")
+            elif match_cand:
                 submission_key = f"{match_cand['symbol']}:{match_cand.get('signal_date')}:{st.session_state['scan_state'].get('scan_completed_at')}"
                 submitted = st.session_state.setdefault("paper_submission_keys", set())
                 if submission_key in submitted:
@@ -413,6 +497,7 @@ with tab_today:
                     if res.get("success"):
                         submitted.add(submission_key)
                         log_event(PROJECT_ROOT, "PAPER_TRADE_RECORDED", symbol=match_cand["symbol"], trade_id=res.get("trade_id"))
+                        hydrate_portfolio(force=True)
                         st.success(res["message"])
                         st.rerun()
                     else:
@@ -457,50 +542,7 @@ with tab_today:
 # ==============================================================================
 with tab_signals:
     render_section_header("Signals", "All qualified opportunities; allocation does not hide a setup", "All qualified", "neutral")
-
-    f1, f2, f3, f4 = st.columns([2, 1.2, 1.2, 1.2])
-    with f1:
-        strat_filter = st.multiselect("Strategy", sorted(TREND_STRATEGIES.union(VOLATILITY_STRATEGIES)), default=sorted(TREND_STRATEGIES.union(VOLATILITY_STRATEGIES)))
-    with f2:
-        status_filter = st.selectbox("Allocation", ["All", "Allocated", "Not allocated"])
-    with f3:
-        symbol_filter = st.text_input("Symbol search", placeholder="e.g. RELIANCE")
-    with f4:
-        stop_filter = st.selectbox("Executable stop", ["All", "Available", "Not available"])
-
-    if live_qualified_decisions:
-        filtered_cands = live_qualified_decisions
-        if strat_filter:
-            filtered_cands = [c for c in filtered_cands if c.get('strategy') in strat_filter]
-        if status_filter != "All":
-            filtered_cands = [c for c in filtered_cands if (c.get('allocation_status') == 'ALLOCATED') == (status_filter == 'Allocated')]
-        if symbol_filter:
-            filtered_cands = [c for c in filtered_cands if symbol_filter.upper() in str(c.get('symbol', '')).upper()]
-        if stop_filter != "All":
-            filtered_cands = [c for c in filtered_cands if c.get('executable_stop_enabled') == (stop_filter == "Available")]
-
-        st.caption(f"Showing {len(filtered_cands)} of {len(live_qualified_decisions)} qualified opportunities")
-        signal_rows = []
-        for candidate in filtered_cands:
-            economics = candidate.get("trade_economics", {})
-            allocation_label, _ = allocation_display(candidate.get("allocation_status"), candidate.get("allocation_reason_code"))
-            economics_source = economics.get("display_sample_source", "INSUFFICIENT")
-            economics_label = "Insufficient" if economics_source == "INSUFFICIENT" else f"{economics_source} · N={display_value(economics.get('sample_count'))}"
-            signal_rows.append({
-                "Symbol": candidate.get("symbol", "NOT_AVAILABLE"),
-                "Strategy": candidate.get("strategy", "NOT_AVAILABLE"),
-                "Priority": candidate.get("opportunity_priority_rank", "NOT_AVAILABLE"),
-                "Allocation": allocation_label,
-                "Volume Ratio": format_volume(candidate.get("volume_ratio_20")),
-                "Entry": format_price(candidate.get("entry_price")),
-                "Reference Risk": format_percent(candidate.get("reference_risk_pct_equity")),
-                "Executable Stop": format_price(candidate.get("initial_executable_stop")) if candidate.get("executable_stop_enabled") else "—",
-                "Heat Added": format_percent(candidate.get("candidate_reference_heat_add_pct")),
-                "Economics": economics_label,
-            })
-        st.dataframe(pd.DataFrame(signal_rows), width="stretch", hide_index=True)
-    else:
-        render_empty_state("No qualified signals", "Run today's analysis to view qualified opportunities here.")
+    render_signals_workbench()
 
 # ==============================================================================
 # TAB 3 — PORTFOLIO (LIVE PAPER PORTFOLIO & POSITION ENGINE)
@@ -508,7 +550,7 @@ with tab_signals:
 with tab_portfolio:
     render_section_header("Portfolio", "Live paper-portfolio state", "Paper trading", "neutral")
 
-    perf_summary = adapters["execution"].get_portfolio_summary()
+    perf_summary = persisted_portfolio_summary
 
     val_inr = perf_summary.get('total_portfolio_value_inr', 1000000.0)
     cash_inr = perf_summary.get('current_cash_inr', perf_summary.get('cash_inr', 1000000.0))
@@ -528,14 +570,14 @@ with tab_portfolio:
     with p4:
         render_metric_card("Open positions", f"{pos_cnt} / 10", "Maximum positions")
     with p5:
-        render_metric_card("Reference heat", live_portfolio_risk["reference_heat_pct"], "Informational", "unavailable")
+        render_metric_card("Reference heat", live_portfolio_risk["reference_heat_pct"], f"Coverage {live_portfolio_risk['positions_with_reference']} / {pos_cnt} · Informational", "unavailable")
     with p6:
-        render_metric_card("Executable stop heat", live_portfolio_risk["executable_stop_heat_pct"], f"Coverage: {live_portfolio_risk['positions_with_reference']} / {pos_cnt}", "unavailable")
+        render_metric_card("Executable stop heat", live_portfolio_risk["executable_stop_heat_pct"], f"Coverage {live_portfolio_risk['positions_with_executable_stop']} / {pos_cnt}", "unavailable")
     st.caption("Reference Heat is informational. Executable Stop Heat is supplementary. Neither is a maximum-loss estimate.")
 
     render_section_header("Open positions", "Risk fields are available only where the paper ledger carries the frozen lifecycle data")
 
-    open_pos_list = adapters["execution"].get_open_positions()
+    open_pos_list = open_positions
 
     if not open_pos_list:
         render_empty_state("No open paper positions", "Run today's analysis and explicitly record a paper trade to begin tracking.")
@@ -556,43 +598,61 @@ with tab_portfolio:
 
         col_s1, col_s2 = st.columns([2, 4])
         with col_s1:
-            if st.button("Sync live market prices"):
-                res_sync = adapters["execution"].sync_live_prices()
-                st.success(res_sync.get("message", "Synced live prices"))
+            refresh_label = "Refresh prices"
+            if st.button(refresh_label):
+                with st.spinner("Refreshing live paper-position marks…"):
+                    res_sync = adapters["execution"].refresh_portfolio_positions()
+                hydrate_portfolio(force=True, positions=res_sync.get("positions", []))
+                st.session_state["last_price_refresh_at"] = utc_now()
+                log_event(PROJECT_ROOT, "PRICE_REFRESH", positions=len(res_sync.get("positions", [])))
+                st.success(f"Price refresh completed · {len(res_sync.get('price_unavailable', []))} price(s) unavailable")
                 st.rerun()
+        if st.session_state.get("last_price_refresh_at"):
+            st.caption(f"Last explicit price refresh: {st.session_state['last_price_refresh_at']}")
 
-        db_health = adapters["execution"].database_diagnostics()
+        db_health = st.session_state["database_health"]
         with st.expander("Manually close a paper trade", expanded=False):
             st.caption("Paper-trading record only. This does not place a broker order or infer an exit from a stop/target.")
             close_candidates = {f"#{pos['id']} · {pos['symbol']}": pos for pos in open_pos_list}
-            close_label = st.selectbox("Open paper trade", list(close_candidates), key="manual_close_trade")
-            close_position = close_candidates[close_label]
-            default_exit = float(close_position.get("current_price") or close_position.get("entry_price") or 0.0)
-            manual_exit_price = st.number_input("Manual exit price", min_value=0.0, value=default_exit, step=0.05, key="manual_exit_price")
-            confirm_close = st.checkbox("I confirm this manual paper-trade close", key="confirm_manual_close")
-            if st.button("Close paper trade", disabled=not confirm_close or db_health.get("database_status") != "AVAILABLE"):
-                close_result = adapters["execution"].close_paper_trade(close_position["id"], manual_exit_price)
-                if close_result.get("success"):
-                    log_event(PROJECT_ROOT, "PAPER_TRADE_CLOSED", trade_id=close_position["id"])
-                    st.success(close_result["message"])
-                    st.rerun()
+            with st.form("manual_paper_close_form", clear_on_submit=False):
+                close_label = st.selectbox("Open paper trade", list(close_candidates), key="manual_close_trade")
+                close_position = close_candidates[close_label]
+                default_exit = float(close_position.get("current_price") or close_position.get("entry_price") or 0.0)
+                manual_exit_price = st.number_input("Manual exit price", min_value=0.0, value=default_exit, step=0.05, key="manual_exit_price")
+                confirm_close = st.checkbox("I confirm this manual paper-trade close", key="confirm_manual_close")
+                close_submit = st.form_submit_button("Close paper trade", disabled=db_health.get("database_status") != "AVAILABLE")
+            if close_submit:
+                if not confirm_close:
+                    st.error("Confirm the manual paper-trade close before submitting.")
                 else:
-                    st.error(close_result.get("message", "Paper-trade close failed."))
+                    close_result = adapters["execution"].close_paper_trade(close_position["id"], manual_exit_price)
+                    if close_result.get("success"):
+                        log_event(PROJECT_ROOT, "PAPER_TRADE_CLOSED", trade_id=close_position["id"])
+                        hydrate_portfolio(force=True)
+                        st.success(close_result["message"])
+                        st.rerun()
+                    else:
+                        st.error(close_result.get("message", "Paper-trade close failed."))
 
 # ==============================================================================
 # TAB 4 — TRADE DETAILS (DECISION CARD & WHY THIS TRADE?)
 # ==============================================================================
 with tab_details:
-    render_section_header("Trade details", "Selected-opportunity analysis")
-    cand_symbols = [candidate["symbol"] for candidate in live_qualified_decisions] if live_qualified_decisions else ["No qualified candidate"]
-    if st.session_state.get("detail_symbol") not in cand_symbols:
-        st.session_state["detail_symbol"] = cand_symbols[0]
-    selected_detail_sym = st.selectbox("Opportunity", cand_symbols, key="detail_symbol")
-    match_detail = next((candidate for candidate in live_qualified_decisions if candidate.get("symbol") == selected_detail_sym), None)
+    render_section_header("Trade details", "Selected-opportunity analysis workspace")
+    ordered_details = ordered_decisions(live_qualified_decisions)
+    detail_options = {f"#{candidate.get('opportunity_priority_rank')} · {candidate.get('symbol')} · {short_strategy_name(candidate.get('strategy'))}": candidate for candidate in ordered_details}
+    if detail_options:
+        active_id = st.session_state.get("selected_opportunity_id")
+        active_label = next((label for label, candidate in detail_options.items() if candidate_identity(candidate, st.session_state["scan_state"]) == active_id), next(iter(detail_options)))
+        selected_label = st.selectbox("Opportunity", list(detail_options), index=list(detail_options).index(active_label), key=f"detail_selection_{current_scan_identity(st.session_state['scan_state'])}")
+        match_detail = detail_options[selected_label]
+        st.session_state["selected_opportunity_id"] = candidate_identity(match_detail, st.session_state["scan_state"])
+    else:
+        match_detail = None
 
     if not match_detail:
         match_detail = {
-            "symbol": selected_detail_sym, "status": "UNAVAILABLE", "strategy": "NOT_AVAILABLE",
+            "symbol": "No qualified candidate", "status": "UNAVAILABLE", "strategy": "NOT_AVAILABLE",
             "qualification_status": "NOT_AVAILABLE", "opportunity_priority_rank": "NOT_AVAILABLE",
             "allocation_status": "NOT_AVAILABLE", "allocation_reason_text": "NOT_AVAILABLE",
             "entry_price": None, "risk_reference_type": "NOT_AVAILABLE", "risk_reference_value": "NOT_AVAILABLE",
@@ -605,7 +665,7 @@ with tab_details:
 
     allocation_label, allocation_tone = allocation_display(match_detail.get("allocation_status"), match_detail.get("allocation_reason_code"))
     st.markdown(f"### {display_value(match_detail.get('symbol'))}")
-    st.markdown(f"{status_badge(display_value(match_detail.get('strategy')), 'neutral')} &nbsp; {status_badge(display_value(match_detail.get('qualification_status')), 'good' if match_detail.get('qualification_status') == 'QUALIFIED' else 'unavailable')} &nbsp; {status_badge(allocation_label, allocation_tone)}", unsafe_allow_html=True)
+    st.markdown(f"{status_badge(short_strategy_name(match_detail.get('strategy')), 'neutral')} &nbsp; {status_badge(display_value(match_detail.get('qualification_status')), 'good' if match_detail.get('qualification_status') == 'QUALIFIED' else 'unavailable')} &nbsp; {status_badge(compact_allocation(match_detail), allocation_tone)}", unsafe_allow_html=True)
     st.caption(f"Priority #{display_value(match_detail.get('opportunity_priority_rank'))} by causal Volume Ratio 20 · {display_value(match_detail.get('allocation_reason_text'))}")
 
     render_section_header("Trade setup", "Binding qualification and allocation fields")
@@ -656,22 +716,21 @@ with tab_details:
             render_context_card("Profit factor", display_value(historical.get("profit_factor")), f"P10 return: {format_percent(historical.get('p10_return'))}")
     st.caption("Target: Not available. No reward/risk ratio is displayed because the frozen contract has no target.")
 
-    render_section_header("Other context", "Supporting information")
-    other_1, other_2, other_3 = st.columns(3)
-    with other_1:
-        render_context_card("Entry timing", display_value(match_detail.get("entry_timing_availability")), "Research diagnostic only", "neutral", "Informational")
-    with other_2:
-        render_context_card("Event context", display_value(match_detail.get("event_context")), display_value(match_detail.get("event_summary")), "neutral", "Informational")
-    with other_3:
-        market_context = get_market_risk_context_for_ui(PROJECT_ROOT)
-        render_context_card("Market risk", display_value(market_context.get("overall_level")).replace("_", " "), display_value(market_context.get("source_coverage_status")), "neutral", "Informational")
-
-    render_section_header("Price trend", "Completed-session chart")
-    chart_df = pd.DataFrame() if match_detail.get("status") == "UNAVAILABLE" else adapters["market_data"].get_symbol_chart_data(selected_detail_sym, as_of_date=str(analysis_date))
-    if not chart_df.empty:
-        st.line_chart(chart_df[["Close", "EMA_20", "EMA_50"]].tail(120), width="stretch")
-    else:
-        render_empty_state("Price chart unavailable", "Completed-session OHLCV data is not available for this view.")
+    with st.expander("Supporting context & provenance", expanded=False):
+        other_1, other_2, other_3 = st.columns(3)
+        with other_1:
+            render_context_card("Entry timing", display_value(match_detail.get("entry_timing_availability")), "Research diagnostic only", "neutral", "Informational")
+        with other_2:
+            render_context_card("Event context", display_value(match_detail.get("event_context")), display_value(match_detail.get("event_summary")), "neutral", "Informational")
+        with other_3:
+            market_context = get_market_risk_context_for_ui(PROJECT_ROOT)
+            render_context_card("Market risk", display_value(market_context.get("overall_level")).replace("_", " "), display_value(market_context.get("source_coverage_status")), "neutral", "Informational")
+    with st.expander("Price trend", expanded=False):
+        chart_df = pd.DataFrame() if match_detail.get("status") == "UNAVAILABLE" else load_selected_chart(match_detail.get("symbol"), str(analysis_date))
+        if not chart_df.empty:
+            st.line_chart(chart_df[["Close", "EMA_20", "EMA_50"]].tail(120), width="stretch")
+        else:
+            render_empty_state("Price chart unavailable", "Completed-session OHLCV data is not available for this view.")
 
 # ==============================================================================
 # TAB 5 — PERFORMANCE (HISTORICAL RESEARCH VIEWER)
@@ -679,12 +738,9 @@ with tab_details:
 with tab_performance:
     render_section_header("Performance", "Historical research viewer; separate from the live paper portfolio", "Historical", "neutral")
 
-    perf_file = os.path.join(PROJECT_ROOT, "data", "mvp", "performance_report.json")
-    equity_file = os.path.join(PROJECT_ROOT, "data", "mvp", "equity_curve.csv")
+    perf_json, df_eq = load_historical_performance(PROJECT_ROOT)
 
-    if os.path.exists(perf_file):
-        with open(perf_file, "r") as f:
-            perf_json = json.load(f)
+    if perf_json:
 
         st.caption(f"Baseline: {perf_json.get('config_version', 'MVP v1.0')} · Allocation: {perf_json.get('allocation', '7T/3V')} · ML: {perf_json.get('ml_status', 'OFF')}")
 
@@ -701,14 +757,13 @@ with tab_performance:
             for label, value in (("Net return", format_percent(tm.get("net_return_pct"))), ("Daily Sharpe", display_value(tm.get("daily_sharpe_ratio"))), ("Max drawdown", format_percent(tm.get("max_drawdown_pct"))), ("Win rate / trades", f"{format_percent(tm.get('win_rate_pct'), 1)} · {display_value(tm.get('executed_trades'))}")):
                 render_context_card(label, value)
 
-        if os.path.exists(equity_file):
+        if not df_eq.empty:
             render_section_header("Cumulative equity", "Historical research curve")
-            df_eq = pd.read_csv(equity_file)
             st.line_chart(df_eq.set_index('date')['total_equity'], width="stretch")
 
     # Persistent paper results remain distinct from historical research above.
     render_section_header("Paper portfolio history", "Persisted portfolio snapshots; separate from historical research", "Paper trading", "neutral")
-    snapshots = adapters["execution"].get_portfolio_snapshots()
+    snapshots = st.session_state.get("portfolio_snapshots", [])
     if snapshots:
         history = pd.DataFrame([{
             "timestamp": row.snapshot_timestamp, "equity": row.portfolio_equity,
@@ -743,7 +798,7 @@ with tab_settings:
         render_context_card("Market risk", "Informational only", "Forward-looking broad-market context", "neutral", "Informational")
         render_context_card("ML / sentiment", "Inactive", "Not used by the cockpit", "unavailable")
     render_section_header("Operations", "Cloud deployment diagnostics", "Operational", "neutral")
-    db_health = adapters["execution"].database_diagnostics()
+    db_health = st.session_state["database_health"]
     op1, op2, op3 = st.columns(3)
     with op1:
         render_context_card("Product", PRODUCT_VERSION, "Paper-trading decision support", "neutral")

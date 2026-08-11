@@ -25,6 +25,7 @@ from database import (
     add_paper_trade,
     get_database_diagnostics,
     get_open_trades_with_live_data,
+    get_open_trades_persisted,
     get_closed_trades,
     load_portfolio_snapshots,
     save_portfolio_snapshot,
@@ -515,6 +516,11 @@ class ExecutionAdapter:
             return {"success": False, "message": "Paper-trade storage is unavailable. No trade was recorded."}
 
     def get_open_positions(self) -> List[Dict[str, Any]]:
+        # Navigation reads the durable ledger only. Provider marks are explicit.
+        return get_open_trades_persisted()
+
+    def refresh_open_positions(self) -> List[Dict[str, Any]]:
+        """The only position-read path allowed to request current market prices."""
         return get_open_trades_with_live_data()
 
     def get_closed_positions(self) -> List[Dict[str, Any]]:
@@ -524,6 +530,11 @@ class ExecutionAdapter:
         result = sync_paper_trades()
         self.save_portfolio_snapshot("PORTFOLIO_REFRESH")
         return result
+
+    def refresh_portfolio_positions(self) -> Dict[str, Any]:
+        """Explicit user action: sync frozen legacy lifecycle, then fetch fresh marks."""
+        sync_result = self.sync_live_prices()
+        return {**sync_result, "positions": self.refresh_open_positions()}
 
     def close_paper_trade(self, trade_id: int, exit_price: float) -> Dict[str, Any]:
         """Persist a user-confirmed manual paper close; no exit is inferred."""

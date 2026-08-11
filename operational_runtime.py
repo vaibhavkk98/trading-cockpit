@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import logging
 from pathlib import Path
 
-PRODUCT_VERSION = "TRADING_COCKPIT_V1"
+PRODUCT_VERSION = "TRADING_COCKPIT_V1_1"
 SCAN_NOT_RUN = "NOT_RUN"
 SCAN_RUNNING = "RUNNING"
 SCAN_SUCCESS = "SUCCESS"
