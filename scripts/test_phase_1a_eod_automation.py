@@ -14,9 +14,11 @@ except FileNotFoundError:
     pass
 
 from database import (DailyOpportunity, SessionLocal, add_paper_trade, get_latest_position_marks,
-                      get_open_trades_persisted, load_latest_analysis_run, persist_position_marks,
-                      save_portfolio_snapshot)
-from eod_pipeline import execute_eod_pipeline, has_completed_market_bar
+                      get_open_trades_persisted, load_latest_analysis_run, persist_analysis_run,
+                      persist_position_marks, save_portfolio_snapshot)
+from eod_pipeline import (execute_eod_pipeline, has_completed_market_bar,
+                          resolve_expected_completed_market_date)
+from zoneinfo import ZoneInfo
 
 
 class Market:
@@ -57,10 +59,22 @@ def deps(data_as_of):
 def run():
     assert "streamlit" not in open("eod_pipeline.py").read().lower()
     date = dt.date(2026, 8, 12)
+    ist = ZoneInfo("Asia/Kolkata")
+    assert resolve_expected_completed_market_date(dt.datetime(2026, 8, 12, 1, 38, tzinfo=ist)) == dt.date(2026, 8, 11)
+    assert resolve_expected_completed_market_date(dt.datetime(2026, 8, 12, 13, 0, tzinfo=ist)) == dt.date(2026, 8, 11)
+    assert resolve_expected_completed_market_date(dt.datetime(2026, 8, 12, 17, 0, tzinfo=ist)) == dt.date(2026, 8, 12)
+    assert resolve_expected_completed_market_date(dt.datetime(2026, 8, 15, 17, 0, tzinfo=ist)) == dt.date(2026, 8, 14)
+    valid_sessions = {dt.date(2026, 8, 14)}
+    assert resolve_expected_completed_market_date(
+        dt.datetime(2026, 8, 17, 17, 0, tzinfo=ist), completed_bar_lookup=lambda candidate: candidate in valid_sessions
+    ) == dt.date(2026, 8, 14)
     assert has_completed_market_bar({"data_as_of": "2026-08-12"}, date)
     assert not has_completed_market_bar({"data_as_of": "2026-08-11"}, date)
     no_bar = execute_eod_pipeline(date, dependencies=deps("2026-08-11"))
     assert no_bar["status"] == "NO_COMPLETED_MARKET_BAR" and not no_bar["persisted"] and load_latest_analysis_run() is None
+
+    persist_analysis_run({"analysis_date": date, "status": "NO_COMPLETED_MARKET_BAR", "decision_contract_version": "TEST"}, [])
+    assert load_latest_analysis_run() is None
 
     first = execute_eod_pipeline(date, dependencies=deps("2026-08-12"))
     assert first["status"] == "PARTIAL_SUCCESS" and first["persisted"]
@@ -68,9 +82,11 @@ def run():
     assert latest and latest["analysis_date"] == "2026-08-12" and len(latest["decisions"]) == 2
     second = execute_eod_pipeline(date, dependencies=deps("2026-08-12"))
     assert second["run_id"] == first["run_id"]
+    premarket = execute_eod_pipeline(dependencies={**deps("2026-08-11"), "now": dt.datetime(2026, 8, 12, 1, 38, tzinfo=ist)})
+    assert str(premarket["analysis_date"]) == "2026-08-11" and premarket["persisted"]
     session = SessionLocal()
     try:
-        assert session.query(DailyOpportunity).count() == 2
+        assert session.query(DailyOpportunity).filter_by(run_id=first["run_id"]).count() == 2
     finally:
         session.close()
 
@@ -85,7 +101,8 @@ def run():
     assert not save_portfolio_snapshot(snapshot, "AUTOMATED_EOD")["saved"]
 
     app_source = open("app.py").read()
-    assert "load_latest_analysis_run" in app_source and "persisted_run_hydrated" in app_source
+    assert "persistence.load_latest_analysis_run" not in app_source and "persisted_run_hydrated" in app_source
+    assert "getattr(persistence, \"load_latest_analysis_run\", None)" in app_source
     assert "Load price chart" in app_source
     assert "execute_eod_pipeline" in app_source and "refresh_portfolio_positions()" not in app_source.split("with tab_portfolio:")[0]
     print("Phase 1A EOD automation tests: PASS")

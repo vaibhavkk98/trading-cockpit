@@ -2,6 +2,7 @@
 
 import datetime as dt
 from typing import Any, Dict, Optional
+from zoneinfo import ZoneInfo
 
 from adapters import ExecutionAdapter, MarketDataProvider, PortfolioAllocationEngine, SignalEngine, UniverseProvider
 from event_intelligence import EventIntelligenceService
@@ -11,12 +12,39 @@ from operational_runtime import SCAN_PARTIAL, SCAN_SUCCESS
 
 
 DECISION_CONTRACT_VERSION = "TRADING_COCKPIT_V1_1_EOD"
+INDIAN_MARKET_TIMEZONE = ZoneInfo("Asia/Kolkata")
+EOD_READINESS_TIME = dt.time(16, 7)
+EXPECTED_SESSION_LOOKBACK_DAYS = 10
+
+
+def resolve_expected_completed_market_date(
+    now: Optional[dt.datetime] = None,
+    completed_bar_lookup=None,
+    readiness_time: dt.time = EOD_READINESS_TIME,
+    max_lookback_days: int = EXPECTED_SESSION_LOOKBACK_DAYS,
+) -> Optional[dt.date]:
+    """Resolve the latest eligible IST session, with provider bars as holiday authority."""
+    local_now = now or dt.datetime.now(INDIAN_MARKET_TIMEZONE)
+    if local_now.tzinfo is None:
+        local_now = local_now.replace(tzinfo=INDIAN_MARKET_TIMEZONE)
+    else:
+        local_now = local_now.astimezone(INDIAN_MARKET_TIMEZONE)
+    candidate = local_now.date() if local_now.time().replace(tzinfo=None) >= readiness_time else local_now.date() - dt.timedelta(days=1)
+    for offset in range(max_lookback_days + 1):
+        session_date = candidate - dt.timedelta(days=offset)
+        if session_date.weekday() >= 5:
+            continue
+        if completed_bar_lookup is None or completed_bar_lookup(session_date):
+            return session_date
+    return None
 
 
 def expected_indian_market_date(now: Optional[dt.datetime] = None) -> dt.date:
-    """The scheduled workflow runs after close; bar presence remains the holiday authority."""
-    now = now or dt.datetime.now(dt.timezone(dt.timedelta(hours=5, minutes=30)))
-    return now.date()
+    """Compatibility alias for UI defaults; provider validation occurs in the pipeline."""
+    resolved = resolve_expected_completed_market_date(now=now)
+    if resolved is None:  # Bounded search always finds a weekday without a provider callback.
+        raise RuntimeError("Unable to resolve an eligible Indian market date.")
+    return resolved
 
 
 def has_completed_market_bar(regime_info: Dict[str, Any], expected_date: dt.date) -> bool:
@@ -25,9 +53,6 @@ def has_completed_market_bar(regime_info: Dict[str, Any], expected_date: dt.date
 
 def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = "AUTOMATED_EOD", dependencies: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Run the existing production screen/allocation once, then persist its exact decision payload."""
-    analysis_date = analysis_date or expected_indian_market_date()
-    if isinstance(analysis_date, str):
-        analysis_date = dt.date.fromisoformat(analysis_date)
     deps = dependencies or {}
     market = deps.get("market_data") or MarketDataProvider()
     universe = deps.get("universe") or UniverseProvider()
@@ -35,9 +60,25 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
     execution = deps.get("execution") or ExecutionAdapter()
     allocator = deps.get("allocator") or PortfolioAllocationEngine()
     event_service = deps.get("event_service") or EventIntelligenceService()
+    regime_cache: Dict[dt.date, Dict[str, Any]] = {}
+    if analysis_date is None:
+        def completed_bar_lookup(candidate_date: dt.date) -> bool:
+            regime_cache[candidate_date] = market.get_index_regime(as_of_date=candidate_date.isoformat())
+            return has_completed_market_bar(regime_cache[candidate_date], candidate_date)
+
+        analysis_date = resolve_expected_completed_market_date(
+            now=deps.get("now"), completed_bar_lookup=completed_bar_lookup
+        )
+        if analysis_date is None:
+            fallback_date = expected_indian_market_date(now=deps.get("now"))
+            return {"status": "NO_COMPLETED_MARKET_BAR", "analysis_date": fallback_date.isoformat(),
+                    "run_id": f"EOD-{fallback_date.isoformat()}", "persisted": False,
+                    "reason": "No completed daily market bar was found in the bounded session search."}
+    if isinstance(analysis_date, str):
+        analysis_date = dt.date.fromisoformat(analysis_date)
     started = dt.datetime.now(dt.timezone.utc)
     run_id = f"EOD-{analysis_date.isoformat()}"
-    regime = market.get_index_regime(as_of_date=analysis_date.isoformat())
+    regime = regime_cache.get(analysis_date) or market.get_index_regime(as_of_date=analysis_date.isoformat())
     if not has_completed_market_bar(regime, analysis_date):
         return {"status": "NO_COMPLETED_MARKET_BAR", "analysis_date": analysis_date.isoformat(), "run_id": run_id,
                 "persisted": False, "reason": "Expected completed daily market bar is absent."}

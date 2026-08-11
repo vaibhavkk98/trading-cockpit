@@ -40,7 +40,7 @@ from event_intelligence import EventIntelligenceService
 from market_risk_live import get_market_risk_context_for_ui
 from live_decision_adapter import assemble_live_decisions, summarize_live_portfolio_risk
 from operational_runtime import PRODUCT_VERSION, SCAN_FAILED, SCAN_NOT_RUN, SCAN_PARTIAL, SCAN_RUNNING, SCAN_SUCCESS, initial_scan_state, log_event, scan_freshness, utc_now
-from database import load_latest_analysis_run
+import database as persistence
 from eod_pipeline import execute_eod_pipeline, expected_indian_market_date
 from interaction_architecture import (
     candidate_identity,
@@ -169,7 +169,8 @@ if st.session_state.get("candidate_contract_version") != COCKPIT_CANDIDATE_CONTR
 
 # Startup reads only durable state. It never starts a universe scan or price refresh.
 if not st.session_state.get("persisted_run_hydrated"):
-    persisted_run = load_latest_analysis_run()
+    latest_run_loader = getattr(persistence, "load_latest_analysis_run", None)
+    persisted_run = latest_run_loader() if callable(latest_run_loader) else None
     if persisted_run:
         st.session_state["scan_state"] = {**initial_scan_state(), **{key: persisted_run.get(key) for key in initial_scan_state()}, "source": persisted_run.get("source"), "run_id": persisted_run.get("run_id")}
         st.session_state["last_analysis_date"] = persisted_run.get("analysis_date")
