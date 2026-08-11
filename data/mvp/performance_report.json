@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-08-11T06:34:52.474644",
+  "config_version": "MVP v1.0",
+  "dataset_sha256": "1e3ce82f6e494d172fa2189c1f9a9030f553c7694574d0db29d5afd0864fb5ec",
+  "initial_capital": 1000000.0,
+  "allocation": "7 Trend / 3 Volatility",
+  "ml_status": "OFF",
+  "sentiment_status": "DISABLED",
+  "regime_filter": "ON",
+  "validation": {
+    "period": "2025-10-15 to 2026-02-03",
+    "net_return_pct": 13.27,
+    "daily_sharpe_ratio": 3.97,
+    "max_drawdown_pct": 2.43,
+    "win_rate_pct": 56.0,
+    "profit_factor": 2.54,
+    "executed_trades": 50,
+    "mean_trade_return_pct": 1.35,
+    "median_trade_return_pct": 1.06,
+    "nr7_trades": 9,
+    "avg_open_positions": 10.0
+  },
+  "test_descriptive": {
+    "period": "2026-02-18 to 2026-07-24",
+    "net_return_pct": 0.57,
+    "daily_sharpe_ratio": 0.42,
+    "max_drawdown_pct": 6.76,
+    "win_rate_pct": 46.7,
+    "profit_factor": 1.06,
+    "executed_trades": 30,
+    "mean_trade_return_pct": 0.13,
+    "median_trade_return_pct": -1.17,
+    "nr7_trades": 4,
+    "avg_open_positions": 10.0
+  }
+}

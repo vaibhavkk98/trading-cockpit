@@ -1,0 +1,11 @@
+{
+  "index_name": "Nifty 500",
+  "snapshot_date": "2026-08-10",
+  "source_name": "NSE India",
+  "source_url": "https://archives.nseindia.com/content/indices/ind_nifty500list.csv",
+  "record_count": 500,
+  "data_type": "current_universe_snapshot",
+  "historical_dataset_status": "PARTIAL / SAMPLE HISTORICAL EVENT DATASET — NOT SUITABLE FOR BACKTESTING",
+  "historical_snapshots_programmatic_availability": "UNAVAILABLE_PROGRAMMATICALLY",
+  "note": "Official full historical constituent snapshot CSVs for past reconstitution dates (2018-2025) cannot be retrieved via public static URLs. The system will NOT use sample events or today's constituent list as a substitute for historical backtesting."
+}

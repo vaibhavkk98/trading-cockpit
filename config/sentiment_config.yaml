@@ -1,0 +1,21 @@
+# SENTIMENT ENGINE V1 CONFIGURATION
+# Default configuration for Sentiment Engine interface.
+# IMPORTANT: sentiment_enabled defaults to false.
+
+sentiment_enabled: false
+
+market_sentiment:
+  enabled: false
+  provider: "placeholder"
+  min_sources: 3
+  decay_halflife_days: 3
+
+symbol_sentiment:
+  enabled: false
+  provider: "placeholder"
+  min_sources: 2
+  decay_halflife_days: 5
+
+logging:
+  enabled: true
+  log_file: "data/sentiment/sentiment_log.csv"

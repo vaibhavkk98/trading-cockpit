@@ -1,0 +1,4 @@
+symbol,previous_status,current_status,event_type,evidence,reason
+LTI_LTIM,14 Corporate Actions,22 Candidates,MERGER/RENAME,LTI merged into LTIMindtree (LTIM),Ticker swap and merger
+MINDTREE,14 Corporate Actions,22 Candidates,MERGER/RENAME,Mindtree merged into LTIMindtree (LTIM),Ticker swap and merger
+CADILAHC,14 Corporate Actions,22 Candidates,RENAME,Cadila Healthcare renamed to Zydus Lifesciences (ZYDUSLIFE),Ticker swap

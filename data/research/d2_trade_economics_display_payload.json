@@ -1,0 +1,155 @@
+[
+  {
+    "strategy": "Donchian Channel Breakout",
+    "display_sample_source": "TEST",
+    "sample_count": 37,
+    "sample_quality": "MODERATE_SAMPLE",
+    "historical_return_context": {
+      "mean_return": 0.7967113919293493,
+      "median_return": -1.2671205006777986,
+      "win_rate": 48.64864864864865,
+      "profit_factor": 1.3564706988729345,
+      "p10_return": -6.247566741027428,
+      "worst_return": -7.0981550302104175
+    },
+    "payoff_context": {
+      "average_winner": 6.231847619050475,
+      "average_loser": -4.35236503376435,
+      "payoff_ratio": 1.4318301821436528
+    },
+    "excursion_context": {
+      "median_mfe": 4.668652298884757,
+      "p90_mfe": 14.454502688111669,
+      "median_mae": 3.6355105422260503,
+      "p90_mae": 8.942448956608033,
+      "plus3_before_minus2_frequency": 36.11111111111111
+    },
+    "current_risk_context": "ATTACH_CURRENT_PHASE_A_B_RISK_FIELDS",
+    "target_context": {
+      "status": "NOT_AVAILABLE"
+    },
+    "descriptive_only": true,
+    "predictive": false,
+    "historical_path_metric_label": "Historical frequency of +3% before -2%",
+    "product_copy": "Historical strategy context \u2014 descriptive only. TEST sample: N=37, MODERATE_SAMPLE."
+  },
+  {
+    "strategy": "EMA Pullback / Bounce",
+    "display_sample_source": "INSUFFICIENT",
+    "sample_count": 0,
+    "sample_quality": "LOW_SAMPLE_SIZE",
+    "historical_return_context": "INSUFFICIENT_SAMPLE",
+    "payoff_context": "INSUFFICIENT_SAMPLE",
+    "excursion_context": "INSUFFICIENT_SAMPLE",
+    "current_risk_context": "ATTACH_CURRENT_PHASE_A_B_RISK_FIELDS",
+    "target_context": {
+      "status": "NOT_AVAILABLE"
+    },
+    "descriptive_only": true,
+    "predictive": false,
+    "historical_path_metric_label": "Historical frequency of +3% before -2%",
+    "product_copy": "Historical strategy context \u2014 descriptive only. Insufficient validation/test sample."
+  },
+  {
+    "strategy": "RS Momentum Breakout",
+    "display_sample_source": "TEST",
+    "sample_count": 53,
+    "sample_quality": "MODERATE_SAMPLE",
+    "historical_return_context": {
+      "mean_return": -0.0850404413619531,
+      "median_return": -1.2671205006777986,
+      "win_rate": 47.16981132075472,
+      "profit_factor": 0.9655471185004209,
+      "p10_return": -6.553346454257627,
+      "worst_return": -7.620566000819384
+    },
+    "payoff_context": {
+      "average_winner": 5.052534505764521,
+      "average_loser": -4.672160929867734,
+      "payoff_ratio": 1.0814127727204712
+    },
+    "excursion_context": {
+      "median_mfe": 3.6802463310397826,
+      "p90_mfe": 13.342823407550624,
+      "median_mae": 3.774660970045341,
+      "p90_mae": 9.012408789870427,
+      "plus3_before_minus2_frequency": 31.37254901960784
+    },
+    "current_risk_context": "ATTACH_CURRENT_PHASE_A_B_RISK_FIELDS",
+    "target_context": {
+      "status": "NOT_AVAILABLE"
+    },
+    "descriptive_only": true,
+    "predictive": false,
+    "historical_path_metric_label": "Historical frequency of +3% before -2%",
+    "product_copy": "Historical strategy context \u2014 descriptive only. TEST sample: N=53, MODERATE_SAMPLE."
+  },
+  {
+    "strategy": "True Connors RSI Mean Reversion",
+    "display_sample_source": "INSUFFICIENT",
+    "sample_count": 0,
+    "sample_quality": "LOW_SAMPLE_SIZE",
+    "historical_return_context": "INSUFFICIENT_SAMPLE",
+    "payoff_context": "INSUFFICIENT_SAMPLE",
+    "excursion_context": "INSUFFICIENT_SAMPLE",
+    "current_risk_context": "ATTACH_CURRENT_PHASE_A_B_RISK_FIELDS",
+    "target_context": {
+      "status": "NOT_AVAILABLE"
+    },
+    "descriptive_only": true,
+    "predictive": false,
+    "historical_path_metric_label": "Historical frequency of +3% before -2%",
+    "product_copy": "Historical strategy context \u2014 descriptive only. Insufficient validation/test sample."
+  },
+  {
+    "strategy": "True NR7 Volatility Expansion Breakout",
+    "display_sample_source": "INSUFFICIENT",
+    "sample_count": 0,
+    "sample_quality": "LOW_SAMPLE_SIZE",
+    "historical_return_context": "INSUFFICIENT_SAMPLE",
+    "payoff_context": "INSUFFICIENT_SAMPLE",
+    "excursion_context": "INSUFFICIENT_SAMPLE",
+    "current_risk_context": "ATTACH_CURRENT_PHASE_A_B_RISK_FIELDS",
+    "target_context": {
+      "status": "NOT_AVAILABLE"
+    },
+    "descriptive_only": true,
+    "predictive": false,
+    "historical_path_metric_label": "Historical frequency of +3% before -2%",
+    "product_copy": "Historical strategy context \u2014 descriptive only. Insufficient validation/test sample."
+  },
+  {
+    "strategy": "VCP Volatility Contraction Breakout",
+    "display_sample_source": "TEST",
+    "sample_count": 30,
+    "sample_quality": "MODERATE_SAMPLE",
+    "historical_return_context": {
+      "mean_return": -0.195365526630813,
+      "median_return": 0.042571380240769,
+      "win_rate": 50.0,
+      "profit_factor": 0.884475904343304,
+      "p10_return": -5.196131341909087,
+      "worst_return": -5.75155388586428
+    },
+    "payoff_context": {
+      "average_winner": 2.991516183044511,
+      "average_loser": -3.3822472363061364,
+      "payoff_ratio": 0.884475904343304
+    },
+    "excursion_context": {
+      "median_mfe": 4.400757717270887,
+      "p90_mfe": 8.285678115744084,
+      "median_mae": 3.004990606396124,
+      "p90_mae": 6.224982865522878,
+      "plus3_before_minus2_frequency": 36.666666666666664
+    },
+    "current_risk_context": "ATTACH_CURRENT_PHASE_A_B_RISK_FIELDS",
+    "target_context": {
+      "status": "NOT_AVAILABLE"
+    },
+    "descriptive_only": true,
+    "predictive": false,
+    "historical_path_metric_label": "Historical frequency of +3% before -2%",
+    "product_copy": "Historical strategy context \u2014 descriptive only. TEST sample: N=30, MODERATE_SAMPLE."
+  }
+]

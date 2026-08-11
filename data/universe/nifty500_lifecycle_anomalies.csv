@@ -1,0 +1,524 @@
+symbol,anomaly_type,first_event_id,first_date,second_event_id,second_date,description
+AARTIDRUGS,CONSECUTIVE_DELETION,PEVT_01000,"August 30, 2022",PEVT_01234,"March 28, 2024",Consecutive DELETION events without intervening opposite transition
+ABB,CONSECUTIVE_DELETION,PEVT_00776,"June 28, 2024",PEVT_00344,"December 31, 2024",Consecutive DELETION events without intervening opposite transition
+ABBOTINDIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00781,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+ABCAPITAL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00172,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+ABLBL,CONSECUTIVE_ADDITION,PEVT_00853,"September 30, 2025",PEVT_00659,"October 31, 2025",Consecutive ADDITION events without intervening opposite transition
+ABREL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00871,"August 29, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on August 29, 2025"
+ABSLAMC,CONSECUTIVE_ADDITION,PEVT_01055,"September 30, 2024",PEVT_00384,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+ABSLAMC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00072,"June 30,
+2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 30,
+2025"
+ACI,CONSECUTIVE_ADDITION,PEVT_00584,"March 31, 2023",PEVT_01023,"August 31, 2023",Consecutive ADDITION events without intervening opposite transition
+ACI,CONSECUTIVE_DELETION,PEVT_00451,"March 28, 2025",PEVT_00713,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+ADANIENT,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00782,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+ADANIGAS,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00334,"January 1, 2021",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on January 1, 2021"
+ADANIGREEN,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00234,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+ADANIPORTS,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00345,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+ADANIPOWER,CONSECUTIVE_ADDITION,PEVT_00582,"March 31, 2023",PEVT_00129,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+ADANIPOWER,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00346,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+AEGISCHEM,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_01022,"August 31, 2023",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on August 31, 2023"
+AEGISLOG,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00872,"August 29, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on August 29, 2025"
+AETHER,CONSECUTIVE_DELETION,PEVT_01027,"September 30, 2024",PEVT_01081,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+AFCONS,CONSECUTIVE_ADDITION,PEVT_00469,"March 28, 2025",PEVT_00744,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+AFFLE,CONSECUTIVE_ADDITION,PEVT_00676,"December 26, 2019",PEVT_00808,"May 31, 2024",Consecutive ADDITION events without intervening opposite transition
+AFFLE,CONSECUTIVE_DELETION,PEVT_00283,"October 31, 2024",PEVT_00693,,Consecutive DELETION events without intervening opposite transition
+AFFLE,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00693,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+AIAENG,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00783,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+AKUMS,CONSECUTIVE_DELETION,PEVT_00426,"March 30, 2026",PEVT_00936,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+AKZOINDIA,CONSECUTIVE_ADDITION,PEVT_00539,"September 30, 2025",PEVT_00855,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+AKZOINDIA,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00855,"September 30, 2025",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on September 30, 2025"
+ALIVUS,CONSECUTIVE_ADDITION,PEVT_00470,"March 28, 2025",PEVT_00745,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+ALIVUS,CONSECUTIVE_DELETION,PEVT_00523,"September 30, 2025",PEVT_00835,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+ALKYLAMINE,CONSECUTIVE_DELETION,PEVT_00428,"March 30, 2026",PEVT_00938,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+ALLCARGO,CONSECUTIVE_ADDITION,PEVT_01156,"March
+31, 2022",PEVT_00629,"September 29, 2023",Consecutive ADDITION events without intervening opposite transition
+ALLCARGO,CONSECUTIVE_DELETION,PEVT_01028,"September 30, 2024",PEVT_01082,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+ALLCARGO,CONSECUTIVE_DELETION,PEVT_01082,"September 30, 2024",PEVT_00084,,Consecutive DELETION events without intervening opposite transition
+ALLCARGO,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00510,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+AMBER,CONSECUTIVE_ADDITION,PEVT_00335,"January 1, 2021",PEVT_00385,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+ANANDRATHI,CONSECUTIVE_ADDITION,PEVT_01269,"March 28, 2024",PEVT_00130,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+ANANTRAJ,CONSECUTIVE_ADDITION,PEVT_01056,"September 30, 2024",PEVT_01108,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+ANANTRAJ,CONSECUTIVE_ADDITION,PEVT_01108,"September 30, 2024",PEVT_00386,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+ANGELBRKG,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00912,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+ANURAS,CONSECUTIVE_DELETION,PEVT_01029,"September 30, 2024",PEVT_01083,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+APARINDS,CONSECUTIVE_ADDITION,PEVT_00062,,PEVT_00186,,Consecutive ADDITION events without intervening opposite transition
+APLLTD,CONSECUTIVE_DELETION,PEVT_00427,"March 30, 2026",PEVT_00937,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+APOLLOHOSP,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00524,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+ASHOKLEY,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00308,"January 1, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on January 1, 2021"
+ASTRAZEN,CONSECUTIVE_DELETION,PEVT_00429,"March 30, 2026",PEVT_00940,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+ASTRAZEN,CONSECUTIVE_DELETION,PEVT_00940,"March 30, 2026",PEVT_00055,,Consecutive DELETION events without intervening opposite transition
+ATGL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00603,"July 31, 2026",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2026"
+AUROPHARMA,CONSECUTIVE_DELETION,PEVT_00097,"June 28, 2024",PEVT_00160,,Consecutive DELETION events without intervening opposite transition
+AVANTIFEED,CONSECUTIVE_DELETION,PEVT_00452,"March 28, 2025",PEVT_00714,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+AWL,CONSECUTIVE_DELETION,PEVT_01192,"July 31, 2023",PEVT_00198,,Consecutive DELETION events without intervening opposite transition
+AWL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00198,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+AXISBANK,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00204,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+BAJAJ-AUTO,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00349,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+BALAMINES,CONSECUTIVE_DELETION,PEVT_00453,"March 28, 2025",PEVT_00715,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+BALAMINES,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00914,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+BALKRISIND,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01193,"July 31, 2023",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2023"
+BALRAMCHIN,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00235,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+BANKBARODA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00173,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+BANKINDIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00174,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+BASF,CONSECUTIVE_ADDITION,PEVT_01057,"September 30, 2024",PEVT_01109,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+BASF,CONSECUTIVE_DELETION,PEVT_00430,"March 30, 2026",PEVT_00941,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+BASF,CONSECUTIVE_DELETION,PEVT_00941,"March 30, 2026",PEVT_00497,,Consecutive DELETION events without intervening opposite transition
+BATAINDIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00202,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+BCG,CONSECUTIVE_DELETION,PEVT_01235,"March 28, 2024",PEVT_01187,"April 26, 2024",Consecutive DELETION events without intervening opposite transition
+BCG,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00268,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+BDL,CONSECUTIVE_DELETION,PEVT_00350,"December 31, 2024",PEVT_00002,,Consecutive DELETION events without intervening opposite transition
+BDL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00002,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+BEL,CONSECUTIVE_DELETION,PEVT_01084,"September 30, 2024",PEVT_00351,"December 31, 2024",Consecutive DELETION events without intervening opposite transition
+BEL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00351,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+BEML,CONSECUTIVE_DELETION,PEVT_00051,"April 12, 2022",PEVT_00284,"October 31, 2024",Consecutive DELETION events without intervening opposite transition
+BHARATRAS,CONSECUTIVE_DELETION,PEVT_00564,"March 31, 2023",PEVT_00056,,Consecutive DELETION events without intervening opposite transition
+BHARTIARTL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00330,"January 1, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on January 1, 2021"
+BHEL,CONSECUTIVE_DELETION,PEVT_00206,"December 31, 2021",PEVT_00352,"December 31, 2024",Consecutive DELETION events without intervening opposite transition
+BHEL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00352,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+BIKAJI,CONSECUTIVE_ADDITION,PEVT_00585,"March 31, 2023",PEVT_00063,,Consecutive ADDITION events without intervening opposite transition
+BIOCON,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00784,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+BIRLACORPN,CONSECUTIVE_DELETION,PEVT_00785,"May 31, 2024",PEVT_00716,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+BLUEJET,CONSECUTIVE_ADDITION,PEVT_00540,"September 30, 2025",PEVT_00857,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+BORORENEW,CONSECUTIVE_ADDITION,PEVT_01158,"March
+31, 2022",PEVT_01006,"August 30, 2022",Consecutive ADDITION events without intervening opposite transition
+BORORENEW,CONSECUTIVE_DELETION,PEVT_01030,"September 30, 2024",PEVT_00499,,Consecutive DELETION events without intervening opposite transition
+BOSCHLTD,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00203,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+BPCL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00498,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+BRITANNIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00175,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+BSE,CONSECUTIVE_ADDITION,PEVT_00242,"December 31, 2021",PEVT_00189,,Consecutive ADDITION events without intervening opposite transition
+BSE LTD.*,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00682,"March 28, 2024",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on March 28, 2024"
+CAMPUS,CONSECUTIVE_DELETION,PEVT_00431,"March 30, 2026",PEVT_00942,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+CAPLIPOINT,CONSECUTIVE_ADDITION,PEVT_01271,"March 28, 2024",PEVT_00811,"May 31, 2024",Consecutive ADDITION events without intervening opposite transition
+CAPLIPOINT,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00694,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+CARERATING,CONSECUTIVE_DELETION,PEVT_00309,"January 1, 2021",PEVT_00889,,Consecutive DELETION events without intervening opposite transition
+CDSL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00100,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+CELLO,CONSECUTIVE_DELETION,PEVT_00454,"March 28, 2025",PEVT_00717,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+CEMPRO,CONSECUTIVE_ADDITION,PEVT_00444,"March 30, 2026",PEVT_00976,"March 30, 2026",Consecutive ADDITION events without intervening opposite transition
+CENTURYPLY,CONSECUTIVE_DELETION,PEVT_00651,"October 31, 2025",PEVT_00943,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+CERA,CONSECUTIVE_DELETION,PEVT_01199,"July 31, 2024",PEVT_00944,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+CGCL,CONSECUTIVE_DELETION,PEVT_01127,"March
+31, 2022",PEVT_00052,"April 12, 2022",Consecutive DELETION events without intervening opposite transition
+CGCL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00052,"April 12, 2022",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on April 12, 2022"
+CGPOWER,CONSECUTIVE_DELETION,PEVT_00673,"December 26, 2019",PEVT_00555,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+CGPOWER,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00555,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+CHEMPLASTS,CONSECUTIVE_ADDITION,PEVT_01161,"March
+31, 2022",PEVT_01216,"August 08, 2022",Consecutive ADDITION events without intervening opposite transition
+CHENNPETRO,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00890,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+CIEINDIA,CONSECUTIVE_DELETION,PEVT_00455,"March 28, 2025",PEVT_00719,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+CIEINDIA,CONSECUTIVE_DELETION,PEVT_00719,"March 28, 2025",PEVT_00044,"May 12, 2026",Consecutive DELETION events without intervening opposite transition
+CLEAN,CONSECUTIVE_ADDITION,PEVT_01162,"March
+31, 2022",PEVT_01007,"August 30, 2022",Consecutive ADDITION events without intervening opposite transition
+CLEAN,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01085,"September 30, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2024"
+COALINDIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00525,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+COCHINSHIP,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00353,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+COFORGE,CONSECUTIVE_ADDITION,PEVT_00831,"May 31, 2024",PEVT_00389,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+CONCOR,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00787,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+CONCORDBIO,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00650,"October 26, 2023",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on October 26, 2023"
+CPPLUS,CONSECUTIVE_ADDITION,PEVT_00443,"March 30, 2026",PEVT_00968,"March 30, 2026",Consecutive ADDITION events without intervening opposite transition
+CUMMINSIND,CONSECUTIVE_DELETION,PEVT_01122,"September 30, 2024",PEVT_00354,"December 31, 2024",Consecutive DELETION events without intervening opposite transition
+CUMMINSIND,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00354,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+CYIENT,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00101,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+DCBBANK,CONSECUTIVE_DELETION,PEVT_00208,"December 31, 2021",PEVT_01128,"March
+31, 2022",Consecutive DELETION events without intervening opposite transition
+DCMSHRIRAM,CONSECUTIVE_DELETION,PEVT_00310,"January 1, 2021",PEVT_01032,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+DEEPAKFERT,CONSECUTIVE_ADDITION,PEVT_00024,"September 30, 2022",PEVT_00391,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+DEEPAKFERT,CONSECUTIVE_ADDITION,PEVT_00391,"December 31, 2024",PEVT_00166,,Consecutive ADDITION events without intervening opposite transition
+DIVISLAB,CONSECUTIVE_DELETION,PEVT_00236,"December 31, 2021",PEVT_00788,"May 31, 2024",Consecutive DELETION events without intervening opposite transition
+DIXON,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00670,"February 28, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on February 28, 2025"
+EIDPARRY,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00262,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+ELECON,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00604,"July 31, 2026",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2026"
+ENGINERSIN,CONSECUTIVE_DELETION,PEVT_00209,"December 31, 2021",PEVT_01086,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+ENRIN,CONSECUTIVE_ADDITION,PEVT_00869,"September 30, 2025",PEVT_00691,"February 27, 2026",Consecutive ADDITION events without intervening opposite transition
+EPL,CONSECUTIVE_DELETION,PEVT_01033,"September 30, 2024",PEVT_01087,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+EQUITAS,CONSECUTIVE_DELETION,PEVT_00485,"June 30, 2022",PEVT_00559,,Consecutive DELETION events without intervening opposite transition
+EQUITASBNK,CONSECUTIVE_DELETION,PEVT_00721,"March 28, 2025",PEVT_00176,,Consecutive DELETION events without intervening opposite transition
+ERIS,CONSECUTIVE_DELETION,PEVT_00054,"April 02, 2018",PEVT_00004,"September 30, 2022",Consecutive DELETION events without intervening opposite transition
+ERIS,CONSECUTIVE_DELETION,PEVT_00004,"September 30, 2022",PEVT_00286,"October 31, 2024",Consecutive DELETION events without intervening opposite transition
+ERIS,CONSECUTIVE_DELETION,PEVT_00286,"October 31, 2024",PEVT_00685,,Consecutive DELETION events without intervening opposite transition
+ERIS,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00685,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+ESCORTS,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00250,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+EXIDEIND,CONSECUTIVE_DELETION,PEVT_00355,"December 31, 2024",PEVT_00161,,Consecutive DELETION events without intervening opposite transition
+EXIDEIND,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00161,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+FACT,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00103,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+FDC,CONSECUTIVE_DELETION,PEVT_01034,"September 30, 2024",PEVT_01088,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+FEDERALBNK,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00177,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+FINEORG,CONSECUTIVE_DELETION,PEVT_00456,"March 28, 2025",PEVT_00722,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+FINPIPE,CONSECUTIVE_DELETION,PEVT_00526,"September 30, 2025",PEVT_00946,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+FINPIPE,CONSECUTIVE_DELETION,PEVT_00946,"March 30, 2026",PEVT_00500,,Consecutive DELETION events without intervening opposite transition
+FIRSTCRY,CONSECUTIVE_ADDITION,PEVT_00471,"March 28, 2025",PEVT_00748,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+FORCEMOT,CONSECUTIVE_ADDITION,PEVT_00542,"September 30, 2025",PEVT_00860,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+FORTIS,CONSECUTIVE_ADDITION,PEVT_00815,"May 31, 2024",PEVT_00394,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+FRETAIL,CONSECUTIVE_ADDITION,PEVT_00093,"March 31, 2017",PEVT_00322,"January 1, 2021",Consecutive ADDITION events without intervening opposite transition
+FRETAIL,CONSECUTIVE_DELETION,PEVT_00211,"December 31, 2021",PEVT_01130,"March
+31, 2022",Consecutive DELETION events without intervening opposite transition
+GABRIEL,CONSECUTIVE_ADDITION,PEVT_00445,"March 30, 2026",PEVT_00978,"March 30, 2026",Consecutive ADDITION events without intervening opposite transition
+GAEL,CONSECUTIVE_DELETION,PEVT_00458,"March 28, 2025",PEVT_00725,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+GALLANTT,CONSECUTIVE_ADDITION,PEVT_00446,"March 30, 2026",PEVT_00979,"March 30, 2026",Consecutive ADDITION events without intervening opposite transition
+GAYAPROJ,CONSECUTIVE_DELETION,PEVT_00424,"March 27, 2020",PEVT_00998,"March 27, 2020",Consecutive DELETION events without intervening opposite transition
+GESHIP,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00486,"June 30, 2022",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 30, 2022"
+GET&D,CONSECUTIVE_ADDITION,PEVT_01060,"September 30, 2024",PEVT_01112,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+GET&D,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_01112,"September 30, 2024",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on September 30, 2024"
+GHCL,CONSECUTIVE_DELETION,PEVT_00312,"January 1, 2021",PEVT_00777,"April 29, 2021",Consecutive DELETION events without intervening opposite transition
+GICRE,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00104,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+GILLETTE,CONSECUTIVE_ADDITION,PEVT_00631,"September 29, 2023",PEVT_00512,,Consecutive ADDITION events without intervening opposite transition
+GLAND,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00484,"June 30, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 30, 2021"
+GLAXO,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01194,"July 31, 2023",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2023"
+GLS,CONSECUTIVE_DELETION,PEVT_01035,"September 30, 2024",PEVT_01089,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+GLS,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00513,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+GMDCLTD,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00893,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+GMMPFAUDLR,CONSECUTIVE_DELETION,PEVT_01036,"September 30, 2024",PEVT_01090,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+GMRINFRA,CONSECUTIVE_DELETION,PEVT_00050,"May 04, 2022",PEVT_00882,,Consecutive DELETION events without intervening opposite transition
+GNFC,CONSECUTIVE_DELETION,PEVT_00487,"June 30, 2022",PEVT_00287,"October 31, 2024",Consecutive DELETION events without intervening opposite transition
+GNFC,CONSECUTIVE_DELETION,PEVT_00287,"October 31, 2024",PEVT_00836,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+GNFC,CONSECUTIVE_DELETION,PEVT_00836,"September 30, 2025",PEVT_00199,,Consecutive DELETION events without intervening opposite transition
+GODREJAGRO,CONSECUTIVE_DELETION,PEVT_01002,"August 30, 2022",PEVT_00613,"September 29, 2023",Consecutive DELETION events without intervening opposite transition
+GODREJCP,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01204,"July 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2024"
+GPPL,CONSECUTIVE_DELETION,PEVT_01016,"August 31, 2023",PEVT_00837,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+GRAPHITE,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00212,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+GRASIM,CONSECUTIVE_DELETION,PEVT_01229,"May 26, 2017",PEVT_00340,"January 1, 2021",Consecutive DELETION events without intervening opposite transition
+GRASIM,CONSECUTIVE_DELETION,PEVT_00340,"January 1, 2021",PEVT_00789,"May 31, 2024",Consecutive DELETION events without intervening opposite transition
+GRASIM,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00789,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+GRAVITA,CONSECUTIVE_ADDITION,PEVT_00750,"March 28, 2025",PEVT_00543,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+GREENPANEL,CONSECUTIVE_DELETION,PEVT_00614,"September 29, 2023",PEVT_00501,,Consecutive DELETION events without intervening opposite transition
+GRINDWELL,CONSECUTIVE_DELETION,PEVT_00457,"March 28, 2025",PEVT_00724,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+GSFC,CONSECUTIVE_DELETION,PEVT_00459,"March 28, 2025",PEVT_00726,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+GSPL,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00269,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+GUJGASLTD,CONSECUTIVE_DELETION,PEVT_00432,"March 30, 2026",PEVT_00948,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+HAL,CONSECUTIVE_DELETION,PEVT_00358,"December 31, 2024",PEVT_00503,,Consecutive DELETION events without intervening opposite transition
+HAL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00503,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+HAPPSTMNDS,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00916,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+HAPPYFORGE,CONSECUTIVE_DELETION,PEVT_01037,"September 30, 2024",PEVT_01091,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+HATHWAY,CONSECUTIVE_DELETION,PEVT_00688,"December 27, 2019",PEVT_00006,"September 30, 2022",Consecutive DELETION events without intervening opposite transition
+HATHWAY,CONSECUTIVE_DELETION,PEVT_00006,"September 30, 2022",PEVT_00894,,Consecutive DELETION events without intervening opposite transition
+HBLPOWER,CONSECUTIVE_ADDITION,PEVT_01279,"March 28, 2024",PEVT_00137,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+HBLPOWER,CONSECUTIVE_DELETION,PEVT_00288,"October 31, 2024",PEVT_00357,"December 31, 2024",Consecutive DELETION events without intervening opposite transition
+HEMIPROP,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00917,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+HEXT,CONSECUTIVE_ADDITION,PEVT_00544,"September 30, 2025",PEVT_00861,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+HGS,CONSECUTIVE_DELETION,PEVT_00616,"September 29, 2023",PEVT_00502,,Consecutive DELETION events without intervening opposite transition
+HINDCOPPER,CONSECUTIVE_ADDITION,PEVT_00252,"December 31, 2021",PEVT_00138,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+HINDPETRO,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00339,"January 1, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on January 1, 2021"
+HINDZINC,CONSECUTIVE_ADDITION,PEVT_00222,"December 31, 2021",PEVT_00608,"July 31, 2026",Consecutive ADDITION events without intervening opposite transition
+HINDZINC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00162,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+HONASA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00652,"October 31, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on October 31, 2025"
+HONAUT,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00790,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+HSCL,CONSECUTIVE_ADDITION,PEVT_01280,"March 28, 2024",PEVT_00397,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+HYUNDAI,CONSECUTIVE_ADDITION,PEVT_00472,"March 28, 2025",PEVT_00751,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+ICIL,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00918,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+IDEA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01053,"September 30, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2024"
+IDFC,CONSECUTIVE_DELETION,PEVT_00214,"December 31, 2021",PEVT_00047,"October 10, 2024",Consecutive DELETION events without intervening opposite transition
+IDFC,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00169,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+IFBIND,CONSECUTIVE_DELETION,PEVT_00617,"September 29, 2023",PEVT_00504,,Consecutive DELETION events without intervening opposite transition
+IGIL,CONSECUTIVE_ADDITION,PEVT_00473,"March 28, 2025",PEVT_00752,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+IGIL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01207,"July 31, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2025"
+IIFL,CONSECUTIVE_DELETION,PEVT_00648,"September 27, 2019",PEVT_00314,"January 1, 2021",Consecutive DELETION events without intervening opposite transition
+IIFL,CONSECUTIVE_DELETION,PEVT_00314,"January 1, 2021",PEVT_01188,"April 26, 2024",Consecutive DELETION events without intervening opposite transition
+IIFL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01188,"April 26, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on April 26, 2024"
+INDIACEM,CONSECUTIVE_ADDITION,PEVT_00298,"October 31, 2024",PEVT_00398,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+INDIACEM,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00873,"August 29, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on August 29, 2025"
+INDIAMART,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00237,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+"INDIAN RENEWABLE ENERGY DEV.
+AGENCY LTD.",ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00681,"March 28, 2024",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on March 28, 2024"
+INDIGOPNTS,CONSECUTIVE_DELETION,PEVT_01038,"September 30, 2024",PEVT_01092,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+INDOCO,CONSECUTIVE_DELETION,PEVT_00569,"March 31, 2023",PEVT_00057,,Consecutive DELETION events without intervening opposite transition
+INDUSTOWER,CONSECUTIVE_ADDITION,PEVT_00225,"December 31, 2021",PEVT_00817,"May 31, 2024",Consecutive ADDITION events without intervening opposite transition
+INFIBEAM,CONSECUTIVE_DELETION,PEVT_00671,"November 25, 2020",PEVT_00780,"April 29, 2021",Consecutive DELETION events without intervening opposite transition
+INFY,CONSECUTIVE_DELETION,PEVT_01201,"July 31, 2024",PEVT_01208,"July 31, 2025",Consecutive DELETION events without intervening opposite transition
+INGERRAND,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00065,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+INOXINDIA,CONSECUTIVE_ADDITION,PEVT_01066,"September 30, 2024",PEVT_01114,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+INOXINDIA,CONSECUTIVE_DELETION,PEVT_00433,"March 30, 2026",PEVT_00950,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+INOXWIND,CONSECUTIVE_ADDITION,PEVT_01283,"March 28, 2024",PEVT_00661,"October 31, 2025",Consecutive ADDITION events without intervening opposite transition
+IOC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00528,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+IRB,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00488,"June 30, 2022",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 30, 2022"
+IRCON,CONSECUTIVE_DELETION,PEVT_00791,"May 31, 2024",PEVT_00106,"June 28, 2024",Consecutive DELETION events without intervening opposite transition
+IRCTC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00289,"October 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on October 31, 2024"
+IREDA,CONSECUTIVE_ADDITION,PEVT_01282,"March 28, 2024",PEVT_01065,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+IRFC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00361,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+ITI,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00107,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+J&KBANK,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00899,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+JAIBALAJI,CONSECUTIVE_DELETION,PEVT_01039,"September 30, 2024",PEVT_01094,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+JINDALSAW,CONSECUTIVE_DELETION,PEVT_00792,"May 31, 2024",PEVT_00108,"June 28, 2024",Consecutive DELETION events without intervening opposite transition
+JINDALSAW,CONSECUTIVE_DELETION,PEVT_00108,"June 28, 2024",PEVT_01209,"July 31, 2025",Consecutive DELETION events without intervening opposite transition
+JKLAKSHMI,CONSECUTIVE_DELETION,PEVT_00793,"May 31, 2024",PEVT_00727,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+JMFINANCIL,CONSECUTIVE_DELETION,PEVT_00489,"June 30, 2022",PEVT_00163,,Consecutive DELETION events without intervening opposite transition
+JSWCEMENT,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00423,"December 31, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2025"
+JUBLFOOD,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00239,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+JUBLPHARMA,CONSECUTIVE_ADDITION,PEVT_00401,"December 31, 2024",PEVT_00547,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+JWL,CONSECUTIVE_ADDITION,PEVT_01288,"March 28, 2024",PEVT_00142,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+JWL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00363,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+JYOTHYLAB,CONSECUTIVE_DELETION,PEVT_00109,"June 28, 2024",PEVT_00434,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+JYOTHYLAB,CONSECUTIVE_DELETION,PEVT_00434,"March 30, 2026",PEVT_00951,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+JYOTICNC,CONSECUTIVE_ADDITION,PEVT_01069,"September 30, 2024",PEVT_00299,"October 31, 2024",Consecutive ADDITION events without intervening opposite transition
+KANSAINER,CONSECUTIVE_DELETION,PEVT_00529,"September 30, 2025",PEVT_00840,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+KARURVYSYA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00110,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+KAYNES,CONSECUTIVE_DELETION,PEVT_00111,"June 28, 2024",PEVT_01095,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+KEI,CONSECUTIVE_ADDITION,PEVT_00246,"December 31, 2021",PEVT_00190,,Consecutive ADDITION events without intervening opposite transition
+KFINTECH,CONSECUTIVE_ADDITION,PEVT_00404,"December 31, 2024",PEVT_00067,,Consecutive ADDITION events without intervening opposite transition
+KIMS,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01098,"September 30, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2024"
+KIRLFER,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00518,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+KIRLOSBROS,CONSECUTIVE_ADDITION,PEVT_01070,"September 30, 2024",PEVT_01115,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+KIRLOSBROS,CONSECUTIVE_DELETION,PEVT_00435,"March 30, 2026",PEVT_00952,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+KNRCON,CONSECUTIVE_DELETION,PEVT_00290,"October 31, 2024",PEVT_00841,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+KOTAKBANK,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00342,"January 1, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on January 1, 2021"
+KPIL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00364,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+KRBL,CONSECUTIVE_DELETION,PEVT_01041,"September 30, 2024",PEVT_01097,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+KSB,CONSECUTIVE_DELETION,PEVT_00460,"March 28, 2025",PEVT_00728,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+KSB,CONSECUTIVE_ADDITION,PEVT_00548,"September 30, 2025",PEVT_00863,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+KSB,CONSECUTIVE_DELETION,PEVT_00436,"March 30, 2026",PEVT_00953,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+KSB,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00068,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+LALPATHLAB,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01200,"July 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2024"
+LLOYDSME,CONSECUTIVE_ADDITION,PEVT_01289,"March 28, 2024",PEVT_00405,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+LTFOODS,CONSECUTIVE_ADDITION,PEVT_00474,"March 28, 2025",PEVT_00755,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+LXCHEM,CONSECUTIVE_DELETION,PEVT_01042,"September 30, 2024",PEVT_01099,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+MAHLIFE,CONSECUTIVE_DELETION,PEVT_01017,"August 31, 2023",PEVT_00729,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+MAHLOG,CONSECUTIVE_DELETION,PEVT_01018,"August 31, 2023",PEVT_00622,"September 29, 2023",Consecutive DELETION events without intervening opposite transition
+MAHSEAMLES,CONSECUTIVE_DELETION,PEVT_00530,"September 30, 2025",PEVT_00955,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+MANKIND,CONSECUTIVE_DELETION,PEVT_00046,"July 13, 2023",PEVT_00669,"February 28, 2025",Consecutive DELETION events without intervening opposite transition
+MANKIND,CONSECUTIVE_DELETION,PEVT_00669,"February 28, 2025",PEVT_00531,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+MANKIND,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00531,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+MANYAVAR,CONSECUTIVE_DELETION,PEVT_01106,"September 30, 2024",PEVT_00964,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+MAPMYINDIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00099,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+MASTEK,CONSECUTIVE_DELETION,PEVT_00532,"September 30, 2025",PEVT_00842,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+MAXHEALTH,CONSECUTIVE_ADDITION,PEVT_00877,"August 29, 2025",PEVT_00922,,Consecutive ADDITION events without intervening opposite transition
+MAXINDIA,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00094,"March 31, 2017",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on March 31, 2017"
+MCX,CONSECUTIVE_ADDITION,PEVT_00407,"December 31, 2024",PEVT_00191,,Consecutive ADDITION events without intervening opposite transition
+MEDPLUS,CONSECUTIVE_ADDITION,PEVT_01172,"March
+31, 2022",PEVT_00820,"May 31, 2024",Consecutive ADDITION events without intervening opposite transition
+MEDPLUS,CONSECUTIVE_DELETION,PEVT_01044,"September 30, 2024",PEVT_01100,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+METROBRAND,CONSECUTIVE_ADDITION,PEVT_01173,"March
+31, 2022",PEVT_00821,"May 31, 2024",Consecutive ADDITION events without intervening opposite transition
+METROBRAND,CONSECUTIVE_DELETION,PEVT_00461,"March 28, 2025",PEVT_00730,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+METROPOLIS,CONSECUTIVE_DELETION,PEVT_00437,"March 30, 2026",PEVT_00956,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+MFL,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00597,"March 31, 2023",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on March 31, 2023"
+MFSL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01303,"September 29, 2017",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 29, 2017"
+MGL,CONSECUTIVE_ADDITION,PEVT_00095,"March 31, 2017",PEVT_00492,"June 30, 2022",Consecutive ADDITION events without intervening opposite transition
+MGL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00263,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+MINDACORP,CONSECUTIVE_ADDITION,PEVT_00638,"September 29, 2023",PEVT_00822,"May 31, 2024",Consecutive ADDITION events without intervening opposite transition
+MINDACORP,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00533,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+MMTC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00292,"October 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on October 31, 2024"
+MOTHERSON,CONSECUTIVE_ADDITION,PEVT_00033,"September 30, 2022",PEVT_00151,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+MOTHERSON,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00373,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+MRF,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00180,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+MRPL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00365,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+MSUMI,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00073,"June 30,
+2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 30,
+2025"
+MTARTECH,CONSECUTIVE_DELETION,PEVT_00071,"April 07, 2022",PEVT_01045,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+NATIONALUM,CONSECUTIVE_ADDITION,PEVT_00254,"December 31, 2021",PEVT_00145,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+NAUKRI,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00505,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+NAVA,CONSECUTIVE_ADDITION,PEVT_00475,"March 28, 2025",PEVT_00756,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+NAVINFLUOR,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00240,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+NCC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00251,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+NETWEB,CONSECUTIVE_ADDITION,PEVT_01072,"September 30, 2024",PEVT_01116,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+NETWEB,CONSECUTIVE_ADDITION,PEVT_01116,"September 30, 2024",PEVT_00409,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+NETWORK18,CONSECUTIVE_DELETION,PEVT_01227,"November 02, 2020",PEVT_00843,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+NEULANDLAB,CONSECUTIVE_ADDITION,PEVT_00476,"March 28, 2025",PEVT_00757,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+NH,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00293,"October 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on October 31, 2024"
+NHPC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00367,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+NIACL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00124,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+NLCINDIA,CONSECUTIVE_DELETION,PEVT_00316,"January 1, 2021",PEVT_00115,"June 28, 2024",Consecutive DELETION events without intervening opposite transition
+NLCINDIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00115,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+NMDC,CONSECUTIVE_DELETION,PEVT_00302,"August 08, 2022",PEVT_01213,"August 08, 2022",Consecutive DELETION events without intervening opposite transition
+NMDC,CONSECUTIVE_ADDITION,PEVT_00069,,PEVT_00271,,Consecutive ADDITION events without intervening opposite transition
+NOCIL,CONSECUTIVE_DELETION,PEVT_00623,"September 29, 2023",PEVT_00507,,Consecutive DELETION events without intervening opposite transition
+NSLNISP,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00686,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+NUVOCO,CONSECUTIVE_ADDITION,PEVT_01174,"March
+31, 2022",PEVT_01009,"August 30, 2022",Consecutive ADDITION events without intervening opposite transition
+NUVOCO,CONSECUTIVE_DELETION,PEVT_00462,"March 28, 2025",PEVT_00731,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+NUVOCO,CONSECUTIVE_ADDITION,PEVT_00549,"September 30, 2025",PEVT_00865,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+NYKAA,CONSECUTIVE_ADDITION,PEVT_01165,"March
+31, 2022",PEVT_00816,"May 31, 2024",Consecutive ADDITION events without intervening opposite transition
+NYKAA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00527,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+OLECTRA,CONSECUTIVE_ADDITION,PEVT_00030,"September 30, 2022",PEVT_00706,,Consecutive ADDITION events without intervening opposite transition
+PAGEIND,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00343,"January 1, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on January 1, 2021"
+PAYTM,CONSECUTIVE_ADDITION,PEVT_01175,"March
+31, 2022",PEVT_00192,,Consecutive ADDITION events without intervening opposite transition
+PCBL,CONSECUTIVE_DELETION,PEVT_00116,"June 28, 2024",PEVT_01101,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+PEL,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00272,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+PETRONET,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00074,"June 30,
+2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 30,
+2025"
+PFC,CONSECUTIVE_DELETION,PEVT_00368,"December 31, 2024",PEVT_00201,,Consecutive DELETION events without intervening opposite transition
+PFC,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00201,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+PFIZER,CONSECUTIVE_DELETION,PEVT_01019,"August 31, 2023",PEVT_01250,"March 28, 2024",Consecutive DELETION events without intervening opposite transition
+PFOCUS,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00482,"July
+17, 2026",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July
+17, 2026"
+PGEL,CONSECUTIVE_ADDITION,PEVT_00477,"March 28, 2025",PEVT_00761,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+PGHH,CONSECUTIVE_DELETION,PEVT_00463,"March 28, 2025",PEVT_00732,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+PGHH,CONSECUTIVE_ADDITION,PEVT_00550,"September 30, 2025",PEVT_00867,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+PGHH,CONSECUTIVE_DELETION,PEVT_00438,"March 30, 2026",PEVT_00958,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+PGHL,CONSECUTIVE_DELETION,PEVT_01252,"March 28, 2024",PEVT_00058,,Consecutive DELETION events without intervening opposite transition
+PGHL,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00519,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+PIIND,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00874,"August 29, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on August 29, 2025"
+PNB,CONSECUTIVE_ADDITION,PEVT_00326,"January 1, 2021",PEVT_00149,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+PNB,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00370,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+PNBHOUSING,CONSECUTIVE_DELETION,PEVT_00117,"June 28, 2024",PEVT_00181,,Consecutive DELETION events without intervening opposite transition
+PNBHOUSING,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00181,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+PNCINFRA,CONSECUTIVE_DELETION,PEVT_00798,"May 31, 2024",PEVT_00844,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+POLICYBZR,CONSECUTIVE_ADDITION,PEVT_01176,"March
+31, 2022",PEVT_00411,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+POLICYBZR,CONSECUTIVE_ADDITION,PEVT_00411,"December 31, 2024",PEVT_00193,,Consecutive ADDITION events without intervening opposite transition
+POLYCAB,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00118,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+POLYPLEX,CONSECUTIVE_DELETION,PEVT_01251,"March 28, 2024",PEVT_00264,,Consecutive DELETION events without intervening opposite transition
+PPLPHARMA,CONSECUTIVE_DELETION,PEVT_00261,"February 17, 2023",PEVT_00797,"May 31, 2024",Consecutive DELETION events without intervening opposite transition
+PPLPHARMA,CONSECUTIVE_ADDITION,PEVT_00414,"December 31, 2024",PEVT_00712,,Consecutive ADDITION events without intervening opposite transition
+PRAJIND,CONSECUTIVE_DELETION,PEVT_00957,"March 30, 2026",PEVT_00905,,Consecutive DELETION events without intervening opposite transition
+PRESTIGE,CONSECUTIVE_DELETION,PEVT_00799,"May 31, 2024",PEVT_00369,"December 31, 2024",Consecutive DELETION events without intervening opposite transition
+PRINCEPIPE,CONSECUTIVE_DELETION,PEVT_01046,"September 30, 2024",PEVT_01102,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+PRINCEPIPE,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00924,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+PRSMJOHNSN,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00825,"May 31, 2024",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on May 31, 2024"
+RADICO,CONSECUTIVE_ADDITION,PEVT_00248,"December 31, 2021",PEVT_00416,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+RAIN,CONSECUTIVE_DELETION,PEVT_01253,"March 28, 2024",PEVT_00164,,Consecutive DELETION events without intervening opposite transition
+RAINBOW,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00887,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+RAJESHEXPO,CONSECUTIVE_DELETION,PEVT_00317,"January 1, 2021",PEVT_00667,"February 28, 2025",Consecutive DELETION events without intervening opposite transition
+RAJESHEXPO,CONSECUTIVE_DELETION,PEVT_00667,"February 28, 2025",PEVT_00733,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+RAJESHEXPO,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00708,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+RATNAMANI,CONSECUTIVE_DELETION,PEVT_00464,"March 28, 2025",PEVT_00734,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+RAYMOND,CONSECUTIVE_ADDITION,PEVT_00032,"September 30, 2022",PEVT_00878,"August 29, 2025",Consecutive ADDITION events without intervening opposite transition
+RAYMOND,CONSECUTIVE_DELETION,PEVT_00534,"September 30, 2025",PEVT_00847,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+RAYMOND,CONSECUTIVE_DELETION,PEVT_00847,"September 30, 2025",PEVT_00182,,Consecutive DELETION events without intervening opposite transition
+RAYMONDLSL,CONSECUTIVE_DELETION,PEVT_00602,"March 21, 2025",PEVT_00846,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+RCF,CONSECUTIVE_DELETION,PEVT_00294,"October 31, 2024",PEVT_00666,"November 28, 2025",Consecutive DELETION events without intervening opposite transition
+RCF,CONSECUTIVE_DELETION,PEVT_00666,"November 28, 2025",PEVT_00439,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+RCF,CONSECUTIVE_DELETION,PEVT_00439,"March 30, 2026",PEVT_00959,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+RECLTD,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00372,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+RELINFRA,CONSECUTIVE_DELETION,PEVT_00440,"March 30, 2026",PEVT_00960,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+RESPONIND,CONSECUTIVE_ADDITION,PEVT_00678,"December 26, 2019",PEVT_00925,,Consecutive ADDITION events without intervening opposite transition
+RESPONIND,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00925,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+RITES,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01103,"September 30, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2024"
+RKFORGE,CONSECUTIVE_ADDITION,PEVT_01294,"March 28, 2024",PEVT_01117,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+RKFORGE,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00656,"October 31, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on October 31, 2025"
+ROSSARI,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00926,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+ROUTE,CONSECUTIVE_DELETION,PEVT_00535,"September 30, 2025",PEVT_00848,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+ROUTE,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00927,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+RTNINDIA,CONSECUTIVE_DELETION,PEVT_00075,"June 30,
+2025",PEVT_00845,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+RVNL,CONSECUTIVE_ADDITION,PEVT_00150,"June 28, 2024",PEVT_00300,"October 31, 2024",Consecutive ADDITION events without intervening opposite transition
+SAFARI,CONSECUTIVE_DELETION,PEVT_00119,"June 28, 2024",PEVT_01048,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+SAFARI,CONSECUTIVE_DELETION,PEVT_01048,"September 30, 2024",PEVT_01104,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+SAFARI,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00520,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+SAGILITY,CONSECUTIVE_ADDITION,PEVT_00764,"March 28, 2025",PEVT_00773,"April 30, 2025",Consecutive ADDITION events without intervening opposite transition
+SAIL,CONSECUTIVE_ADDITION,PEVT_00885,"November 29, 2024",PEVT_00710,,Consecutive ADDITION events without intervening opposite transition
+SAILIFE,CONSECUTIVE_ADDITION,PEVT_00765,"March 28, 2025",PEVT_00551,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+SANOFI,CONSECUTIVE_DELETION,PEVT_00465,"March 28, 2025",PEVT_00735,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+SANOFI,CONSECUTIVE_DELETION,PEVT_00735,"March 28, 2025",PEVT_00165,,Consecutive DELETION events without intervening opposite transition
+SANOFI,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00273,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+SAREGAMA,CONSECUTIVE_ADDITION,PEVT_01180,"March
+31, 2022",PEVT_00641,"September 29, 2023",Consecutive ADDITION events without intervening opposite transition
+SAREGAMA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00886,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+SBICARD,CONSECUTIVE_DELETION,PEVT_00040,"July 31, 2020",PEVT_00205,,Consecutive DELETION events without intervening opposite transition
+SBICARD,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00205,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+SCHNEIDER,CONSECUTIVE_ADDITION,PEVT_01296,"March 28, 2024",PEVT_00279,,Consecutive ADDITION events without intervening opposite transition
+SCI,CONSECUTIVE_ADDITION,PEVT_01076,"September 30, 2024",PEVT_01118,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+SFL,CONSECUTIVE_DELETION,PEVT_01258,"March 28, 2024",PEVT_00059,,Consecutive DELETION events without intervening opposite transition
+SHARDACROP,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00928,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+SHILPAMED,CONSECUTIVE_DELETION,PEVT_01305,"September 28, 2018",PEVT_00425,"March 27, 2020",Consecutive DELETION events without intervening opposite transition
+SHILPAMED,CONSECUTIVE_DELETION,PEVT_00425,"March 27, 2020",PEVT_00574,"March 31, 2023",Consecutive DELETION events without intervening opposite transition
+SHOPERSTOP,CONSECUTIVE_DELETION,PEVT_01259,"March 28, 2024",PEVT_00560,,Consecutive DELETION events without intervening opposite transition
+SHREECEM,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00875,"August 29, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on August 29, 2025"
+SHRIRAMFIN,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00265,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+SHYAMMETL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00120,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+SIEMENS,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00668,"February 28, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on February 28, 2025"
+SJVN,CONSECUTIVE_DELETION,PEVT_00318,"January 1, 2021",PEVT_00374,"December 31, 2024",Consecutive DELETION events without intervening opposite transition
+SJVN,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00374,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+SOBHA,CONSECUTIVE_ADDITION,PEVT_01011,"August 30, 2022",PEVT_00153,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+SOBHA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00375,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+SOLARINDS,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00376,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+SONACOMS,CONSECUTIVE_DELETION,PEVT_00876,"August 29, 2025",PEVT_00883,,Consecutive DELETION events without intervening opposite transition
+SONACOMS,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00883,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+SONATSOFTW,CONSECUTIVE_DELETION,PEVT_00121,"June 28, 2024",PEVT_00183,,Consecutive DELETION events without intervening opposite transition
+SONATSOFTW,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00183,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+SPANDANA,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00929,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+SPLPETRO,CONSECUTIVE_ADDITION,PEVT_00447,"March 30, 2026",PEVT_00990,"March 30, 2026",Consecutive ADDITION events without intervening opposite transition
+SRF,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00556,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+SRTRANSFIN,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00496,"June 30, 2022",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on June 30, 2022"
+SUDARSCHEM,CONSECUTIVE_DELETION,PEVT_01004,"August 30, 2022",PEVT_00576,"March 31, 2023",Consecutive DELETION events without intervening opposite transition
+SUNCLAYLTD,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00930,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+SUNDRMFAST,CONSECUTIVE_DELETION,PEVT_00466,"March 28, 2025",PEVT_00737,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+SUNDRMFAST,CONSECUTIVE_DELETION,PEVT_00737,"March 28, 2025",PEVT_00042,"April 11, 2025",Consecutive DELETION events without intervening opposite transition
+SUNDRMFAST,CONSECUTIVE_DELETION,PEVT_00441,"March 30, 2026",PEVT_00961,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+SUPREMEIND,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00122,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+SUVENPHAR,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00417,"December 31, 2024",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on December 31, 2024"
+SWANENERGY,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00035,"September 30, 2022",N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on September 30, 2022"
+SWIGGY,CONSECUTIVE_ADDITION,PEVT_00767,"March 28, 2025",PEVT_00552,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+SWSOLAR,CONSECUTIVE_DELETION,PEVT_00536,"September 30, 2025",PEVT_00850,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+SWSOLAR,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00711,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+SYRMA,CONSECUTIVE_ADDITION,PEVT_00644,"September 29, 2023",PEVT_00521,,Consecutive ADDITION events without intervening opposite transition
+TANLA,CONSECUTIVE_DELETION,PEVT_00537,"September 30, 2025",PEVT_00851,"September 30, 2025",Consecutive DELETION events without intervening opposite transition
+TANLA,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00931,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+TARIL,CONSECUTIVE_ADDITION,PEVT_00478,"March 28, 2025",PEVT_00768,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+TASTYBITE,CONSECUTIVE_DELETION,PEVT_00690,"December 27, 2019",PEVT_01151,"March
+31, 2022",Consecutive DELETION events without intervening opposite transition
+TATACHEM,CONSECUTIVE_ADDITION,PEVT_00255,"December 31, 2021",PEVT_01197,"July 31, 2023",Consecutive ADDITION events without intervening opposite transition
+TATACOFFEE,CONSECUTIVE_DELETION,PEVT_00578,"March 31, 2023",PEVT_00060,,Consecutive DELETION events without intervening opposite transition
+TATACOMM,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00801,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+TATACONSUM,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00257,"December 31, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2021"
+TATAELXSI,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00296,"October 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on October 31, 2024"
+TATAINVEST,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00123,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+TATAMOTORS,CONSECUTIVE_DELETION,PEVT_00217,"December 31, 2021",PEVT_00076,"June 30,
+2025",Consecutive DELETION events without intervening opposite transition
+TATAMOTORS,CONSECUTIVE_DELETION,PEVT_00076,"June 30,
+2025",PEVT_01210,"July 31, 2025",Consecutive DELETION events without intervening opposite transition
+TATAPOWER,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00378,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+TATASTEEL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00802,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+TATASTLBSL,CONSECUTIVE_DELETION,PEVT_00259,"January 16, 2020",PEVT_00778,"April 29, 2021",Consecutive DELETION events without intervening opposite transition
+TATASTLLP,CONSECUTIVE_DELETION,PEVT_01214,"August 08, 2022",PEVT_00017,"September 30, 2022",Consecutive DELETION events without intervening opposite transition
+TBOTEK,CONSECUTIVE_ADDITION,PEVT_01077,"September 30, 2024",PEVT_00301,"October 31, 2024",Consecutive ADDITION events without intervening opposite transition
+TCI,CONSECUTIVE_DELETION,PEVT_00627,"September 29, 2023",PEVT_00509,,Consecutive DELETION events without intervening opposite transition
+TCIEXP,CONSECUTIVE_DELETION,PEVT_00625,"September 29, 2023",PEVT_00508,,Consecutive DELETION events without intervening opposite transition
+TEGA,CONSECUTIVE_ADDITION,PEVT_00448,"March 30, 2026",PEVT_00993,"March 30, 2026",Consecutive ADDITION events without intervening opposite transition
+TENNIND,CONSECUTIVE_ADDITION,PEVT_00449,"March 30, 2026",PEVT_00994,"March 30, 2026",Consecutive ADDITION events without intervening opposite transition
+THERMAX,CONSECUTIVE_ADDITION,PEVT_01026,"August 31, 2023",PEVT_00155,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+THERMAX,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00379,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+THYROCARE,CONSECUTIVE_DELETION,PEVT_00579,"March 31, 2023",PEVT_00061,,Consecutive DELETION events without intervening opposite transition
+TIINDIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00184,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+TITAGARH,CONSECUTIVE_ADDITION,PEVT_01300,"March 28, 2024",PEVT_00156,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+TITAGARH,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00380,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+TMCV,CONSECUTIVE_ADDITION,PEVT_00992,"March 30, 2026",PEVT_00610,"July 31, 2026",Consecutive ADDITION events without intervening opposite transition
+TORNTPHARM,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00605,"July 31, 2026",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2026"
+TRENT,CONSECUTIVE_ADDITION,PEVT_00828,"May 31, 2024",PEVT_00196,,Consecutive ADDITION events without intervening opposite transition
+TRIDENT,CONSECUTIVE_ADDITION,PEVT_01223,"August 08, 2022",PEVT_00553,"September 30, 2025",Consecutive ADDITION events without intervening opposite transition
+TRIVENI,CONSECUTIVE_DELETION,PEVT_01190,"May 31, 2022",PEVT_00962,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+TV18BRDCST,CONSECUTIVE_DELETION,PEVT_00280,"October
+16, 2024",PEVT_00266,,Consecutive DELETION events without intervening opposite transition
+TVSMOTOR,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00803,"May 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on May 31, 2024"
+TVSSCS,CONSECUTIVE_DELETION,PEVT_00467,"March 28, 2025",PEVT_00738,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+UJJIVAN,CONSECUTIVE_DELETION,PEVT_01152,"March
+31, 2022",PEVT_00490,"June 30, 2022",Consecutive DELETION events without intervening opposite transition
+USHAMART,CONSECUTIVE_ADDITION,PEVT_00646,"September 29, 2023",PEVT_00522,,Consecutive ADDITION events without intervening opposite transition
+VAIBHAVGBL,CONSECUTIVE_DELETION,PEVT_01052,"September 30, 2024",PEVT_01105,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+VALIANTORG,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00934,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+VARROC,CONSECUTIVE_DELETION,PEVT_00741,"March 28, 2025",PEVT_00695,,Consecutive DELETION events without intervening opposite transition
+VBL,CONSECUTIVE_ADDITION,PEVT_01233,"May 26, 2017",PEVT_00775,"April 30, 2025",Consecutive ADDITION events without intervening opposite transition
+VBL,CONSECUTIVE_DELETION,PEVT_00077,"June 30,
+2025",PEVT_00665,"November 28, 2025",Consecutive DELETION events without intervening opposite transition
+VBL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00665,"November 28, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on November 28, 2025"
+VEDL,CONSECUTIVE_DELETION,PEVT_00039,"July 31, 2020",PEVT_00341,"January 1, 2021",Consecutive DELETION events without intervening opposite transition
+VEDL,CONSECUTIVE_ADDITION,PEVT_00233,"December 31, 2021",PEVT_00935,,Consecutive ADDITION events without intervening opposite transition
+VGUARD,CONSECUTIVE_DELETION,PEVT_01264,"March 28, 2024",PEVT_00442,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+VGUARD,CONSECUTIVE_DELETION,PEVT_00442,"March 30, 2026",PEVT_00966,"March 30, 2026",Consecutive DELETION events without intervening opposite transition
+VINATIORGA,CONSECUTIVE_ADDITION,PEVT_01080,"September 30, 2024",PEVT_01121,"September 30, 2024",Consecutive ADDITION events without intervening opposite transition
+VINATIORGA,CONSECUTIVE_DELETION,PEVT_00468,"March 28, 2025",PEVT_00742,"March 28, 2025",Consecutive DELETION events without intervening opposite transition
+VMM,CONSECUTIVE_ADDITION,PEVT_00479,"March 28, 2025",PEVT_00769,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+VTL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00267,,N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on "
+WAAREEENER,CONSECUTIVE_ADDITION,PEVT_00480,"March 28, 2025",PEVT_00770,"March 28, 2025",Consecutive ADDITION events without intervening opposite transition
+WAAREEENER,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00657,"October 31, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on October 31, 2025"
+WELCORP,CONSECUTIVE_DELETION,PEVT_00219,"December 31, 2021",PEVT_01005,"August 30, 2022",Consecutive DELETION events without intervening opposite transition
+WELCORP,CONSECUTIVE_DELETION,PEVT_01005,"August 30, 2022",PEVT_00125,"June 28, 2024",Consecutive DELETION events without intervening opposite transition
+WELCORP,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00125,"June 28, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on June 28, 2024"
+WHIRLPOOL,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00333,"January 1, 2021",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on January 1, 2021"
+WIPRO,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01202,"July 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on July 31, 2024"
+WOCKPHARMA,CONSECUTIVE_ADDITION,PEVT_00771,"March 28, 2025",PEVT_00881,"August 29, 2025",Consecutive ADDITION events without intervening opposite transition
+ZENSARTECH,CONSECUTIVE_DELETION,PEVT_00126,"June 28, 2024",PEVT_01107,"September 30, 2024",Consecutive DELETION events without intervening opposite transition
+ZENSARTECH,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_01107,"September 30, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2024"
+ZENTEC,CONSECUTIVE_ADDITION,PEVT_00772,"March 28, 2025",PEVT_00083,"June 30,
+2025",Consecutive ADDITION events without intervening opposite transition
+ZFCVINDIA,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00538,"September 30, 2025",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on September 30, 2025"
+ZOMATO,CONSECUTIVE_ADDITION,PEVT_01186,"March
+31, 2022",PEVT_00421,"December 31, 2024",Consecutive ADDITION events without intervening opposite transition
+ZOMATO,CONSECUTIVE_ADDITION,PEVT_00421,"December 31, 2024",PEVT_00197,,Consecutive ADDITION events without intervening opposite transition
+ZOMATO,ABSENT_BUT_LAST_EVENT_ADDITION,PEVT_00197,,N/A,N/A,"Stock is absent from current Nifty 500 anchor, but its last historical event was ADDITION on "
+ZYDUSLIFE,CONSECUTIVE_ADDITION,PEVT_00830,"May 31, 2024",PEVT_00157,"June 28, 2024",Consecutive ADDITION events without intervening opposite transition
+ZYDUSLIFE,PRESENT_BUT_LAST_EVENT_DELETION,PEVT_00382,"December 31, 2024",N/A,N/A,"Stock is currently in Nifty 500 anchor, but its last historical event was DELETION on December 31, 2024"
+ZYDUSWELL,CONSECUTIVE_ADDITION,PEVT_00450,"March 30, 2026",PEVT_00997,"March 30, 2026",Consecutive ADDITION events without intervening opposite transition

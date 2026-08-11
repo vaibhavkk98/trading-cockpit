@@ -1,0 +1,2 @@
+date,expected_or_prior_count,current_count,difference,symbol,reason,severity
+2024-03-31,413,412,-1,ANGELONE,ANGELONE addition event on 2023-12-07 was identified as a sub-index factor replacement (Nifty500 Quality 50) rather than a parent broad-market Nifty 500 event. Excluding it prevents broad-market state contamination and shifts 2024-03-31 reconstructed state from 413 to 412.,INFORMATIONAL / INTENTIONAL_FILTER

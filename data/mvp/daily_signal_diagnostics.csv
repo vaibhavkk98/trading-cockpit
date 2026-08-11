@@ -1,0 +1,6 @@
+analysis_date,data_as_of,universe_count,symbols_screened,valid_price_data,regime,nifty_dist_ema50_pct,unique_signal_candidates,total_strategy_triggers,donchian_triggers,vcp_triggers,ema_bounce_triggers,rs_momentum_triggers,eligible_trend_candidates,eligible_volatility_candidates,selected_trend_positions,selected_volatility_positions,rejected_trend_slots_full,final_recommended_positions
+2026-08-11,2026-08-10,500,500,490,BULLISH,1.8,112,536,29,389,25,93,112,0,7,0,105,7
+2026-08-10,2026-08-10,500,500,490,BULLISH,1.8,112,536,29,389,25,93,112,0,7,0,105,7
+2026-08-07,2026-08-07,500,500,490,BULLISH,1.82,177,585,29,385,34,137,177,0,7,0,170,7
+2026-08-06,2026-08-06,500,500,490,BULLISH,2.17,172,606,33,394,43,136,172,0,7,0,165,7
+2026-08-05,2026-08-05,500,500,490,BULLISH,2.21,168,631,48,395,40,148,168,0,7,0,161,7

@@ -1,0 +1,24 @@
+symbol,related_security,event_type,event_date,source,confidence,resolution_status
+ADANIGAS,N/A,ADDITION,"January 1, 2021",parent events ledger,MEDIUM,UNRESOLVED
+AEGISCHEM,N/A,ADDITION,"August 31, 2023",parent events ledger,MEDIUM,UNRESOLVED
+AKZOINDIA,N/A,ADDITION,"September 30, 2025",parent events ledger,MEDIUM,UNRESOLVED
+ANGELBRKG,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+BALAMINES,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+BCG,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+BSE LTD.*,N/A,ADDITION,"March 28, 2024",parent events ledger,MEDIUM,UNRESOLVED
+GET&D,N/A,ADDITION,"September 30, 2024",parent events ledger,MEDIUM,UNRESOLVED
+GLS,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+HAPPSTMNDS,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+"INDIAN RENEWABLE ENERGY DEV.
+AGENCY LTD.",N/A,ADDITION,"March 28, 2024",parent events ledger,MEDIUM,UNRESOLVED
+KIRLFER,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+MAXINDIA,N/A,ADDITION,"March 31, 2017",parent events ledger,MEDIUM,UNRESOLVED
+MFL,N/A,ADDITION,"March 31, 2023",parent events ledger,MEDIUM,UNRESOLVED
+PRSMJOHNSN,N/A,ADDITION,"May 31, 2024",parent events ledger,MEDIUM,UNRESOLVED
+RESPONIND,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+SAFARI,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+SRTRANSFIN,N/A,ADDITION,"June 30, 2022",parent events ledger,MEDIUM,UNRESOLVED
+SUNCLAYLTD,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED
+SUVENPHAR,N/A,ADDITION,"December 31, 2024",parent events ledger,MEDIUM,UNRESOLVED
+SWANENERGY,N/A,ADDITION,"September 30, 2022",parent events ledger,MEDIUM,UNRESOLVED
+ZOMATO,N/A,ADDITION,,parent events ledger,MEDIUM,UNRESOLVED

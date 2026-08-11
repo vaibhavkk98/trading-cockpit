@@ -1,0 +1,5 @@
+test_name,target_url,http_method,http_status,response_type,response_size_bytes,supports_historical_dates,notes
+Direct CSV Constituent Download,https://niftyindices.com/ind_close_all/ind_nifty500list.csv,GET,200,text/html; charset=utf-8,78730,False,"Content-Type: text/html; charset=utf-8, Size: 78730 bytes"
+API Index Constituent Data,https://niftyindices.com/api/indices/getindexconstituent?indexName=Nifty%20500,GET,200,text/html; charset=utf-8,78730,UNPROVEN,"Content-Type: text/html; charset=utf-8, Size: 78730 bytes"
+API Historical Constituent Data,https://niftyindices.com/api/indices/getindexconstituent?indexName=Nifty%20500&date=31032024,GET,200,text/html; charset=utf-8,78730,UNPROVEN,"Content-Type: text/html; charset=utf-8, Size: 78730 bytes"
+API Index Data Post,https://niftyindices.com/api/IndexConstituentData/GetIndexConstituentData,POST,200,text/html; charset=utf-8,78730,UNPROVEN,"Content-Type: text/html; charset=utf-8, Size: 78730 bytes"

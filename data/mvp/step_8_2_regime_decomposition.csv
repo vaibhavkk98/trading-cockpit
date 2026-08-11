@@ -1,0 +1,8 @@
+metric,validation,test,change
+Trading Days Count,76.0,108.0,32.0
+Bullish Days (Nifty > EMA50),59.0,36.0,-23.0
+Bearish/Neutral Days (Nifty <= EMA50),17.0,72.0,55.0
+Bullish Days Share (%),77.63,33.33,-44.3
+Regime Transitions Count,2.0,17.0,15.0
+Avg Nifty Distance to EMA50 (%),91.39,-157.46,-248.84
+Avg Nifty 20D Volatility (%),770.04,1388.41,618.37

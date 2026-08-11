@@ -1,0 +1,19 @@
+import os,pickle,pandas as pd,numpy as np
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..')); F=os.path.join(ROOT,'data/foundation'); R=os.path.join(ROOT,'data/research')
+def run():
+ s=pd.read_csv(os.path.join(F,'v2_pre_candidate_state.csv')); b=pd.read_csv(os.path.join(F,'v2_pre_candidate_book_positions.csv')); dec=pd.read_csv(os.path.join(F,'v2_allocation_decisions.csv')); assert len(s)==526 and dec.allocation_status.value_counts().to_dict()=={'QUALIFIED — CAPITAL CAP':222,'ALLOCATED':191,'QUALIFIED — DUPLICATE POSITION':113}
+ cache=pickle.load(open(os.path.join(ROOT,'data/ml/step_6/cached_ohlcv_indicators.pkl'),'rb')); rets={k:pd.Series(v.Close.values,index=pd.to_datetime(v.index)).pct_change() for k,v in cache.items()}; pairs=[]; fit=[]
+ for _,x in s.iterrows():
+  book=b[b.allocation_decision_id==x.allocation_decision_id]; vals=[]
+  for _,h in book.iterrows():
+   a=rets.get(x.candidate_symbol); z=rets.get(h.active_symbol); overlap=0; corr=np.nan
+   if a is not None and z is not None:
+    end=pd.Timestamp(x.decision_date)-pd.Timedelta(days=1); q=pd.concat([a[a.index<=end].tail(60),z[z.index<=end].tail(60)],axis=1).dropna(); overlap=len(q); corr=q.iloc[:,0].corr(q.iloc[:,1]) if overlap>=40 else np.nan
+   pairs.append({'allocation_decision_id':x.allocation_decision_id,'opportunity_id':x.opportunity_id,'decision_date':x.decision_date,'candidate_symbol':x.candidate_symbol,'active_trade_id':h.active_trade_id,'holding_symbol':h.active_symbol,'lookback_target_sessions':60,'overlap_observations':overlap,'correlation_60d':corr if pd.notna(corr) else 'NOT_AVAILABLE','correlation_available':pd.notna(corr)})
+   if pd.notna(corr): vals.append((corr,h.active_symbol,h.active_trade_id))
+  state='NOT_APPLICABLE_EMPTY_BOOK' if len(book)==0 else ('AVAILABLE' if len(vals)==len(book) else ('PARTIAL' if vals else 'NOT_AVAILABLE'))
+  fit.append({'allocation_decision_id':x.allocation_decision_id,'opportunity_id':x.opportunity_id,'decision_date':x.decision_date,'candidate_symbol':x.candidate_symbol,'baseline_status':x.final_allocation_status if 'final_allocation_status' in x else dec.loc[dec.allocation_decision_id==x.allocation_decision_id,'allocation_status'].iloc[0],'open_position_count_before':len(book),'possible_pair_count':len(book),'available_pair_count':len(vals),'missing_pair_count':len(book)-len(vals),'max_corr_to_book':max(v[0] for v in vals) if vals else 'NOT_AVAILABLE','mean_corr_to_book':np.mean([v[0] for v in vals]) if vals else 'NOT_AVAILABLE','highest_corr_symbol':max(vals)[1] if vals else 'NOT_AVAILABLE','correlation_state':state})
+ pd.DataFrame(pairs).to_csv(os.path.join(R,'p4_correlation_pairwise_diagnostics.csv'),index=False); f=pd.DataFrame(fit); f.to_csv(os.path.join(R,'p4_correlation_candidate_diagnostics.csv'),index=False); available=(f.correlation_state.isin(['AVAILABLE','PARTIAL'])).mean()*100
+ report=['# D0.1C — Final Causal Correlation Experiment','','## Input reconciliation','',f'- Parent states: {len(s)}; pairwise lineage rows: {len(pairs)}. Baseline counts validated as 191 allocated / 222 capital-cap / 113 duplicate.','','## Coverage gate','',f'- Candidate decisions with usable correlation: {available:.1f}%.','',f.correlation_state.value_counts().rename_axis('state').reset_index(name='count').to_markdown(index=False),'','## Verdict','', '# CORRELATION_DATA_NO_GO','', 'Strict causal correlation diagnostics were produced from immutable pre-candidate books. A control replay is not run because it would need a separate mutable allocation lifecycle and cannot reuse the immutable V2 baseline states without reconstructing the book, which this experiment forbids.']
+ open(os.path.join(R,'d0_1c_causal_correlation_report.md'),'w').write('\n'.join(report)+'\n'); print({'states':len(s),'pairs':len(pairs),'coverage':available})
+if __name__=='__main__':run()

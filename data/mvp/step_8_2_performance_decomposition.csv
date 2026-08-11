@@ -1,0 +1,20 @@
+dimension,validation,test,notes
+1. Overall Return (%),13.27,0.57,Drop of -12.70 percentage points
+1. Daily Sharpe Ratio,3.97,0.42,Deterioration from 3.97 to 0.42
+1. Max Drawdown (%),2.43,6.76,Increased from 2.43% to 6.76%
+1. Executed Trades,50.0,30.0,50 trades in Val vs 30 trades in Test
+1. Win Rate (%),56.0,46.7,Dropped from 56.0% to 46.7%
+1. Profit Factor,2.54,1.06,Collapsed from 2.54 to 1.06
+2. Trend Trades Share (%),70.0,70.0,70.0% Trend in Val vs 70.0% in Test
+2. Volatility Trades Share (%),30.0,30.0,30.0% Volatility in Val vs 30.0% in Test
+3. Candidate Signal Mean Score,0.506,0.511,Average composite_score across setup candidates
+3. High Quality Signals Share (>=0.66) (%),25.8,26.3,High score signal availability
+4. Average Entry Gap (%),0.16,0.23,Slippage/Gap between signal close and entry fill
+4. Adverse Gap Frequency (%),64.0,80.0,% of entries filling higher than signal close
+5. Avg Open Positions,10.0,10.0,Capital capacity utilization out of 10 slots
+5. Avg Cash Balance (%),4.0,2.9,Cash drag during market regime
+6. Average Winner Return (%),3.99,5.14,+3.99% Val vs +5.14% Test
+6. Average Loser Return (%),-2.0,-4.26,-2.00% Val vs -4.26% Test
+6. Top 5 Winners Share of Gross PnL (%),47.9,76.6,Concentration of outperformance
+7. Total Transaction Costs (INR),12069.73,7113.46,"Brokerage, STT, slippage"
+7. Cost Drag on Gross PnL (%),15.1,65.2,% of gross gains eaten by transaction costs

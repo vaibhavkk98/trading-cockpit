@@ -1,0 +1,4 @@
+replacement_id,source_document,source_page,effective_date,outgoing_symbol,outgoing_company,incoming_symbol,incoming_company,review_period,replacement_type,resolution_status
+REP_001,ind_prs10062026.pdf,Page 8,2026-06-10,ANGELONE,Angel One Ltd.,INFY,Infosys Ltd.,2026-JUN,ONE_FOR_ONE_SUBINDEX_REPLACEMENT,RESOLVED
+REP_002,ind_prs10062026.pdf,Page 8,2026-06-10,ASTRAZEN,AstraZenca Pharma India Ltd.,JSWDULUX,JSW Dulux Ltd.,2026-JUN,ONE_FOR_ONE_SUBINDEX_REPLACEMENT,RESOLVED
+REP_003,ind_prs10062026.pdf,Page 8,2026-06-10,GLAXO,Glaxosmithkline Pharmaceuticals Ltd.,SCHNEIDER,Schneider Electric Infrastructure Ltd.,2026-JUN,ONE_FOR_ONE_SUBINDEX_REPLACEMENT,RESOLVED

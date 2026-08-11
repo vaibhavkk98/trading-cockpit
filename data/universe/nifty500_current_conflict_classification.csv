@@ -1,0 +1,6 @@
+conflict_category,count,percentage,explanation
+MISSING_HISTORICAL_ADDITION_EVENTS,135,72.2%,Stock entered Nifty 500 during 2018-2021 when press releases omitted addition tables
+TICKER_SYMBOL_IDENTITY_CHANGE,38,20.3%,Ticker changed (e.g. LTI -> LTIM) creating unlinked historical symbol lifecycles
+CORPORATE_ACTION_RESTRUCTURING,14,7.5%,"Mergers, demergers, and scheme of arrangement transitions"
+EVENT_DATE_PROBLEMS,0,0.0%,No date formatting errors found
+UNKNOWN,0,0.0%,No unclassified conflicts

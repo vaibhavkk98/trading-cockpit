@@ -1,0 +1,4 @@
+anchor_target_date,priority,official_snapshot_found,status,reason
+2020-03-31,Priority 1,False,NOT_ACCEPTED_AS_HISTORICAL_ANCHOR,No complete constituent list CSV/XLS file present in local repository for 2020-03-31
+2018-03-31,Priority 2,False,NOT_ACCEPTED_AS_HISTORICAL_ANCHOR,No complete constituent list CSV/XLS file present in local repository for 2018-03-31
+2021-03-31,Priority 3,False,NOT_ACCEPTED_AS_HISTORICAL_ANCHOR,No complete constituent list CSV/XLS file present in local repository for 2021-03-31

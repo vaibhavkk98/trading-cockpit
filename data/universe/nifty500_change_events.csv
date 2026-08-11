@@ -1,0 +1,563 @@
+effective_date,event_type,symbol,old_symbol,new_symbol,isin,company_name,reason,source,source_reference
+2018-01-15,SYMBOL_CHANGE,TIRUPATIFL,FORGE,TIRUPATIFL,,Tirupati Forge Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-01-19,SYMBOL_CHANGE,AMJLAND,PDUMJEPULP,AMJLAND,,Amj Land Holdings Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-01-24,SYMBOL_CHANGE,PAISALO,SEINV,PAISALO,,Paisalo Digital Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-10,SYMBOL_CHANGE,ICICIGOLD,GOLDIWIN,ICICIGOLD,,ICICI Prudential Gold ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-10,SYMBOL_CHANGE,ICICILOVOL,LOWVOLIWIN,ICICILOVOL,,ICICI Prudential Nifty Low Vol 30 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-10,SYMBOL_CHANGE,ICICIMCAP,MIDCAPIWIN,ICICIMCAP,,ICICI Prudential Midcap Select ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-10,SYMBOL_CHANGE,ICICINF100,NIF100IWIN,ICICINF100,,ICICI Prudential Nifty 100 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-10,SYMBOL_CHANGE,ICICINIFTY,NIFTYIWIN,ICICINIFTY,,ICICI Prudential Nifty ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-10,SYMBOL_CHANGE,ICICINV20,NV20IWIN,ICICINV20,,ICICI Prudential NV20 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-10,SYMBOL_CHANGE,ICICISENSX,SENSEXIWIN,ICICISENSX,,ICICI Prudential Sensex ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-12,SYMBOL_CHANGE,HAVISHA,SHAKTIGAS,HAVISHA,,Sri Havisha Hospitality and Infrastructure Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-19,SYMBOL_CHANGE,ADROITINFO,SPHEREGSL,ADROITINFO,,Adroit Infotech Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-19,SYMBOL_CHANGE,ICICIB22,BHARATIWIN,ICICIB22,,ICICI Prudential Mutual Fund - BHARAT 22 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-04-23,SYMBOL_CHANGE,JTEKTINDIA,SONASTEER,JTEKTINDIA,,Jtekt India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-05-04,SYMBOL_CHANGE,3PLAND,PDUMJEIND,3PLAND,,3P Land Holdings Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-05-04,SYMBOL_CHANGE,PRSMJOHNSN,PRISMCEM,PRSMJOHNSN,,Prism Johnson Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-06-06,SYMBOL_CHANGE,PITTIENG,PITTILAM,PITTIENG,,Pitti Engineering Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-06-08,SYMBOL_CHANGE,IBULISL,SORILHOLD,IBULISL,,Yaari Digital Integrated Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-07-18,SYMBOL_CHANGE,PROSEED,GREENFIRE,PROSEED,,Proseed India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-07-25,SYMBOL_CHANGE,THEINVEST,FORTUNEFIN,THEINVEST,,The Investment Trust Of India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-07-26,SYMBOL_CHANGE,OLECTRA,GOLDINFRA,OLECTRA,,Olectra Greentech Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-08-13,SYMBOL_CHANGE,GARFIBRES,GARWALLROP,GARFIBRES,,Garware Technical Fibres Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-10-08,SYMBOL_CHANGE,BCG,LYCOS,BCG,,Brightcom Group Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-10-12,SYMBOL_CHANGE,INSPIRISYS,AFL,INSPIRISYS,,Inspirisys Solutions Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-10-23,SYMBOL_CHANGE,KSB,KSBPUMPS,KSB,,Ksb Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-11-15,SYMBOL_CHANGE,EMAMIREAL,EMAMIINFRA,EMAMIREAL,,Emami Realty Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2018-12-10,SYMBOL_CHANGE,TATASTLBSL,BHUSANSTL,TATASTLBSL,,Tata Steel Bsl Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-01-02,SYMBOL_CHANGE,DVL,DPL,DVL,,Dhunseri Ventures Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-01-15,SYMBOL_CHANGE,BAJAJCON,BAJAJCORP,BAJAJCON,,Bajaj Consumer Care Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-01-16,SYMBOL_CHANGE,IDFCFIRSTB,IDFCBANK,IDFCFIRSTB,,IDFC First Bank Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-02-26,SYMBOL_CHANGE,BSOFT,KPIT,BSOFT,,BIRLASOFT LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-04-08,SYMBOL_CHANGE,RGL,RJL,RGL,,Renaissance Global Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-04-09,SYMBOL_CHANGE,CHOLAHLDNG,TIFIN,CHOLAHLDNG,,Cholamandalam Financial Holdings Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-05-02,SYMBOL_CHANGE,EXPLEOSOL,SQSBFSI,EXPLEOSOL,,Expleo Solutions Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-05-03,SYMBOL_CHANGE,KEYFINSERV,KEYCORPSER,KEYFINSERV,,Keynote Financial Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-05-27,SYMBOL_CHANGE,BABAFOOD,SKML,BABAFOOD,,Baba Agro Food Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-06-11,SYMBOL_CHANGE,PGHL,MERCK,PGHL,,Procter & Gamble Health Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-07-19,SYMBOL_CHANGE,ICICIBANKN,IPRU5008,ICICIBANKN,,ICICI Prudential Bank ETF Nifty Bank Index,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-07-25,SYMBOL_CHANGE,GFLLIMITED,GUJFLUORO,GFLLIMITED,,GFL Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-07-30,SYMBOL_CHANGE,SETUINFRA,PRAKASHCON,SETUINFRA,,Setubandhan Infrastructure Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-19,SYMBOL_CHANGE,FORCEMOT,BAJAJTEMPO,FORCEMOT,,FORCE MOTORS LTD,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-19,SYMBOL_CHANGE,KENNAMET,WIDIA,KENNAMET,,Kennametal India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-19,SYMBOL_CHANGE,SPICEJET,MODILUFT,SPICEJET,,SPICEJET LTD,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIM1SD1G,PRM1SD1,PGIM1SD1G,,PGIM India Fixed Duration Fund - Series 31 - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIM1SDPD,PRM1SDP,PGIM1SDPD,,PGIM India Fixed Duration Fund - Series 31 - RPDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIM1SGPG,PRM1SGP,PGIM1SGPG,,PGIM India Fixed Duration Fund - Series 31 - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAAADD,DPRMAAAD,PGIMAAADD,,PGIM India Fixed Duration Fund - Series AA - RPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAAD1G,DPRMAAD1,PGIMAAD1G,,PGIM India Fixed Duration Fund - Series AA - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAAD3D,DPRMAAD3,PGIMAAD3D,,PGIM India Fixed Duration Fund - Series AA - DPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAAGPG,DPRMAAGP,PGIMAAGPG,,PGIM India Fixed Duration Fund - Series AA - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAAQDD,DPRMAAQD,PGIMAAQDD,,PGIM India Fixed Duration Fund - Series AA - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMABADD,DPRMABAD,PGIMABADD,,PGIM India Fixed Duration Fund - Series AB - RPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMABD1G,DPRMABD1,PGIMABD1G,,PGIM India Fixed Duration Fund - Series AB - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMABDPD,DPRMABDP,PGIMABDPD,,PGIM India Fixed Duration Fund - Series AB - RPRDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMABGPG,DPRMABGP,PGIMABGPG,,PGIM India Fixed Duration Fund - Series AB - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMABQDD,DPRMABQD,PGIMABQDD,,PGIM India Fixed Duration Fund - Series AB - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMACADD,DPRMACAD,PGIMACADD,,PGIM India Fixed Duration Fund - Series AC - RPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMACD1G,DPRMACD1,PGIMACD1G,,PGIM India Fixed Duration Fund - Series AC - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMACD2D,DPRMACD2,PGIMACD2D,,PGIM India Fixed Duration Fund - Series AC - DPRDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMACD4D,DPRMACD4,PGIMACD4D,,PGIM India Fixed Duration Fund - Series AC - DPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMACDPD,DPRMACDP,PGIMACDPD,,PGIM India Fixed Duration Fund - Series AC - RPRDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMACGPG,DPRMACGP,PGIMACGPG,,PGIM India Fixed Duration Fund - Series AC - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMACQDD,DPRMACQD,PGIMACQDD,,PGIM India Fixed Duration Fund - Series AC - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAEADD,DPRMAEAD,PGIMAEADD,,PGIM India Fixed Duration Fund - Series AE - RPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAED1G,DPRMAED1,PGIMAED1G,,PGIM India Fixed Duration Fund - Series AE - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAED4D,DPRMAED4,PGIMAED4D,,PGIM India Fixed Duration Fund - Series AE - DPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAEDPD,DPRMAEDP,PGIMAEDPD,,PGIM India Fixed Duration Fund - Series AE - RPRDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAEGPG,DPRMAEGP,PGIMAEGPG,,PGIM India Fixed Duration Fund - Series AE - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAGD1G,DPRMAGD1,PGIMAGD1G,,PGIM India Fixed Duration Fund - Series AG - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAGGPG,DPRMAGGP,PGIMAGGPG,,PGIM India Fixed Duration Fund - Series AG - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAHADD,DPRMAHAD,PGIMAHADD,,PGIM India Fixed Duration Fund - Series AH - RPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAHD1G,DPRMAHD1,PGIMAHD1G,,PGIM India Fixed Duration Fund - Series AH - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAHD3D,DPRMAHD3,PGIMAHD3D,,PGIM India Fixed Duration Fund - Series AH - DPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAHD4D,DPRMAHD4,PGIMAHD4D,,PGIM India Fixed Duration Fund - Series AH - DPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAHGPG,DPRMAHGP,PGIMAHGPG,,PGIM India Fixed Duration Fund - Series AH - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAHQDD,DPRMAHQD,PGIMAHQDD,,PGIM India Fixed Duration Fund - Series AH - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAPD1G,DPRMAPD1G,PGIMAPD1G,,PGIM India Fixed Duration Fund - Series AP - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAPDPD,DPRMAPDPD,PGIMAPDPD,,PGIM India Fixed Duration Fund - Series AP - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAPGPG,DPRMAPGPG,PGIMAPGPG,,PGIM India Fixed Duration Fund - Series AP - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAQD1G,DPRMAQD1G,PGIMAQD1G,,PGIM India Fixed Duration Fund - Series AQ - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAQD2D,DPRMAQD2D,PGIMAQD2D,,PGIM India Fixed Duration Fund - Series AQ - DPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAQGPG,DPRMAQGPG,PGIMAQGPG,,PGIM India Fixed Duration Fund - Series AQ - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMATD1G,DPRMATD1G,PGIMATD1G,,PGIM India Fixed Duration Fund - Series AT - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMATDPD,DPRMATDPD,PGIMATDPD,,PGIM India Fixed Duration Fund - Series AT - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMATGPG,DPRMATGPG,PGIMATGPG,,PGIM India Fixed Duration Fund - Series AT - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMATQDD,DPRMATQDD,PGIMATQDD,,PGIM India Fixed Duration Fund - Series AT - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAUD1G,DPRMAUD1G,PGIMAUD1G,,PGIM India Fixed Duration Fund - Series AU - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAUDPD,DPRMAUDPD,PGIMAUDPD,,PGIM India Fixed Duration Fund - Series AU - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAUGPG,DPRMAUGPG,PGIMAUGPG,,PGIM India Fixed Duration Fund - Series AU - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAUQDD,DPRMAUQDD,PGIMAUQDD,,PGIM India Fixed Duration Fund - Series AU - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAYD1G,DPRMAYD1G,PGIMAYD1G,,PGIM India Fixed Duration Fund - Series AY - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAYGPG,DPRMAYGPG,PGIMAYGPG,,PGIM India Fixed Duration Fund - Series AY - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAZD1G,DPRMAZD1G,PGIMAZD1G,,PGIM India Fixed Duration Fund - Series AZ - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAZDPD,DPRMAZDPD,PGIMAZDPD,,PGIM India Fixed Duration Fund - Series AZ - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMAZGPG,DPRMAZGPG,PGIMAZGPG,,PGIM India Fixed Duration Fund - Series AZ - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBAD1G,DPRMBAD1G,PGIMBAD1G,,PGIM India Fixed Duration Fund - Series BA - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBADPD,DPRMBADPD,PGIMBADPD,,PGIM India Fixed Duration Fund - Series BA - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBAGPG,DPRMBAGPG,PGIMBAGPG,,PGIM India Fixed Duration Fund - Series BA - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBAQDD,DPRMBAQDD,PGIMBAQDD,,PGIM India Fixed Duration Fund - Series BA - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBBD1G,DPRMBBD1G,PGIMBBD1G,,PGIM India Fixed Duration Fund - Series BB - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBBDPD,DPRMBBDPD,PGIMBBDPD,,PGIM India Fixed Duration Fund - Series BB - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBBGPG,DPRMBBGPG,PGIMBBGPG,,PGIM India Fixed Duration Fund - Series BB - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBBQDD,DPRMBBQDD,PGIMBBQDD,,PGIM India Fixed Duration Fund - Series BB - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBCD1G,DPRMBCD1G,PGIMBCD1G,,PGIM India Fixed Duration Fund - Series BC - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBCD2S,DPRMBCD2S,PGIMBCD2S,,PGIM India Fixed Duration Fund - Series BC - DPSDT,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBCDPD,DPRMBCDPD,PGIMBCDPD,,PGIM India Fixed Duration Fund - Series BC - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBCGPG,DPRMBCGPG,PGIMBCGPG,,PGIM India Fixed Duration Fund - Series BC - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBCQDD,DPRMBCQDD,PGIMBCQDD,,PGIM India Fixed Duration Fund - Series BC - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBED1G,DPRMBED1G,PGIMBED1G,,PGIM India Fixed Duration Fund - Series BE - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBEDPD,DPRMBEDPD,PGIMBEDPD,,PGIM India Fixed Duration Fund - Series BE - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBEGPG,DPRMBEGPG,PGIMBEGPG,,PGIM India Fixed Duration Fund - Series BE - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMBEQDD,DPRMBEQDD,PGIMBEQDD,,PGIM India Fixed Duration Fund - Series BE - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMC6D1G,DWSLCFS2DG,PGIMC6D1G,,PGIM India Large Cap Fund Series 2 - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMC6D2D,DWSLCFS2DD,PGIMC6D2D,,PGIM India Large Cap Fund Series 2 - DPDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMC6DPD,DWSLCFS2RD,PGIMC6DPD,,PGIM India Large Cap Fund Series 2 - RPDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMC6GPG,DWSLCFS2RG,PGIMC6GPG,,PGIM India Large Cap Fund Series 2 - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMDAADD,DPRMDAAD,PGIMDAADD,,PGIM India Dual Advantage Fund - Series 1 - RPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMDAD1G,DPRMDAD1,PGIMDAD1G,,PGIM India Dual Advantage Fund - Series 1 - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMDAD2D,DPRMDAD2,PGIMDAD2D,,PGIM India Dual Advantage Fund - Series 1 - DPRDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMDAD3D,DPRMDAD3,PGIMDAD3D,,PGIM India Dual Advantage Fund - Series 1 - DPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMDADPD,DPRMDADP,PGIMDADPD,,PGIM India Dual Advantage Fund - Series 1 - RPRDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMDAGPG,DPRMDAGP,PGIMDAGPG,,PGIM India Dual Advantage Fund - Series 1 - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMDAQDD,DPRMDAQD,PGIMDAQDD,,PGIM India Dual Advantage Fund - Series 1 - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMFAADD,DPRMFAAD,PGIMFAADD,,PGIM India Fixed Duration Fund - Series AF - RPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMFAD1G,DPRMFAD1,PGIMFAD1G,,PGIM India Fixed Duration Fund - Series AF - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMFAD4D,DPRMFAD4,PGIMFAD4D,,PGIM India Fixed Duration Fund - Series AF - DPADPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMFAGPG,DPRMFAGP,PGIMFAGPG,,PGIM India Fixed Duration Fund - Series AF - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMFAQDD,DPRMFAQD,PGIMFAQDD,,PGIM India Fixed Duration Fund - Series AF - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMRAD1G,DPRMARD1G,PGIMRAD1G,,PGIM India Fixed Duration Fund - Series AR - DPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMRADPD,DPRMARDPD,PGIMRADPD,,PGIM India Fixed Duration Fund - Series AR - RPSDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMRAGPG,DPRMARGPG,PGIMRAGPG,,PGIM India Fixed Duration Fund - Series AR - RPG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-22,SYMBOL_CHANGE,PGIMRAQDD,DPRMARQDD,PGIMRAQDD,,PGIM India Fixed Duration Fund - Series AR - RPQDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-08-28,SYMBOL_CHANGE,DIGISPICE,SPICEMOBI,DIGISPICE,,DiGiSPICE Technologies Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-09-03,SYMBOL_CHANGE,TATASTLLP,TATASPONGE,TATASTLLP,,Tata Steel Long Products Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-09-09,SYMBOL_CHANGE,GBGLOBAL,MIL,GBGLOBAL,,GB Global Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFDVHDR,RDAFDVHDR,NDAFDVHDR,,NIPPON INDIA MUTUAL FUND - NIPPON INDIA Dual Ad FTF V- Plan H - DPDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFDVHGR,RDAFDVHGR,NDAFDVHGR,,NIPPON INDIA MUTUAL FUND - NIPPON INDIA Dual Ad FTF V- Plan H - DPGO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTFIVCD,RDAFTFIVCD,NDAFTFIVCD,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA DA-FTF IV-P-C-D,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTFIVCG,RDAFTFIVCG,NDAFTFIVCG,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA DA-FTF IV-P-C-G,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTFVCD,RDAFTFVCD,NDAFTFVCD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF V - Pl C - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTFVCG,RDAFTFVCG,NDAFTFVCG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF V - Pl C - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTIIPGD,RDAFTIIPGD,NDAFTIIPGD,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA DAFTF II - P - G - DP,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTIIPGG,RDAFTIIPGG,NDAFTIIPGG,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA DAFTF II - P - G - Growth,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTIVCDD,RDAFTIVCDD,NDAFTIVCDD,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA DA-FTF IV-P-C-DD,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTIVCDG,RDAFTIVCDG,NDAFTIVCDG,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA DA-FTF IV-P-C-DG,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTVCDG,RDAFTVCDG,NDAFTVCDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF V - Pl C - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTVHDR,RDAFTVHDR,NDAFTVHDR,,NIPPON INDIA MUTUAL FUND - NIPPON INDIA Dual Ad FTF V- Plan H - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFTVHGR,RDAFTVHGR,NDAFTVHGR,,NIPPON INDIA MUTUAL FUND - NIPPON INDIA Dual Ad FTF V- Plan H - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFVGDD,RDAFVGDD,NDAFVGDD,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund V- Pl,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFVGDG,RDAFVGDG,NDAFVGDG,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund V- Pl,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFVGDO,RDAFVGDO,NDAFVGDO,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund V- Pl,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFVGGO,RDAFVGGO,NDAFVGGO,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund V- Pl,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFVIIICD,RDAFVIIICD,NDAFVIIICD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr VIII Pl C - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAFVIIICX,RDAFVIIICX,NDAFVIIICX,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr VIII Pl C - DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIIIADG,RDAIIIADG,NDAIIIADG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr III Pl A - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIIIARD,RDAIIIARD,NDAIIIARD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr III Pl A - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIIIARG,RDAIIIARG,NDAIIIARG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr III Pl A - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXDD,RDAIXDD,NDAIXDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl D - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXDDD,RDAIXDDD,NDAIXDDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl D - DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXDDG,RDAIXDDG,NDAIXDDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl D - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXDG,RDAIXDG,NDAIXDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl D - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXEDD,RDAIXEDD,NDAIXEDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl E - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXEDDD,RDAIXEDDD,NDAIXEDDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl E - DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXEDDG,RDAIXEDDG,NDAIXEDDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl E - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXEDG,RDAIXEDG,NDAIXEDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl E - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXFDD,RDAIXFDD,NDAIXFDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl F - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXFDDD,RDAIXFDDD,NDAIXFDDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl F - DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXFDDG,RDAIXFDDG,NDAIXFDDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl F - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAIXFDG,RDAIXFDG,NDAIXFDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr IX Pl F - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAVIIPCDG,RDAVIIPCDG,NDAVIIPCDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr VII Pl C - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAVIIPDD,RDAVIIPDD,NDAVIIPDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr VII Pl D - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAVIIPDDD,RDAVIIPDDD,NDAVIIPDDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr VII Pl D - DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAVIIPDDG,RDAVIIPDDG,NDAVIIPDDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr VII Pl D - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAVIIPDG,RDAVIIPDG,NDAVIIPDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr VII Pl D - O,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXADD,RDAXADD,NDAXADD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr X Pl A - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXADDD,RDAXADDD,NDAXADDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr X Pl A - DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXADDG,RDAXADDG,NDAXADDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr X Pl A - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXADG,RDAXADG,NDAXADG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr X Pl A - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXBDD,RDAXBDD,NDAXBDD,,NIPPON INDIA MF- Nippon India DA Fixed Tenure Fund Sr x Plan B - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXBDDD,RDAXBDDD,NDAXBDDD,,NIPPON INDIA MF- Nippon India DA Fixed Tenure Fund Sr x Plan B-DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXBDDG,RDAXBDDG,NDAXBDDG,,NIPPON INDIA MF-Nippon India DA Fixed Tenure Fund Sr x Plan B -DP - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXBDG,RDAXBDG,NDAXBDG,,NIPPON INDIA MF - Nippon India DA Fixed Tenure Fund   Sr x Plan B - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXCDD,RDAXCDD,NDAXCDD,,NIPPON INDIA MF-Nippon India  Dual Adv. Fix.Ten. Fund Sr.x Plan C-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXCDDD,RDAXCDDD,NDAXCDDD,,NIPPON INDIA MF-Nippon India DualAdv. Fix.Ten. Fund Sr.x Plan C-DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXCDDG,RDAXCDDG,NDAXCDDG,,NIPPON INDIA MF-Nippon India Dual Adv.FixTen. Fund Sr.x Plan C-DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXCDG,RDAXCDG,NDAXCDG,,NIPPON INDIA MF-Nippon India  Dual Adv. Fix. Ten. Fund Sr.x Plan C-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXDDD,RDAXDDD,NDAXDDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr X Pl D - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXDDDD,RDAXDDDD,NDAXDDDD,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr X Pl D - DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXDDDG,RDAXDDDG,NDAXDDDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr X Pl D - DP-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXDDG,RDAXDDG,NDAXDDG,,NIPPON INDIA MF - NIPPON INDIA Dual Adv FTF Sr X Pl D - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXEDD,RDAXEDD,NDAXEDD,,NIPPON INDIA MF - NIPPON INDIA Dual Advantage FTF  Sr. x Plan E - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXEDDD,RDAXEDDD,NDAXEDDD,,NIPPON INDIA MF-NIPPON INDIA Dual Advantage FTF Sr.x Plan E- DP- DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXEDDG,RDAXEDDG,NDAXEDDG,,NIPPON INDIA MF - NIPPON INDIA Dual Advantage FTF  Sr. x Plan E-DPGO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXEDG,RDAXEDG,NDAXEDG,,NIPPON INDIA MF - NIPPON INDIA Dual Advantage FTF  Sr. x Plan E -  GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXFDD,RDAXFDD,NDAXFDD,,NIPPON INDIA MUTUAL FUND -NIPPON INDIA Dual Ad Fixed Tenure Fund  Seri,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXFDDD,RDAXFDDD,NDAXFDDD,,NIPPON INDIA MUTUAL FUND - NIPPON INDIA Dual Ad Fixed Tenure Fund Seri,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXFDDG,RDAXFDDG,NDAXFDDG,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund  Seri,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXFDG,RDAXFDG,NDAXFDG,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund  Seri,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIADD,RDAXIADD,NDAXIADD,,NIPPON INDIA MUTUAL FUND - NIPPON INDIA Dual Ad FTF XI Plan A - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIADDD,RDAXIADDD,NDAXIADDD,,NIPPON INDIA MUTUAL FUND - NIPPON INDIA Dual Ad FTF XI Plan A - DPDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIADDG,RDAXIADDG,NDAXIADDG,,NIPPON INDIA MUTUAL FUND - NIPPON INDIA Dual Ad FTF XI Plan A - DPGO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIADG,RDAXIADG,NDAXIADG,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA Dual Ad FTF XI Plan A - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIBDD,RDAXIBDD,NDAXIBDD,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad FTF XI Sr XI Plan B-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIBDDD,RDAXIBDDD,NDAXIBDDD,,NIPPON INDIA MUTUAL FUND-NIPPON INDIA Dual Ad FTF XI SrXI Plan B-DPDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIBDDG,RDAXIBDDG,NDAXIBDDG,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad FTF XI SrXI Plan B-DPGO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIBDG,RDAXIBDG,NDAXIBDG,,NIPPON INDIA MUTUAL FUND-NIPPON INDIA Dual Ad FTF XI Sr XI Plan B - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXICDD,RDAXICDD,NDAXICDD,,NIPPON INDIA MF - NIPPON INDIA Dual Advantage FTF XI Plan C - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXICDDD,RDAXICDDD,NDAXICDDD,,NIPPON INDIA MF - NIPPON INDIA Dual Advantage FTF XI Plan C - DP - DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXICDDG,RDAXICDDG,NDAXICDDG,,NIPPON INDIA MF - NIPPON INDIA Dual Advantage FTF XI Plan C - DP - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXICDG,RDAXICDG,NDAXICDG,,NIPPON INDIA MF - NIPPON INDIA Dual Advantage FTF XI Plan C - GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIDDD,RDAXIDDD,NDAXIDDD,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad FTF XI Plan D-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIDDDD,RDAXIDDDD,NDAXIDDDD,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA Dual Ad FTF XI Plan D-DPDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIDDDG,RDAXIDDDG,NDAXIDDDG,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA Dual Ad FTF XI Plan D-DPGO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIDDG,RDAXIDDG,NDAXIDDG,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA Dual Ad FTF XI Plan D-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIEDD,RDAXIEDD,NDAXIEDD,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund XI (P,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIEDDD,RDAXIEDDD,NDAXIEDDD,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund XI (P,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIEDDG,RDAXIEDDG,NDAXIEDDG,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad Fixed Tenure Fund XI (P,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIEDG,RDAXIEDG,NDAXIEDG,,NIPPON INDIA MUTUAL FUND -NIPPON INDIA Dual Ad Fixed Tenure Fund XI (P,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIIADD,RDAXIIADD,NDAXIIADD,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad FTF XII Plan A-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIIADDD,RDAXIIADDD,NDAXIIADDD,,NIPPON INDIA MUTUAL FUND  - NIPPON INDIA Dual Ad FTF XII Plan A-DPDPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIIADDG,RDAXIIADDG,NDAXIIADDG,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad FTF XII Plan A-DPGO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NDAXIIADG,RDAXIIADG,NDAXIIADG,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Dual Ad FTF XII Plan A-GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NETFCONSUM,RELCONS,NETFCONSUM,,NIPPON INDIA ETF CONSUMPTION,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NETFMID150,RETFMID150,NETFMID150,,NIPPON INDIA ETF NIFTY MIDCAP 150,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NETFNIF100,RELCNX100,NETFNIF100,,NIPPON INDIA ETF NIFTY 100,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NMFINAIDR1,RMFINAIDR1,NMFINAIDR1,,NIPPON INDIA MF - NIPPON INDIA IF - AIF S-I - IDR,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NMFINARDR1,RMFINARDR1,NMFINARDR1,,NIPPON INDIA MUTUAL FUND-NIPPON INDIA Int. Fund-AIF-SI - RP- DP - RO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NMFINQADP1,RMFINQADP1,NMFINQADP1,,NIPPON INDIA MF - NIPPON INDIA Intr Fund - QIF SR I-DIV,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NMFINQIDP1,RMFINQIDP1,NMFINQIDP1,,NIPPON INDIA MUTUAL FUND- NIPPON INDIA Int.Fund-QIF-SI-IP-DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NMFINQRAG1,RMFINQRAG1,NMFINQRAG1,,NIPPON INDIA MF - NIPPON INDIA Intr Fund - QIF SR I-GRW,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-10-30,SYMBOL_CHANGE,NMFINQRDP1,RMFINQRDP1,NMFINQRDP1,,NIPPON INDIA MUTUAL FUND-NIPPON INDIA Int. Fund-QIF-SI-RP-DP-DPO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-11-01,SYMBOL_CHANGE,AVROIND,AVONMPL,AVROIND,,AVRO INDIA LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2019-11-11,SYMBOL_CHANGE,NXTDIGITAL,HINDUJAVEN,NXTDIGITAL,,NXTDIGITAL LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-01-08,SYMBOL_CHANGE,HLVLTD,HOTELEELA,HLVLTD,,HLV LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-01-22,SYMBOL_CHANGE,ANDPAPER,IPAPPM,ANDPAPER,,ANDHRA PAPER LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-01-23,SYMBOL_CHANGE,NAM-INDIA,RNAM,NAM-INDIA,,Nippon Life India Asset Management Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-02-20,SYMBOL_CHANGE,BORORENEW,BOROSIL,BORORENEW,,BOROSIL RENEWABLES LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-02-27,SYMBOL_CHANGE,TATACONSUM,TATAGLOBAL,TATACONSUM,,TATA CONSUMER PRODUCTS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-03-05,SYMBOL_CHANGE,ANDHRAPAP,ANDPAPER,ANDHRAPAP,,ANDHRA PAPER LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-03-20,SYMBOL_CHANGE,EBIXFOREX,WEIZFOREX,EBIXFOREX,,DELPHI WORLD MONEY LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-03-27,ADDITION,AFFLE,,,,Affle (India) Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2020-03-27,ADDITION,IRCTC,,,,Indian Railway Catering And Tourism Corporation Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2020-03-27,DELETION,DHFL,,,,Dewan Housing Finance Corporation Ltd.,Semi-Annual Index Rebalance Exclusion,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2020-04-13,SYMBOL_CHANGE,TEMBO,SAKETH,TEMBO,,Tembo Global Industries Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-04-22,SYMBOL_CHANGE,IMAGICAA,ADLABS,IMAGICAA,,Imagicaaworld Entertainment Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-07-01,SYMBOL_CHANGE,WEWIN,SUREVIN,WEWIN,,WE WIN LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-08-19,SYMBOL_CHANGE,ZENITHSTL,ZENITHBIR,ZENITHSTL,,Zenith Steel Pipes & Industries Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-08-20,SYMBOL_CHANGE,COFORGE,NIITTECH,COFORGE,,Coforge Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-09-17,SYMBOL_CHANGE,DHANILOANS,ICFL,DHANILOANS,,Dhani Loans and Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-09-30,SYMBOL_CHANGE,DEEPENR,DEEPIND,DEEPENR,,DEEP ENERGY RESOURCES LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-10-12,SYMBOL_CHANGE,JSWISPL,AIONJSW,JSWISPL,,JSW Ispat Special Products Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-10-14,SYMBOL_CHANGE,PRIVISCL,FAIRCHEM,PRIVISCL,,Privi Speciality Chemicals Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-10-19,SYMBOL_CHANGE,EPL,ESSELPACK,EPL,,EPL Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-10-28,SYMBOL_CHANGE,DHANI,IBVENTURES,DHANI,,Dhani Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-10-28,SYMBOL_CHANGE,DHANIPP,IBVENTPP,DHANIPP,,Dhani Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-10-29,SYMBOL_CHANGE,STLTECH,STRTECH,STLTECH,,Sterlite Technologies Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-11-26,SYMBOL_CHANGE,HUHTAMAKI,PAPERPROD,HUHTAMAKI,,Huhtamaki India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-12-08,SYMBOL_CHANGE,YAARII,IBULISL,YAARII,,Yaari Digital Integrated Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2020-12-18,SYMBOL_CHANGE,INDUSTOWER,INFRATEL,INDUSTOWER,,Indus Towers Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-01-12,SYMBOL_CHANGE,ACRYSIL,1201210518,ACRYSIL,,CARYSIL LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-01-13,SYMBOL_CHANGE,ATGL,ADANIGAS,ATGL,,Adani Total Gas Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-01-20,SYMBOL_CHANGE,SECURKLOUD,8KMILES,SECURKLOUD,,SECUREKLOUD TECHNOLOGIES LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-02-01,SYMBOL_CHANGE,RPSGVENT,CESCVENT,RPSGVENT,,RPSG VENTURES LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-02-10,SYMBOL_CHANGE,OMINFRAL,OMMETALS,OMINFRAL,,OM INFRA LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-02-12,SYMBOL_CHANGE,JUBLPHARMA,JUBILANT,JUBLPHARMA,,Jubilant Pharmova Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-04-07,SYMBOL_CHANGE,RTNINDIA,RTNINFRA,RTNINDIA,,RattanIndia Enterprises Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-05-06,SYMBOL_CHANGE,VIKASLIFE,VIKASMCORP,VIKASLIFE,,Vikas Lifecare Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-05-20,SYMBOL_CHANGE,INCREDIBLE,ADHUNIKIND,INCREDIBLE,,INCREDIBLE INDUSTRIES LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-06-16,SYMBOL_CHANGE,MOGSEC,G5,MOGSEC,,Motilal Oswal Mutual Fund - Motilal Oswal 5 Year G Sec ETF - Growth,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-06-16,SYMBOL_CHANGE,MOM100,M100,MOM100,,Motilal Oswal Mutual Fund - Motilal Oswal MOSt Shares M100 ETF GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-06-16,SYMBOL_CHANGE,MOM50,M50,MOM50,,Motilal Oswal Mutual Fund - Motilal Oswal MOSt Shares M50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-06-16,SYMBOL_CHANGE,MON100,N100,MON100,,Motilal Oswal Mutual Fund-Motilal Oswal MOSt Shares NASDAQ 100 ETF -GO,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-07-22,SYMBOL_CHANGE,RHIM,ORIENTREF,RHIM,,RHI MAGNESITA INDIA LTD,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-07-28,SYMBOL_CHANGE,SGBJUL29IV,SGBJUN29IV,SGBJUL29IV,,SOVEREIGN GOLD BONDS 2.50% JULY 2029 SR-IV 2021-22,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-08-05,SYMBOL_CHANGE,POONAWALLA,MAGMA,POONAWALLA,,Poonawalla Fincorp Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-08-06,SYMBOL_CHANGE,JAIPURKURT,NANDANI,JAIPURKURT,,Nandani Creation Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-08-16,SYMBOL_CHANGE,AJRINFRA,GAMMNINFRA,AJRINFRA,,AJR INFRA AND TOLLING LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-08-16,SYMBOL_CHANGE,SEJAL,SEZAL,SEJAL,,SEJAL GLASS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-09-01,SYMBOL_CHANGE,DELPHIFX,EBIXFOREX,DELPHIFX,,DELPHI WORLD MONEY LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-09-30,ADDITION,CLEAN,,,,Clean Science And Technology Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2021-09-30,ADDITION,ZOMATO,,,,Zomato Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2021-09-30,DELETION,SREINFRA,,,,SREI Infrastructure Finance Ltd.,Semi-Annual Index Rebalance Exclusion,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2021-10-22,SYMBOL_CHANGE,AURUM,MAJESCO,AURUM,,Aurum PropTech Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-11-11,SYMBOL_CHANGE,ANGELONE,ANGELBRKG,ANGELONE,,Angel One Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-11-30,SYMBOL_CHANGE,EQUIPPP,PROINDIA,EQUIPPP,,Equippp Social Impact Technologies Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-12-03,SYMBOL_CHANGE,BBOX,AGCNET,BBOX,,Black Box Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-12-15,SYMBOL_CHANGE,YAARI,YAARII,YAARI,,Yaari Digital Integrated Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-12-16,SYMBOL_CHANGE,KBCGLOBAL,KARDA,KBCGLOBAL,,KBC Global Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-12-20,SYMBOL_CHANGE,DOLATALGO,DOLAT,DOLATALGO,,Dolat Algotech Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-12-20,SYMBOL_CHANGE,LINC,LINCPEN,LINC,,Linc Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2021-12-22,SYMBOL_CHANGE,WINPRO,JUMPNET,WINPRO,,WinPro Industries Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-03-07,SYMBOL_CHANGE,ZYDUSLIFE,CADILAHC,ZYDUSLIFE,,Zydus Lifesciences Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-04-27,SYMBOL_CHANGE,KPIGREEN,KPIGLOBAL,KPIGREEN,,KPI Green Energy Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,AUTOBEES,NETFAUTO,AUTOBEES,,Nippon India Mutual Fund - Nippon India Nifty Auto ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,CONSUMBEES,NETFCONSUM,CONSUMBEES,,NIPPON INDIA ETF CONSUMPTION,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,GILT5YBEES,NETFGILT5Y,GILT5YBEES,,Nippon India Mutual Fund - Nippon India ETF 5 Year Gilt,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,ITBEES,NETFIT,ITBEES,,Nippon Life India Asset Management Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,MID150BEES,NETFMID150,MID150BEES,,NIPPON INDIA ETF NIFTY MIDCAP 150,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,NIF100BEES,NETFNIF100,NIF100BEES,,NIPPON INDIA ETF NIFTY 100,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,NV20BEES,NETFNV20,NV20BEES,,NIPPON INDIA ETF NV20,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,PHARMABEES,NETFPHARMA,PHARMABEES,,Nippon India Mutual Fund - Nippon India Nifty Pharma ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,SDL24BEES,NCPSESDL24,SDL24BEES,,Nippon India Mutual Fund-Nippon India ETF Nifty CPSE Bond Plus SDL-24,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,SDL26BEES,NETFSDL26,SDL26BEES,,Nippon India Mutual Fund - ETF Nifty SDL - 2026 Maturity,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-10,SYMBOL_CHANGE,SILVERBEES,NETFSILVER,SILVERBEES,,Nippon India Mutual Fund - Nippon India Silver ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-05-11,SYMBOL_CHANGE,AGI,HSIL,AGI,,HSIL Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-06-09,SYMBOL_CHANGE,MOTHERSON,MOTHERSUMI,MOTHERSON,,Samvardhana Motherson International Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-06-20,SYMBOL_CHANGE,JWL,CEBBCO,JWL,,Jupiter Wagons Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-06-21,SYMBOL_CHANGE,HINDWAREAP,SHIL,HINDWAREAP,,Hindware Home Innovation Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-07-04,SYMBOL_CHANGE,ZUARIIND,ZUARIGLOB,ZUARIIND,,ZUARI INDUSTRIES LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-07-18,SYMBOL_CHANGE,HEADSUP,TMRVL,HEADSUP,,Heads UP Ventures Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-07-25,SYMBOL_CHANGE,COSMOFIRST,COSMOFILMS,COSMOFIRST,,COSMO FIRST LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-07-29,SYMBOL_CHANGE,NAVA,NBVENTURES,NAVA,,NAVA LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-08-05,SYMBOL_CHANGE,UNOMINDA,MINDAIND,UNOMINDA,,UNO Minda Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-08-16,SYMBOL_CHANGE,MODISONLTD,MODISNME,MODISONLTD,,MODISON LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-09-01,SYMBOL_CHANGE,TRU,DHANVARSHA,TRU,,TruCap Finance Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-11-02,SYMBOL_CHANGE,DMCC,DHARAMSI,DMCC,,DMCC SPECIALITY CHEMICALS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-11-18,SYMBOL_CHANGE,CARYSIL,ACRYSIL,CARYSIL,,CARYSIL LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-11-21,SYMBOL_CHANGE,JTLIND,JTLINFRA,JTLIND,,JTL INDUSTRIES LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-11-23,SYMBOL_CHANGE,UNIVAFOODS,HOTELRUGBY,UNIVAFOODS,,Univa Foods Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-12-05,SYMBOL_CHANGE,LTIM,LTI,LTIM,,LTIMindtree Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2022-12-20,SYMBOL_CHANGE,SHRIRAMFIN,SRTRANSFIN,SHRIRAMFIN,,Shriram Finance Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-01-02,SYMBOL_CHANGE,ARIHANTACA,AAL,ARIHANTACA,,Arihant Academy Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-01-04,SYMBOL_CHANGE,WEL,WFL,WEL,,Wonder Electricals Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-01-20,SYMBOL_CHANGE,STYRENIX,INEOSSTYRO,STYRENIX,,Styrenix Performance Materials Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-01-23,SYMBOL_CHANGE,360ONE,IIFLWAM,360ONE,,360 ONE WAM LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-03-10,SYMBOL_CHANGE,HEUBACHIND,CLNINDIA,HEUBACHIND,,Sudarshan Colorants India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-03-31,ADDITION,DELHIVERY,,,,Delhivery Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2023-03-31,ADDITION,PAYTM,,,,One 97 Communications Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2023-03-31,DELETION,IBULHSGFIN,,,,Indiabulls Housing Finance Ltd.,Semi-Annual Index Rebalance Exclusion,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2023-05-09,SYMBOL_CHANGE,NDLVENTURE,NXTDIGITAL,NDLVENTURE,,NDL Ventures Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-05-12,SYMBOL_CHANGE,PVRINOX,PVR,PVRINOX,,PVR INOX Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-05-19,SYMBOL_CHANGE,OSWALGREEN,BINDALAGRO,OSWALGREEN,,Oswal Greentech Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-06-06,SYMBOL_CHANGE,KPIL,KALPATPOWR,KPIL,,Kalpataru Projects International Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-06-16,SYMBOL_CHANGE,HDFCGOLD,HDFCMFGETF,HDFCGOLD,,HDFC Gold ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-06-16,SYMBOL_CHANGE,HDFCNIFBAN,HBANKETF,HDFCNIFBAN,,HDFC NIFTY Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-06-16,SYMBOL_CHANGE,HDFCNIFTY,HDFCNIFETF,HDFCNIFTY,,HDFC NIFTY 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-06-16,SYMBOL_CHANGE,HDFCSENSEX,HDFCSENETF,HDFCSENSEX,,HDFC BSE SENSEX ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-06-19,SYMBOL_CHANGE,CIEINDIA,MAHINDCIE,CIEINDIA,,CIE Automotive India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-06-19,SYMBOL_CHANGE,TITAGARH,TWL,TITAGARH,,TITAGARH RAIL SYSTEMS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-07-03,SYMBOL_CHANGE,SHAH,GAL,SHAH,,Shah Metacorp Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-07-13,ADDITION,JIOFIN,,,,Jio Financial Services Ltd.,Spin-off Addition from Reliance Industries,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2023-07-13,CORPORATE_EVENT,HDFC,,,,Housing Development Finance Corporation Ltd.,Amalgamation / Merger into HDFC Bank Ltd.,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2023-07-14,SYMBOL_CHANGE,GATECH,STAMPEDE,GATECH,,GACM Technologies Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-07-18,SYMBOL_CHANGE,NIDO,EHFLNCD,NIDO,,Nido Home Finance Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-07-26,SYMBOL_CHANGE,UCAL,UCALFUEL,UCAL,,UCAL LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-07-31,SYMBOL_CHANGE,GVPTECH,4THDIM,GVPTECH,,GVP Infotech Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-07-31,SYMBOL_CHANGE,LICMFGOLD,IDBIGOLD,LICMFGOLD,,LIC MF Gold EXCHANGE TRADED FUND,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-07-31,SYMBOL_CHANGE,ORIENTCER,ORIENTABRA,ORIENTCER,,ORIENT CERATECH LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-08-04,SYMBOL_CHANGE,PROZONER,PROZONINTU,PROZONER,,Prozone Realty Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-08-08,SYMBOL_CHANGE,GATECHDVR,SCAPDVR,GATECHDVR,,GACM Technologies Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-08-10,SYMBOL_CHANGE,TVSHLTD,SUNCLAYLTD,TVSHLTD,,TVS Holdings Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-08-23,SYMBOL_CHANGE,SAMPANN,SEPOWER,SAMPANN,,Sampann Utpadan India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-08-24,SYMBOL_CHANGE,ADANIENSOL,ADANITRANS,ADANIENSOL,,Adani Energy Solutions Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,BFSI,MAFSETF,BFSI,,Mirae Asset Mutual Fund - Mirae Asset Nifty Financial Services ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,ESG,MAESGETF,ESG,,MIRAE ASSET MUTUAL FUND - Mirae Asset Nifty 100 ESG Sector Leaders ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,GOLDETF,MAGOLDETF,GOLDETF,,Mirae Asset Mutual Fund - Mirae Asset Gold ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,GSEC10YEAR,MAGS813ETF,GSEC10YEAR,,Mirae Asset Mutual Fund - Mirae Asset Nifty 8-13 yr G-Sec ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,LOWVOL,MANV30F,LOWVOL,,Mirae Asset Mutual Fund - Mirae Asset Nifty 100 Low Volatility 30 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,MAKEINDIA,MAMFGETF,MAKEINDIA,,Mirae Asset Mutual Fund - Mirae Asset Nifty India Manufacturing ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,MIDCAPETF,MAM150ETF,MIDCAPETF,,Mirae Asset Mutual Fund - Mirae Asset Nifty Midcap 150 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,NEXT50,MANXT50,NEXT50,,Mirae Asset Mutual Fund - MIRAE ASSET NIFTY NEXT 50 ETF (MANXT50) - Mi,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,NIFTYETF,MAN50ETF,NIFTYETF,,Mirae Asset Mutual Fund - Mirae Asset Nifty 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-01,SYMBOL_CHANGE,SILVRETF,MASILVER,SILVRETF,,Mirae Asset Mutual Fund - Mirae Asset Silver ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-11,SYMBOL_CHANGE,EPIGRAL,MFL,EPIGRAL,,Epigral Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-12,SYMBOL_CHANGE,GTECJAINX,KEERTI,GTECJAINX,,G-TEC JAINX EDUCATION LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-09-21,SYMBOL_CHANGE,SEMAC,REVATHI,SEMAC,,Semac Construction Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-10-16,SYMBOL_CHANGE,LLOYDSENGG,LSIL,LLOYDSENGG,,LLOYDS ENGINEERING WORKS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-10-20,SYMBOL_CHANGE,TPHQ,GISOLUTION,TPHQ,,Teamo Productions HQ Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-10-27,SYMBOL_CHANGE,ARE&M,AMARAJABAT,ARE&M,,Amara Raja Energy & Mobility Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-11-06,SYMBOL_CHANGE,LTFOODS,DAAWAT,LTFOODS,,LT Foods Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-11-15,SYMBOL_CHANGE,SONAMLTD,SONAMCLOCK,SONAMLTD,,SONAM LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-11-30,SYMBOL_CHANGE,ACLGATI,GATI,ACLGATI,,Allcargo Gati Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-01,SYMBOL_CHANGE,GOLDKART,SONAHISONA,GOLDKART,,Goldkart Jewels Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-14,SYMBOL_CHANGE,WELSPUNLIV,WELSPUNIND,WELSPUNLIV,,Welspun Living Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-15,SYMBOL_CHANGE,ATLANTAA,ATLANTA,ATLANTAA,,ATLANTAA LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,ALPL30IETF,ICICIALPLV,ALPL30IETF,,ICICI Prudential Nifty Alpha Low Volatility 30 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,AUTOIETF,ICICIAUTO,AUTOIETF,,ICICI Prudential Mutual Fund - ICICI Prudential  Nifty Auto ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,BSE500IETF,ICICI500,BSE500IETF,,ICICI Prudential BSE 500 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,COMMOIETF,ICICICOMMO,COMMOIETF,,ICICI Prudential Mutual Fund - ICICI Prudential Nifty Commodities ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,CONSUMIETF,ICICICONSU,CONSUMIETF,,ICICI Prudential Nifty India Consumption ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,FINIETF,ICICIFIN,FINIETF,,ICICI Prudential Mutual Fund - ICICI Pru Nifty Fin Ser Ex-Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,FMCGIETF,ICICIFMCG,FMCGIETF,,ICICI PRUDENTIAL MUTUAL FUND - ICICI Prudential Nifty FMCG ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,GSEC10IETF,ICICI10GS,GSEC10IETF,,ICICI Pru Mutual Fund-ICICI Prudential Nifty 10 yr Benchmark G-Sec ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,GSEC5IETF,ICICI5GSEC,GSEC5IETF,,ICICI Prudential Nifty 5 Yr Benchmark G-SEC ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,HEALTHIETF,ICICIPHARM,HEALTHIETF,,ICICI PRUDENTIAL MUTUAL FUND - ICICI Prudential Nifty Healthcare ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,INFRAIETF,ICICIINFRA,INFRAIETF,,ICICI Prudential Mutual Fund-ICICI Prudential Nifty Infrastructure ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,ITIETF,ICICITECH,ITIETF,,ICICI PRUDENTIAL MUTUAL FUND - ICICI Prudential Nifty IT ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,LIQUIDIETF,ICICILIQ,LIQUIDIETF,,ICICI Prudential BSE Liquid Rate ETF- IDCW,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,MIDCAPIETF,ICICIM150,MIDCAPIETF,,ICICI PRUDENTIAL MUTUAL FUND - ICICI Prudential Nifty Midcap 150 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,MOM30IETF,ICICIMOM30,MOM30IETF,,ICICI Prudential Mutual Fund -  ICICI Pru Nifty 200 Momentum 30 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,NEXT50IETF,ICICINXT50,NEXT50IETF,,ICICI Prudential Mutual Fund - ICICI Prudential Nifty Next 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,PSUBNKIETF,PSUBANKICI,PSUBNKIETF,,ICICI Prudential Mutual Fund - ICICI Prudential Nifty PSU Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,PVTBANIETF,ICICIBANKP,PVTBANIETF,,ICICI Prudential Nifty Private Bank ETF - NIFTY PRIVATE BANK INDEX,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,QUAL30IETF,ICICIQTY30,QUAL30IETF,,ICICI Prudential MF - ICICI Prudential Nifty 200 Quality 30 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2023-12-20,SYMBOL_CHANGE,SILVERIETF,ICICISILVE,SILVERIETF,,ICICI Prudential Mutual Fund - ICICI Prudential Silver ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,BANKETFADD,DSPBANKETF,BANKETFADD,,DSP  Mutual Fund - DSP Nifty Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,EQUAL50ADD,DSPNEWETF,EQUAL50ADD,,DSP  Mutual Fund - DSP Nifty 50 Equal Weight ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,GOLDETFADD,DSPGOLDETF,GOLDETFADD,,DSP Mutual Fund - DSP Gold ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,ITETFADD,DSPITETF,ITETFADD,,DSP Mutual Fund - DSP Nifty IT ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,MIDQ50ADD,DSPQ50ETF,MIDQ50ADD,,DSP  Mutual Fund - DSP Nifty Midcap 150 Quality 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,NIFTY50ADD,DSPN50ETF,NIFTY50ADD,,DSP  Mutual Fund - DSP Nifty 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,PSUBANKADD,DSPPSBKETF,PSUBANKADD,,DSP Mutual Fund - DSP Nifty PSU Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,PVTBANKADD,DSPPVBKETF,PVTBANKADD,,DSP Mutual Fund - DSP Nifty Private Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,SENSEXADD,DSPSENXETF,SENSEXADD,,DSP BSE Sensex ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-02-15,SYMBOL_CHANGE,SILVERADD,DSPSILVETF,SILVERADD,,DSP  Mutual Fund - DSP Silver ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,ALPHA,KOTAKALPHA,ALPHA,,Kotak Mahindra Mutual Fund - Kotak Nifty Alpha 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,BANKNIFTY1,KOTAKBKETF,BANKNIFTY1,,Kotak Nifty Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,CONS,KOTAKCONS,CONS,,Kotak Nifty India Consumption ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,IT,KOTAKIT,IT,,Kotak Nifty IT ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,LIQUID1,KOTAKLIQ,LIQUID1,,Kotak Mahindra Mutual Fund - Kotak Nifty 1D Rate Liquid ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,LOWVOL1,KOTAKLOVOL,LOWVOL1,,Kotak Nifty 100 Low Volatility 30 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,MIDCAP,KOTAKMID50,MIDCAP,,Kotak Nifty Midcap 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,MNC,KOTAKMNC,MNC,,Kotak Mahindra Mutual Fund - Kotak Nifty MNC ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,NIFTY1,KOTAKNIFTY,NIFTY1,,Kotak Nifty 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-03-20,SYMBOL_CHANGE,PSUBANK,KOTAKPSUBK,PSUBANK,,Kotak Nifty PSU Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-04-08,SYMBOL_CHANGE,BHARTIHEXA,LIST000857,BHARTIHEXA,,Bharti Hexacom Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-04-16,SYMBOL_CHANGE,GOLD1,KOTAKGOLD,GOLD1,,Kotak Mutual Fund - Gold Exchange Traded Fund,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-04-16,SYMBOL_CHANGE,SILVER1,KOTAKSILVE,SILVER1,,Kotak Mahindra Mutual Fund - Kotak Silver ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-04-23,SYMBOL_CHANGE,LTF,L&TFH,LTF,,L&T Finance Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-06-07,SYMBOL_CHANGE,AEGISLOG,AEGISCHEM,AEGISLOG,,Aegis Logistics Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-06-07,SYMBOL_CHANGE,UNITDSPR,MCDOWELL-N,UNITDSPR,,United Spirits Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-07-08,SYMBOL_CHANGE,EMBDL,IBREALEST,EMBDL,,Embassy Developments Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-07-26,SYMBOL_CHANGE,SAMMAANCAP,IBULHSGFIN,SAMMAANCAP,,Sammaan Capital Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-07-26,SYMBOL_CHANGE,SCLPP,IBULPP,SCLPP,,Sammaan Capital Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-08-01,SYMBOL_CHANGE,AMBANIORGO,AMBANIORG,AMBANIORGO,,AMBANI ORGOCHEM LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-08-09,SYMBOL_CHANGE,SHEKHAWATI,SPYL,SHEKHAWATI,,Shekhawati Industries Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-08-23,SYMBOL_CHANGE,GROWWEV,GROWEV,GROWWEV,,Groww Mutual Fund - Groww Nifty EV & New Age Automotive ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-08-26,SYMBOL_CHANGE,TARIL,TRIL,TARIL,,Transformers And Rectifiers (India) Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-09-03,SYMBOL_CHANGE,ORTINGLOBE,ORTINLAB,ORTINGLOBE,,ORTIN GLOBAL LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-09-27,SYMBOL_CHANGE,ALLDIGI,ALLSEC,ALLDIGI,,Alldigi Tech Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-09-30,ADDITION,BWA,,,,Brainbees Solutions Ltd. (FirstCry),Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2024-09-30,ADDITION,OLAENE,,,,Ola Electric Mobility Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2024-09-30,SYMBOL_CHANGE,TIPSMUSIC,TIPSINDLTD,TIPSMUSIC,,Tips Music Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-10-09,SYMBOL_CHANGE,KUNDANMM,EASTSUGIND,KUNDANMM,,Kundan Minerals and Metals Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-10-09,SYMBOL_CHANGE,VEEDOL,TIDEWATER,VEEDOL,,Veedol Corporation Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-10-10,SYMBOL_CHANGE,ABREL,CENTURYTEX,ABREL,,Aditya Birla Real Estate Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-10-10,SYMBOL_CHANGE,LMW,LAXMIMACH,LMW,,LMW Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-10-23,SYMBOL_CHANGE,TRANSWORLD,SHREYAS,TRANSWORLD,,TRANSWORLD SHIPPING LINES LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-11-05,SYMBOL_CHANGE,GVT&D,GET&D,GVT&D,,GE Vernova T&D India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-11-12,SYMBOL_CHANGE,INTERISE,INDINFR,INTERISE,,Interise Trust,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-11-12,SYMBOL_CHANGE,INTERISE,INTERISE,INTERISE,,Interise Trust,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-11-25,SYMBOL_CHANGE,692GS2039,692MH2039,692GS2039,,Government of India,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-11-26,SYMBOL_CHANGE,RVTH,REVATHIEQU,RVTH,,Revathi Equipment India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-12-03,SYMBOL_CHANGE,IIFLCAPS,IIFLSEC,IIFLCAPS,,IIFL Capital Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-12-09,SYMBOL_CHANGE,ARVINDPORT,ACSAL,ARVINDPORT,,ARVIND PORT AND INFRA LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-12-11,SYMBOL_CHANGE,GMRAIRPORT,GMRINFRA,GMRAIRPORT,,GMR AIRPORTS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2024-12-23,SYMBOL_CHANGE,HBLENGINE,HBLPOWER,HBLENGINE,,HBL Engineering Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-01-16,SYMBOL_CHANGE,URAVIDEF,URAVI,URAVIDEF,,Uravi Defence and Technology Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-01-20,SYMBOL_CHANGE,ALIVUS,GLS,ALIVUS,,Alivus Life Sciences Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-01-23,SYMBOL_CHANGE,INDUSINVIT,BHINVIT,INDUSINVIT,,Indus Infra Trust,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-02-07,SYMBOL_CHANGE,TICL,TCLCONS,TICL,,Twamev Construction and Infrastructure Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-02-19,SYMBOL_CHANGE,799LTFL30,780LTFL30,799LTFL30,,,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-03-11,SYMBOL_CHANGE,EMAPARTNER,EMAIN,EMAPARTNER,,EMA Partners India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-03-20,SYMBOL_CHANGE,CPCAP,CAREERP,CPCAP,,CP Capital Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-03-28,ADDITION,ACMESOLAR,,,,ACME Solar Holdings Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2025-03-28,ADDITION,SWIGGY,,,,Swiggy Ltd.,Semi-Annual Index Rebalance Addition,NSE Indices,https://www.niftyindices.com/resources/press-releases
+2025-03-28,SYMBOL_CHANGE,SUNDROP,ATFL,SUNDROP,,Sundrop Brands Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-04-01,SYMBOL_CHANGE,AFSL,AHL,AFSL,,Abans Financial Services Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-04-02,SYMBOL_CHANGE,10157PCP27,10157PCP24,10157PCP27,,Profectus Capital Private Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-04-09,SYMBOL_CHANGE,BIRLANU,HIL,BIRLANU,,BirlaNu Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-04-09,SYMBOL_CHANGE,ETERNAL,ZOMATO,ETERNAL,,ETERNAL LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-04-11,SYMBOL_CHANGE,ADOR,ADORWELD,ADOR,,Ador Welding Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-04-15,SYMBOL_CHANGE,UMIYA-MRO,MRO-TEK,UMIYA-MRO,,UMIYA BUILDCON LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-05-19,SYMBOL_CHANGE,COHANCE,SUVENPHAR,COHANCE,,Cohance Lifesciences Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-06-02,SYMBOL_CHANGE,ACUTAAS,AMIORG,ACUTAAS,,Acutaas Chemicals Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-06-17,SYMBOL_CHANGE,WAAREEINDO,INDOSOLAR,WAAREEINDO,,Indosolar Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-06-23,SYMBOL_CHANGE,KAVDEFENCE,KAVVERITEL,KAVDEFENCE,,Kavveri Defence & Wireless Technologies Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-06-25,SYMBOL_CHANGE,AEROENTER,SATINDLTD,AEROENTER,,Aeroflex Enterprises Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-06-26,SYMBOL_CHANGE,DHARAN,KBCGLOBAL,DHARAN,,DHARAN INFRA-EPC LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-06-27,SYMBOL_CHANGE,RAYMONDREL,RRL,RAYMONDREL,,Raymond Realty Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-07-03,SYMBOL_CHANGE,JUBLCPL,JACPL,JUBLCPL,,Jubilant Agri and Consumer Products Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-07-14,SYMBOL_CHANGE,BILVYAPAR,BINANIIND,BILVYAPAR,,BIL VYAPAR LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-07-18,SYMBOL_CHANGE,QUALITY30,QUALITY,QUALITY30,,Kotak Mahindra Mutual Fund - Kotak Nifty200 Quality 30 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-07-21,SYMBOL_CHANGE,CHEMBONDCH,CHEMBONDIN,CHEMBONDCH,,Chembond Chemicals Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-07-21,SYMBOL_CHANGE,QUALITY30,QUALITY30,QUALITY30,,Kotak Mahindra Mutual Fund - Kotak Nifty200 Quality 30 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-07-22,SYMBOL_CHANGE,VERTIS,HIGHWAYS,VERTIS,,Vertis Infrastructure Trust,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-07-22,SYMBOL_CHANGE,VERTIS,VERTIS,VERTIS,,Vertis Infrastructure Trust,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-08-06,SYMBOL_CHANGE,RNPL,RENOL,RNPL,,Renol Polychem Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-08-13,SYMBOL_CHANGE,TEAMGTY,TIMESGTY,TEAMGTY,,Team India Guaranty Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-08-22,SYMBOL_CHANGE,AERONEU,SAH,AERONEU,,Aeroflex Neu Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-08-28,SYMBOL_CHANGE,GVPIL,GEPIL,GVPIL,,GE Power India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-09-03,SYMBOL_CHANGE,HGM,HOVS,HGM,,HandsOn Global Management (HGM) Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-09-04,SYMBOL_CHANGE,SWANCORP,SWANENERGY,SWANCORP,,SWAN CORP LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-09-15,SYMBOL_CHANGE,GANESHHOU,GANESHHOUC,GANESHHOU,,GANESH HOUSING LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-09-15,SYMBOL_CHANGE,SILVERAG,SILVRETF,SILVERAG,,Mirae Asset Mutual Fund - Mirae Asset Silver ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-09-17,SYMBOL_CHANGE,CEMPRO,ITDCEM,CEMPRO,,Cemindia Projects Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-09-22,SYMBOL_CHANGE,ANTELOPUS,SELAN,ANTELOPUS,,Antelopus Selan Energy Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-10-10,SYMBOL_CHANGE,WORTHPERI,WORTH,WORTHPERI,,Worth Peripherals Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-10-13,SYMBOL_CHANGE,UFBL,BARBEQUE,UFBL,,United Foodbrands Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-10-13,SYMBOL_CHANGE,VGL,AARVEEDEN,VGL,,VARVEE GLOBAL LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-10-16,SYMBOL_CHANGE,TSFINV,SUNDARMHLD,TSFINV,,TSF INVESTMENTS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-10-17,SYMBOL_CHANGE,AURIGROW,GODHA,AURIGROW,,Auri Grow India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-10-24,SYMBOL_CHANGE,TMPV,TATAMOTORS,TMPV,,Tata Motors Passenger Vehicles Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-11-10,SYMBOL_CHANGE,IBULLSLTD,YAARI,IBULLSLTD,,Indiabulls Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-11-10,SYMBOL_CHANGE,SMLMAH,SMLISUZU,SMLMAH,,SML Mahindra Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-11-18,SYMBOL_CHANGE,ALCODIS,AURDIS,ALCODIS,,Alcokraft Distilleries Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-11-26,SYMBOL_CHANGE,HALEOSLABS,SMSLIFE,HALEOSLABS,,HALEOS LABS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-10,SYMBOL_CHANGE,CNL,CREATIVE,CNL,,Creative Newtech Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-15,SYMBOL_CHANGE,BANKADD,BANKETFADD,BANKADD,,DSP  Mutual Fund - DSP Nifty Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-15,SYMBOL_CHANGE,GOLDADD,GOLDETFADD,GOLDADD,,DSP Mutual Fund - DSP Gold ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-15,SYMBOL_CHANGE,ITADD,ITETFADD,ITADD,,DSP Mutual Fund - DSP Nifty IT ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-15,SYMBOL_CHANGE,NIFTYADD,NIFTY50ADD,NIFTYADD,,DSP  Mutual Fund - DSP Nifty 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-17,SYMBOL_CHANGE,ADDICTIVE,LAWSIKHO,ADDICTIVE,,Addictive Learning Technology Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-22,SYMBOL_CHANGE,NEUEON,NTL,NEUEON,,Neueon Corporation Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,BANKBETA,UTIBANKETF,BANKBETA,,UTI Nifty Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,BOSCH-HCIL,JCHAC,BOSCH-HCIL,,BOSCH HOME COMFORT INDIA LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,GILT10BETA,NIF10GETF,GILT10BETA,,UTI Mutual Fund - UTI Nifty 10 yr Benchmark G-Sec ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,GILT5BETA,NIF5GETF,GILT5BETA,,UTI Mutual Fund - UTI Nifty 5 yr Benchmark G-Sec ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,GOLDBETA,GOLDSHARE,GOLDBETA,,UTI Mutual Fund - UTI Gold Exchange Traded Fund,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,ITBETA,NIFITETF,ITBETA,,UTI Mutual Fund - UTI Nifty IT ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,MIDCAPBETA,NIFMID150,MIDCAPBETA,,UTI Mutual Fund - UTI Nifty Midcap 150 Exchange Traded Fund (ETF),Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,NEXT50BETA,UTINEXT50,NEXT50BETA,,UTI Mutual Fund - UTI NIfty Next 50 Exchange Traded Fund - UTI NIFTY N,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,NIFTYBETA,UTINIFTETF,NIFTYBETA,,UTI Nifty 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,SENSEXBETA,UTISENSETF,SENSEXBETA,,UTI BSE Sensex ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,SILVERBETA,SILVERETF,SILVERBETA,,UTI Mutual Fund - UTI Silver Exchange Traded Fund (UTI Silver ETF),Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-24,SYMBOL_CHANGE,SNXT50BETA,UTISXN50,SNXT50BETA,,UTI BSE Sensex Next 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-26,SYMBOL_CHANGE,955SFIL26,955ICCL26,955SFIL26,,Indiabulls Commercial Credit Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-26,SYMBOL_CHANGE,955SFIL26,955SFIL26,955SFIL26,,Indiabulls Commercial Credit Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-26,SYMBOL_CHANGE,980SFIL29,980ICCL29,980SFIL29,,Indiabulls Commercial Credit Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2025-12-26,SYMBOL_CHANGE,980SFIL29,980SFIL29,980SFIL29,,Indiabulls Commercial Credit Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-01-01,SYMBOL_CHANGE,CLCIND,SPENTEX,CLCIND,,CLC Industries Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-01-02,SYMBOL_CHANGE,DIRL,DRL,DIRL,,Dhanuka Infra Realty Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-01-19,SYMBOL_CHANGE,SETL,SGLTL,SETL,,Standard Engineering Technology Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-01-20,SYMBOL_CHANGE,SUDARCOLOR,HEUBACHIND,SUDARCOLOR,,Sudarshan Colorants India Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-01-23,SYMBOL_CHANGE,PARAMPARA,AMJUMBO,PARAMPARA,,PARAMPARA DAIRY DELIGHTS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-01-23,SYMBOL_CHANGE,VIYASH,SEQUENT,VIYASH,,Viyash Scientific Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-02-03,SYMBOL_CHANGE,CCAVENUE,INFIBEAM,CCAVENUE,,AvenuesAI Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-02-09,SYMBOL_CHANGE,ARIS,ARISINFRA,ARIS,,Arisinfra Solutions Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-02-09,SYMBOL_CHANGE,SIGMAADV,MEGASOFT,SIGMAADV,,SIGMA ADVANCED SYSTEMS LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-02-11,SYMBOL_CHANGE,AQYLON,SABTNL,AQYLON,,Aqylon Nexus Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-02-27,SYMBOL_CHANGE,LTM,LTIM,LTM,,LTM Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-03-09,SYMBOL_CHANGE,805NMC29,0503260317,805NMC29,,Nashik Municipal Corporation,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-03-09,SYMBOL_CHANGE,805NMC29,805NMC29,805NMC29,,Nashik Municipal Corporation,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-04-02,SYMBOL_CHANGE,LANDSMILL,EXCEL,LANDSMILL,,Landsmill Green Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-04-15,SYMBOL_CHANGE,JSWDULUX,AKZOINDIA,JSWDULUX,,JSW Dulux Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-04-24,SYMBOL_CHANGE,AVATAR,ASLIND,AVATAR,,AVATAR Industries Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-04-30,SYMBOL_CHANGE,HEALTHX,SASTASUNDR,HEALTHX,,Health X Platform Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-05-20,SYMBOL_CHANGE,VISACHROME,VISASTEEL,VISACHROME,,VISA Chrome Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-05-28,SYMBOL_CHANGE,AAFS27C,AAFS27B,AAFS27C,,Alpha Alternatives Financial Services Private Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-06-01,SYMBOL_CHANGE,DHANSA,AMBEY,DHANSA,,Dhansa Labs Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-06-08,SYMBOL_CHANGE,725NBFI40,725NBFI40,725NBFI40,,National Bank For Financing Infrastructure And Development,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-06-08,SYMBOL_CHANGE,725NBFI40,725NBFID40,725NBFI40,,National Bank For Financing Infrastructure And Development,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-06-08,SYMBOL_CHANGE,761ABCL35A,76100ABCL3,761ABCL35A,,Aditya Birla Capital Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-06-08,SYMBOL_CHANGE,761ABCL35A,761ABCL35A,761ABCL35A,,Aditya Birla Capital Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-06-11,SYMBOL_CHANGE,VEDPOWER,VPL,VEDPOWER,,Vedanta Power Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-06-19,SYMBOL_CHANGE,ONIDA,MIRCELECTR,ONIDA,,Onida Electronics Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-01,SYMBOL_CHANGE,GUJENERGY,GUJGASLTD,GUJENERGY,,GUJARAT ENERGY LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,975PCPL27A,975PCPL27A,975PCPL27A,,Profectus Capital Private Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,975PCPL27A,PCPL27,975PCPL27A,,Profectus Capital Private Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,BNKETFAXIS,AXISBNKETF,BNKETFAXIS,,AXIS MUTUAL FUND - Axis NIFTY Bank ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,CONSUMAXIS,AXISCETF,CONSUMAXIS,,AXIS MUTUAL FUND - Axis NIFTY India Consumption ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,GOLDAXIS,AXISGOLD,GOLDAXIS,,Axis Mutual Fund - Axis Gold ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,HEALTHAXIS,AXISHCETF,HEALTHAXIS,,AXIS MUTUAL FUND - Axis NIFTY Healthcare ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,ITAXIS,AXISTECETF,ITAXIS,,AXIS MUTUAL FUND - AXIS NIFTY IT ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,NIFTYAXIS,AXISNIFTY,NIFTYAXIS,,AXIS MUTUAL FUND - Axis NIFTY 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,SENSEXAXIS,AXSENSEX,SENSEXAXIS,,Axis BSE SENSEX ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,SILVERAXIS,AXISILVER,SILVERAXIS,,Axis Mutual Fund - Axis Silver ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-03,SYMBOL_CHANGE,VALUEAXIS,AXISVALUE,VALUEAXIS,,Axis Mutual Fund - Axis Nifty500 Value 50 ETF,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-14,SYMBOL_CHANGE,AURUS,LYPSAGEMS,AURUS,,AURUS GEM CORPORATION LIMITED,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-20,SYMBOL_CHANGE,AEROPLANE,AMIRCHAND,AEROPLANE,,Amir Chand Jagdish Kumar (Exports) Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-07-27,SYMBOL_CHANGE,ASHIKAG,ASHIKA,ASHIKAG,,Ashika Global Securities Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv
+2026-08-06,SYMBOL_CHANGE,VISDEM,KEL,VISDEM,,Visdem Technosys Limited,Official NSE Symbol Rename,NSE India,https://archives.nseindia.com/content/equities/symbolchange.csv

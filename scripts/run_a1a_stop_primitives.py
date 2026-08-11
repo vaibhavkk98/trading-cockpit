@@ -1,0 +1,17 @@
+import os,pickle,pandas as pd,numpy as np
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..')); P=os.path.join(ROOT,'data/research/p1_qualified_signals.csv'); C=os.path.join(ROOT,'data/ml/step_6/cached_ohlcv_indicators.pkl'); R=os.path.join(ROOT,'data/research')
+def run():
+ d=pd.read_csv(P); c=pickle.load(open(C,'rb')); out=[]
+ for i,r in d.iterrows():
+  clean=str(r.symbol).replace('.NS',''); x=c.get(clean); row={'signal_id':f"SIG_{clean}_{r.signal_date}_{r.strategy_name[:8]}",'security_id':'LOCAL_'+clean,'symbol':clean,'strategy':r.strategy_name,'signal_date':r.signal_date,'entry_price_or_existing_entry_reference':r.entry_price,'atr20':'NOT_AVAILABLE','atr20_available':False,'primitive_class':'NOT_AVAILABLE','primitive_name':'NOT_AVAILABLE','primitive_value':'NOT_AVAILABLE','primitive_date':'NOT_AVAILABLE','known_by_date':r.signal_date,'causal':True,'derivation':'NOT_AVAILABLE','same_bar_ambiguity':True}
+  signal_date=str(r.signal_date)[:10]
+  if x is not None and signal_date in x.index:
+   z=x.loc[:signal_date]; bar=z.iloc[-1]; tr=pd.concat([(z.High-z.Low),(z.High-z.Close.shift()).abs(),(z.Low-z.Close.shift()).abs()],axis=1).max(axis=1).rolling(20).mean().iloc[-1]; row['atr20']=tr if pd.notna(tr) else 'NOT_AVAILABLE'; row['atr20_available']=pd.notna(tr)
+   if r.strategy_name=='True NR7 Volatility Expansion Breakout': row.update(primitive_name='nr7_setup_low',primitive_value=bar.Low,primitive_date=r.signal_date,primitive_class='DIRECT_STRATEGY_STRUCTURE',derivation='signal-date NR7 bar Low')
+   elif r.strategy_name in ['Donchian Channel Breakout','RS Momentum Breakout']: row.update(primitive_name='prior_20_session_low',primitive_value=z.Low.iloc[-21:-1].min() if len(z)>=21 else 'NOT_AVAILABLE',primitive_date=str(z.index[-2]) if len(z)>=2 else 'NOT_AVAILABLE',primitive_class='DERIVED_FROM_EXISTING_CAUSAL_WINDOW',derivation='prior 20 completed sessions low')
+   elif r.strategy_name=='EMA Pullback / Bounce': row.update(primitive_name='prior_5_session_low',primitive_value=z.Low.iloc[-6:-1].min() if len(z)>=6 else 'NOT_AVAILABLE',primitive_date=str(z.index[-2]) if len(z)>=2 else 'NOT_AVAILABLE',primitive_class='DERIVED_FROM_EXISTING_CAUSAL_WINDOW',derivation='causal 5-session pullback proxy')
+   elif r.strategy_name=='True Connors RSI Mean Reversion': row.update(primitive_name='setup_bar_low',primitive_value=bar.Low,primitive_date=r.signal_date,primitive_class='DIRECT_STRATEGY_STRUCTURE',derivation='oversold signal bar Low')
+   elif r.strategy_name=='VCP Volatility Contraction Breakout': row.update(primitive_name='recent_20_session_low',primitive_value=z.Low.iloc[-21:-1].min() if len(z)>=21 else 'NOT_AVAILABLE',primitive_date=str(z.index[-2]) if len(z)>=2 else 'NOT_AVAILABLE',primitive_class='DERIVED_FROM_EXISTING_CAUSAL_WINDOW',derivation='existing causal range only; final contraction metadata unavailable')
+  out.append(row)
+ o=pd.DataFrame(out); o.to_csv(os.path.join(R,'a1a_causal_stop_primitives.csv'),index=False); s=o.groupby('strategy').agg(signal_count=('signal_id','size'),primitive_available=('primitive_value',lambda x:sum(pd.to_numeric(x,errors='coerce').gt(0))),atr20_available=('atr20_available','sum')).reset_index(); s['classification']=np.where(s.primitive_available==s.signal_count,'STRUCTURE_READY',np.where(s.primitive_available>0,'STRUCTURE_PARTIAL','STRUCTURE_UNAVAILABLE')); open(os.path.join(R,'a1a_causal_stop_primitives_report.md'),'w').write('# A1A Causal Stop Primitives\n\n'+s.to_markdown(index=False)+'\n'); print(s)
+if __name__=='__main__':run()

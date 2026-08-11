@@ -1,0 +1,4 @@
+anchor_date,priority,source_domain,source_url,local_file,sha256,constituent_count,acceptance_status,rejection_reason
+2024-03-31,Priority 1,nseindia.com / niftyindices.com,NOT_ACCESSIBLE_PUBLIC_HTTP,NOT_FOUND_LOCALLY,N/A,N/A,REJECTED_AS_HISTORICAL_ANCHOR,No official complete constituent list CSV/XLS file present in local repository or accessible via public HTTP endpoint without official portal login
+2020-03-31,Priority 2,nseindia.com / niftyindices.com,NOT_ACCESSIBLE_PUBLIC_HTTP,NOT_FOUND_LOCALLY,N/A,N/A,REJECTED_AS_HISTORICAL_ANCHOR,No official complete constituent list CSV/XLS file present in local repository or accessible via public HTTP endpoint without official portal login
+2018-03-31,Priority 3,nseindia.com / niftyindices.com,NOT_ACCESSIBLE_PUBLIC_HTTP,NOT_FOUND_LOCALLY,N/A,N/A,REJECTED_AS_HISTORICAL_ANCHOR,No official complete constituent list CSV/XLS file present in local repository or accessible via public HTTP endpoint without official portal login

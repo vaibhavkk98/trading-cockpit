@@ -1,0 +1,9 @@
+yfinance>=0.2.54,<1
+pandas>=2.0,<3
+pandas-ta
+beautifulsoup4>=4.12,<5
+requests>=2.31,<3
+streamlit>=1.40,<2
+pydantic>=2,<3
+SQLAlchemy>=2.0,<3
+psycopg2-binary>=2.9,<3

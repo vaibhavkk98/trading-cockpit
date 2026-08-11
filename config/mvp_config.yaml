@@ -1,0 +1,87 @@
+# Trading System MVP Configuration — v1.0
+# Frozen Research Champion: 7 Trend / 3 Volatility Strategy-Aware Allocation
+# ML: OFF | Sentiment: DISABLED | Regime Filter: ON
+
+universe:
+  anchor_date: "2026-08-10"
+  max_symbols: 500
+  source: "universe_engine"
+  strict_mode: true
+  evidence_threshold: "verified"
+
+backtest:
+  initial_capital: 1000000
+  currency: "INR"
+  position_size: 100000
+  holding_period_days: 10
+  data_source: "data/ml/step_6/expanded_strategy_dataset.csv"
+  ohlcv_cache: "data/ml/step_6/cached_ohlcv_indicators.pkl"
+  splits:
+    validation_start: "2025-10-15"
+    test_start: "2026-02-18"
+
+strategies:
+  enabled:
+    - Donchian Channel Breakout
+    - EMA Pullback / Bounce
+    - RS Momentum Breakout
+    - VCP Volatility Contraction Breakout
+    - True Connors RSI Mean Reversion
+    - True NR7 Volatility Expansion Breakout
+  classification:
+    trend:
+      - Donchian Channel Breakout
+      - EMA Pullback / Bounce
+      - RS Momentum Breakout
+      - VCP Volatility Contraction Breakout
+    volatility:
+      - True NR7 Volatility Expansion Breakout
+      - True Connors RSI Mean Reversion
+
+portfolio:
+  max_positions: 10
+  max_trend_positions: 7
+  max_volatility_positions: 3
+  position_sizing:
+    method: "equal_weight"
+    per_position_capital: 100000
+
+execution:
+  entry: "next_day_open"
+  exit:
+    holding_period_days: 10
+    method: "close_at_period_end"
+  nr7_execution:
+    model: "stop_buy_at_high_t"
+    gap_fill: true
+    intraday_fill: true
+  cost_multiplier: 1.0
+
+costs:
+  brokerage_fee_cap: 20.0
+  brokerage_pct: 0.0015
+  stt_pct: 0.0010
+  slippage_pct: 0.0005
+
+regime:
+  enabled: true
+  method: "nifty_ema50"
+  filter_field: "nifty_dist_ema50"
+  bullish_threshold: 0.0
+
+ml:
+  enabled: false
+  status: "OFF — frozen for MVP"
+
+sentiment:
+  enabled: false
+  status: "DISABLED — insufficient historical data (Step 7.6)"
+
+output:
+  base_dir: "data/mvp"
+  trade_ledger: "trade_ledger.csv"
+  equity_curve: "equity_curve.csv"
+  daily_returns: "daily_returns.csv"
+  performance_report: "performance_report.json"
+  signals_log: "signals_log.csv"
+  readiness_report: "mvp_readiness_report.md"

@@ -1,0 +1,774 @@
+security_id,isin,historical_symbol,canonical_symbol,company_name,valid_from,valid_to,mapping_type,mapping_confidence,source
+SEC_0001,INE466L01038,360ONE,360ONE,360 ONE WAM Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0002,INE470A01017,3MINDIA,3MINDIA,3M India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0003,INE883F01010,AADHARHFC,AADHARHFC,Aadhar Housing Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0004,INSUFFICIENT_ISIN_COVERAGE,AARTIDRUGS,AARTIDRUGS,Aarti Drugs Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0005,INE769A01020,AARTIIND,AARTIIND,Aarti Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0006,INE216P01012,AAVAS,AAVAS,Aavas Financiers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0007,INE117A01022,ABB,ABB,ABB India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0008,INE358A01014,ABBOTINDIA,ABBOTINDIA,Abbott India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0009,INE674K01013,ABCAPITAL,ABCAPITAL,Aditya Birla Capital Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0010,INE552Z01027,ABDL,ABDL,Allied Blenders and Distillers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0011,INE647O01011,ABFRL,ABFRL,Aditya Birla Fashion and Retail Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0012,INSUFFICIENT_ISIN_COVERAGE,ABIRLANUVO,ABIRLANUVO,Aditya Birla Nuvo Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0013,INE14LE01019,ABLBL,ABLBL,Aditya Birla Lifestyle Brands Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0014,INE055A01016,ABREL,ABREL,Aditya Birla Real Estate Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0015,INE404A01024,ABSLAMC,ABSLAMC,Aditya Birla Sun Life AMC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0016,INE012A01025,ACC,ACC,ACC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0017,INE731H01025,ACE,ACE,Action Construction Equipment Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0018,INSUFFICIENT_ISIN_COVERAGE,ACI,ACI,Archean Chemical Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0019,INE622W01025,ACMESOLAR,ACMESOLAR,ACME Solar Holdings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0020,INE00FF01025,ACUTAAS,ACUTAAS,Acutaas Chemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0021,INE931S01010,ADANIENSOL,ADANIENSOL,Adani Energy Solutions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0022,INE423A01024,ADANIENT,ADANIENT,Adani Enterprises Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0023,INSUFFICIENT_ISIN_COVERAGE,ADANIGAS,ADANIGAS,Adani Gas Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0024,INE364U01010,ADANIGREEN,ADANIGREEN,Adani Green Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0025,INE742F01042,ADANIPORTS,ADANIPORTS,Adani Ports and Special Economic Zone Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0026,INE814H01029,ADANIPOWER,ADANIPOWER,Adani Power Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0027,INSUFFICIENT_ISIN_COVERAGE,ADVENZYMES,ADVENZYMES,Advanced Enzyme Tech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0028,INSUFFICIENT_ISIN_COVERAGE,AEGISCHEM,AEGISCHEM,Aegis Logistics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0029,INE208C01025,AEGISLOG,AEGISLOG,Aegis Logistics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0030,INE0INX01018,AEGISVOPAK,AEGISVOPAK,Aegis Vopak Terminals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0031,INSUFFICIENT_ISIN_COVERAGE,AETHER,AETHER,Aether Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0032,INE101I01011,AFCONS,AFCONS,Afcons Infrastructure Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0033,INE00WC01027,AFFLE,AFFLE,Affle 3i Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0034,INSUFFICIENT_ISIN_COVERAGE,AGARWALEYE,AGARWALEYE,Dr. Agarwal's Health Care Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0035,INE212H01026,AIAENG,AIAENG,AIA Engineering Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0036,INE206F01022,AIIL,AIIL,Authum Investment & Infrastructure Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0037,INE031B01049,AJANTPHARM,AJANTPHARM,Ajanta Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0038,INSUFFICIENT_ISIN_COVERAGE,AKUMS,AKUMS,Akums Drugs and Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0039,INSUFFICIENT_ISIN_COVERAGE,AKZOINDIA,AKZOINDIA,Akzo Nobel India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0040,INSUFFICIENT_ISIN_COVERAGE,ALEMBICLTD,ALEMBICLTD,Alembic Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0041,INSUFFICIENT_ISIN_COVERAGE,ALIVUS,ALIVUS,Alivus Life Sciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0042,INE540L01014,ALKEM,ALKEM,Alkem Laboratories Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0043,INSUFFICIENT_ISIN_COVERAGE,ALKYLAMINE,ALKYLAMINE,Alkyl Amines Chemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0044,INSUFFICIENT_ISIN_COVERAGE,ALLCARGO,ALLCARGO,Allcargo Logistics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0045,INSUFFICIENT_ISIN_COVERAGE,ALOKINDS,ALOKINDS,Alok Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0046,INE371P01015,AMBER,AMBER,Amber Enterprises India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0047,INE079A01024,AMBUJACEM,AMBUJACEM,Ambuja Cements Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0048,INE463V01026,ANANDRATHI,ANANDRATHI,Anand Rathi Wealth Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0049,INE242C01024,ANANTRAJ,ANANTRAJ,Anant Raj Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0050,INSUFFICIENT_ISIN_COVERAGE,ANGELBRKG,ANGELBRKG,Angel Broking Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0051,INE732I01021,ANGELONE,ANGELONE,Angel One Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0052,INE0CZ201020,ANTHEM,ANTHEM,Anthem Biosciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0053,INE930P01018,ANURAS,ANURAS,Anupam Rasayan India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0054,INE372A01015,APARINDS,APARINDS,Apar Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0055,INE702C01027,APLAPOLLO,APLAPOLLO,APL Apollo Tubes Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0056,INSUFFICIENT_ISIN_COVERAGE,APLLTD,APLLTD,Alembic Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0057,INE437A01024,APOLLOHOSP,APOLLOHOSP,Apollo Hospitals Enterprise Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0058,INE438A01022,APOLLOTYRE,APOLLOTYRE,Apollo Tyres Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0059,INE852O01025,APTUS,APTUS,Aptus Value Housing Finance India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0060,INE885A01032,ARE&M,ARE&M,Amara Raja Energy & Mobility Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0061,INE439A01020,ASAHIINDIA,ASAHIINDIA,Asahi India Glass Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0062,INSUFFICIENT_ISIN_COVERAGE,ASHOKA,ASHOKA,Ashoka Buildcon Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0063,INE208A01029,ASHOKLEY,ASHOKLEY,Ashok Leyland Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0064,INE021A01026,ASIANPAINT,ASIANPAINT,Asian Paints Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0065,INE914M01019,ASTERDM,ASTERDM,Aster DM Quality Care Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0066,INE006I01046,ASTRAL,ASTRAL,Astral Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0067,INE399L01023,ATGL,ATGL,Adani Total Gas Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0068,INE0LEZ01016,ATHERENERG,ATHERENERG,Ather Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0069,INE100A01010,ATUL,ATUL,Atul Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0070,INE949L01017,AUBANK,AUBANK,AU Small Finance Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0071,INE406A01037,AUROPHARMA,AUROPHARMA,Aurobindo Pharma Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0072,INSUFFICIENT_ISIN_COVERAGE,AVANTIFEED,AVANTIFEED,Avanti Feeds Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0073,INE699H01024,AWL,AWL,AWL Agri Business Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0074,INE238A01034,AXISBANK,AXISBANK,Axis Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0075,INE917I01010,BAJAJ-AUTO,BAJAJ-AUTO,Bajaj Auto Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0076,INSUFFICIENT_ISIN_COVERAGE,BAJAJCON,BAJAJCON,Bajaj Consumer Care Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0077,INSUFFICIENT_ISIN_COVERAGE,BAJAJELEC,BAJAJELEC,Bajaj Electricals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0078,INE918I01026,BAJAJFINSV,BAJAJFINSV,Bajaj Finserv Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0079,INE377Y01014,BAJAJHFL,BAJAJHFL,Bajaj Housing Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0080,INE118A01012,BAJAJHLDNG,BAJAJHLDNG,Bajaj Holdings & Investment Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0081,INE296A01032,BAJFINANCE,BAJFINANCE,Bajaj Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0082,INSUFFICIENT_ISIN_COVERAGE,BALAMINES,BALAMINES,Balaji Amines Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0083,INE787D01026,BALKRISIND,BALKRISIND,Balkrishna Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0084,INE119A01028,BALRAMCHIN,BALRAMCHIN,Balrampur Chini Mills Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0085,INE545U01014,BANDHANBNK,BANDHANBNK,Bandhan Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0086,INE028A01039,BANKBARODA,BANKBARODA,Bank of Baroda,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0087,INE084A01016,BANKINDIA,BANKINDIA,Bank of India,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0088,INSUFFICIENT_ISIN_COVERAGE,BASF,BASF,BASF India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0089,INE176A01028,BATAINDIA,BATAINDIA,Bata India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0090,INE462A01022,BAYERCROP,BAYERCROP,Bayer Cropscience Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0091,INE050A01025,BBTC,BBTC,Bombay Burmah Trading Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0092,INSUFFICIENT_ISIN_COVERAGE,BCG,BCG,Brightcom Group Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0093,INE171Z01026,BDL,BDL,Bharat Dynamics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0094,INE263A01024,BEL,BEL,Bharat Electronics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0095,INE894V01022,BELRISE,BELRISE,Belrise Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0096,INE258A01024,BEML,BEML,BEML Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0097,INE463A01038,BERGEPAINT,BERGEPAINT,Berger Paints India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0098,INE465A01025,BHARATFORG,BHARATFORG,Bharat Forge Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0099,INSUFFICIENT_ISIN_COVERAGE,BHARATRAS,BHARATRAS,Bharat Rasayan Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0100,INE397D01024,BHARTIARTL,BHARTIARTL,Bharti Airtel Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0101,INE343G01021,BHARTIHEXA,BHARTIHEXA,Bharti Hexacom Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0102,INE257A01026,BHEL,BHEL,Bharat Heavy Electricals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0103,INE00E101023,BIKAJI,BIKAJI,Bikaji Foods International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0104,INE376G01013,BIOCON,BIOCON,Biocon Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0105,INSUFFICIENT_ISIN_COVERAGE,BIRLACORPN,BIRLACORPN,Birla Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0106,INE153T01027,BLS,BLS,BLS International Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0107,INE233B01017,BLUEDART,BLUEDART,Blue Dart Express Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0108,INE0KBH01020,BLUEJET,BLUEJET,Blue Jet Healthcare Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0109,INE472A01039,BLUESTARCO,BLUESTARCO,Blue Star Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0110,INSUFFICIENT_ISIN_COVERAGE,BOMDYEING,BOMDYEING,Bombay Dyeing & Manufacturing Co. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0111,INSUFFICIENT_ISIN_COVERAGE,BORORENEW,BORORENEW,Borosil Renewables Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0112,INE323A01026,BOSCHLTD,BOSCHLTD,Bosch Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0113,INE029A01011,BPCL,BPCL,Bharat Petroleum Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0114,INE791I01019,BRIGADE,BRIGADE,Brigade Enterprises Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0115,INE216A01030,BRITANNIA,BRITANNIA,Britannia Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0116,INE118H01025,BSE,BSE,BSE Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0117,INSUFFICIENT_ISIN_COVERAGE,BSE LTD.*,BSE LTD.*,Nifty Smallcap 250,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0118,INE836A01035,BSOFT,BSOFT,Birlasoft Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0119,INSUFFICIENT_ISIN_COVERAGE,BURGERKING,BURGERKING,Burger King India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0120,INE010B01027,CADILAHC,ZYDUSLIFE,Zydus Lifesciences Ltd.,2018-01-01,9999-12-31,TICKER_SYMBOL_CHANGE,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0121,INSUFFICIENT_ISIN_COVERAGE,CAMPUS,CAMPUS,Campus Activewear Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0122,INE596I01020,CAMS,CAMS,Computer Age Management Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0123,INE476A01022,CANBK,CANBK,Canara Bank,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0124,INE477A01020,CANFINHOME,CANFINHOME,Can Fin Homes Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0125,INE01TY01017,CANHLIFE,CANHLIFE,Canara HSBC Life Insurance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0126,INE475E01026,CAPLIPOINT,CAPLIPOINT,Caplin Point Laboratories Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0127,INE120A01034,CARBORUNIV,CARBORUNIV,Carborundum Universal Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0128,INSUFFICIENT_ISIN_COVERAGE,CARERATING,CARERATING,CARE Ratings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0129,INE290S01011,CARTRADE,CARTRADE,Cartrade Tech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0130,INE172A01027,CASTROLIND,CASTROLIND,Castrol India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0131,INE421D01022,CCL,CCL,CCL Products (I) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0132,INE736A01011,CDSL,CDSL,Central Depository Services (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0133,INE482A01020,CEATLTD,CEATLTD,Ceat Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0134,INSUFFICIENT_ISIN_COVERAGE,CELLO,CELLO,Cello World Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0135,INE686A01026,CEMPRO,CEMPRO,Cemindia Projects Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0136,INE483A01010,CENTRALBK,CENTRALBK,Central Bank of India,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0137,INSUFFICIENT_ISIN_COVERAGE,CENTURYPLY,CENTURYPLY,Century Plyboards (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0138,INSUFFICIENT_ISIN_COVERAGE,CERA,CERA,Cera Sanitaryware Ltd,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0139,INE486A01021,CESC,CESC,CESC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0140,INE180C01042,CGCL,CGCL,Capri Global Capital Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0141,INE067A01029,CGPOWER,CGPOWER,CG Power and Industrial Solutions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0142,INE427F01016,CHALET,CHALET,Chalet Hotels Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0143,INE085A01013,CHAMBLFERT,CHAMBLFERT,Chambal Fertilizers & Chemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0144,INSUFFICIENT_ISIN_COVERAGE,CHEMPLASTS,CHEMPLASTS,Chemplast Sanmar Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0145,INE178A01016,CHENNPETRO,CHENNPETRO,Chennai Petroleum Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0146,INE102B01014,CHOICEIN,CHOICEIN,Choice International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0147,INE121A01024,CHOLAFIN,CHOLAFIN,Cholamandalam Investment and Finance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0148,INE149A01033,CHOLAHLDNG,CHOLAHLDNG,Cholamandalam Financial Holdings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0149,INE536H01010,CIEINDIA,CIEINDIA,CIE Automotive India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0150,INE059A01026,CIPLA,CIPLA,Cipla Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0151,INE227W01023,CLEAN,CLEAN,Clean Science and Technology Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0152,INE522F01014,COALINDIA,COALINDIA,Coal India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0153,INE704P01025,COCHINSHIP,COCHINSHIP,Cochin Shipyard Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0154,INSUFFICIENT_ISIN_COVERAGE,COFFEEDAY,COFFEEDAY,Coffee Day Enterprises Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0155,INE591G01025,COFORGE,COFORGE,Coforge Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0156,INE03QK01018,COHANCE,COHANCE,Cohance Lifesciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0157,INE259A01022,COLPAL,COLPAL,Colgate Palmolive (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0158,INE111A01025,CONCOR,CONCOR,Container Corporation of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0159,INE338H01029,CONCORDBIO,CONCORDBIO,Concord Biotech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0160,INE169A01031,COROMANDEL,COROMANDEL,Coromandel International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0161,INSUFFICIENT_ISIN_COVERAGE,COX&KINGS,COX&KINGS,Cox & Kings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0162,INE819V01029,CPPLUS,CPPLUS,Aditya Infotech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0163,INE00LO01017,CRAFTSMAN,CRAFTSMAN,Craftsman Automation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0164,INE741K01010,CREDITACC,CREDITACC,CreditAccess Grameen Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0165,INE007A01025,CRISIL,CRISIL,CRISIL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0166,INE299U01018,CROMPTON,CROMPTON,Crompton Greaves Consumer Electricals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0167,INSUFFICIENT_ISIN_COVERAGE,CSBBANK,CSBBANK,CSB Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0168,INE491A01021,CUB,CUB,City Union Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0169,INE298A01020,CUMMINSIND,CUMMINSIND,Cummins India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0170,INE136B01020,CYIENT,CYIENT,Cyient Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0171,INE016A01026,DABUR,DABUR,Dabur India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0172,INE00R701025,DALBHARAT,DALBHARAT,Dalmia Bharat Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0173,INE0IX101010,DATAPATTNS,DATAPATTNS,Data Patterns (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0174,INSUFFICIENT_ISIN_COVERAGE,DBCORP,DBCORP,D.B.Corp Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0175,INSUFFICIENT_ISIN_COVERAGE,DBL,DBL,Dilip Buildcon Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0176,INSUFFICIENT_ISIN_COVERAGE,DBREALTY,DBREALTY,Valor Estate Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0177,INSUFFICIENT_ISIN_COVERAGE,DCBBANK,DCBBANK,DCB Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0178,INE499A01024,DCMSHRIRAM,DCMSHRIRAM,DCM Shriram Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0179,INE501A01019,DEEPAKFERT,DEEPAKFERT,Deepak Fertilisers & Petrochemicals Corp. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0180,INE288B01029,DEEPAKNTR,DEEPAKNTR,Deepak Nitrite Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0181,INE148O01028,DELHIVERY,DELHIVERY,Delhivery Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0182,INSUFFICIENT_ISIN_COVERAGE,DELTACORP,DELTACORP,Delta Corp Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0183,INSUFFICIENT_ISIN_COVERAGE,DEN,DEN,Den Networks Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0184,INE872J01023,DEVYANI,DEVYANI,Devyani International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0185,INSUFFICIENT_ISIN_COVERAGE,DHANI,DHANI,Dhani Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0186,INSUFFICIENT_ISIN_COVERAGE,DHANUKA,DHANUKA,Dhanuka Agritech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0187,INE361B01024,DIVISLAB,DIVISLAB,Divi's Laboratories Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0188,INE935N01020,DIXON,DIXON,Dixon Technologies (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0189,INE271C01023,DLF,DLF,DLF Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0190,INE192R01011,DMART,DMART,Avenue Supermarts Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0191,INE321T01012,DOMS,DOMS,DOMS Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0192,INE089A01031,DRREDDY,DRREDDY,Dr. Reddy's Laboratories Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0193,INSUFFICIENT_ISIN_COVERAGE,EASEMYTRIP,EASEMYTRIP,Easy Trip Planners Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0194,INE738I01010,ECLERX,ECLERX,eClerx Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0195,INSUFFICIENT_ISIN_COVERAGE,EDELWEISS,EDELWEISS,Edelweiss Financial Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0196,INE066A01021,EICHERMOT,EICHERMOT,Eicher Motors Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0197,INE126A01031,EIDPARRY,EIDPARRY,E.I.D. Parry (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0198,INE230A01023,EIHOTEL,EIHOTEL,EIH Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0199,INE205B01031,ELECON,ELECON,Elecon Engineering Co. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0200,INE285A01027,ELGIEQUIP,ELGIEQUIP,Elgi Equipments Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0201,INE548C01032,EMAMILTD,EMAMILTD,Emami Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0202,INE168P01015,EMCURE,EMCURE,Emcure Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0203,INE1C6T01020,EMMVEE,EMMVEE,Emmvee Photovoltaic Power Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0204,INE913H01037,ENDURANCE,ENDURANCE,Endurance Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0205,INE510A01028,ENGINERSIN,ENGINERSIN,Engineers India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0206,INE1NPP01017,ENRIN,ENRIN,Siemens Energy India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0207,INSUFFICIENT_ISIN_COVERAGE,EPIGRAL,EPIGRAL,Epigral Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0208,INSUFFICIENT_ISIN_COVERAGE,EPL,EPL,EPL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0209,INSUFFICIENT_ISIN_COVERAGE,EQUITAS,EQUITAS,Equitas Holdings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0210,INSUFFICIENT_ISIN_COVERAGE,EQUITASBNK,EQUITASBNK,Equitas Small Finance Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0211,INE406M01024,ERIS,ERIS,Eris Lifesciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0212,INSUFFICIENT_ISIN_COVERAGE,ESABINDIA,ESABINDIA,ESAB India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0213,INE042A01014,ESCORTS,ESCORTS,Escorts Kubota Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0214,INE758T01015,ETERNAL,ETERNAL,Eternal Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0215,INE302A01020,EXIDEIND,EXIDEIND,Exide Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0216,INE188A01015,FACT,FACT,Fertilisers and Chemicals Travancore Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0217,INSUFFICIENT_ISIN_COVERAGE,FDC,FDC,FDC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0218,INE171A01029,FEDERALBNK,FEDERALBNK,Federal Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0219,INE235A01022,FINCABLES,FINCABLES,Finolex Cables Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0220,INSUFFICIENT_ISIN_COVERAGE,FINEORG,FINEORG,Fine Organic Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0221,INSUFFICIENT_ISIN_COVERAGE,FINPIPE,FINPIPE,Finolex Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0222,INE02RE01045,FIRSTCRY,FIRSTCRY,Brainbees Solutions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0223,INE128S01021,FIVESTAR,FIVESTAR,Five-Star Business Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0224,INE09N301011,FLUOROCHEM,FLUOROCHEM,Gujarat Fluorochemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0225,INE451A01017,FORCEMOT,FORCEMOT,Force Motors Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0226,INE061F01013,FORTIS,FORTIS,Fortis Healthcare Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0227,INSUFFICIENT_ISIN_COVERAGE,FRETAIL,FRETAIL,Future Retail Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0228,INE684F01012,FSL,FSL,Firstsource Solutions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0229,INE524A01029,GABRIEL,GABRIEL,Gabriel India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0230,INSUFFICIENT_ISIN_COVERAGE,GAEL,GAEL,Gujarat Ambuja Exports Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0231,INE129A01019,GAIL,GAIL,GAIL (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0232,INSUFFICIENT_ISIN_COVERAGE,GALAXYSURF,GALAXYSURF,Galaxy Surfactants Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0233,INE297H01019,GALLANTT,GALLANTT,Gallantt Ispat Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0234,INSUFFICIENT_ISIN_COVERAGE,GARFIBRES,GARFIBRES,Garware Technical Fibres Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0235,INSUFFICIENT_ISIN_COVERAGE,GAYAPROJ,GAYAPROJ,Gayatri Projects Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0236,INE017A01032,GESHIP,GESHIP,Great Eastern Shipping Co. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0237,INSUFFICIENT_ISIN_COVERAGE,GET&D,GET&D,GE T&D India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0238,INSUFFICIENT_ISIN_COVERAGE,GHCL,GHCL,GHCL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0239,INE481Y01014,GICRE,GICRE,General Insurance Corporation of India,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0240,INE322A01010,GILLETTE,GILLETTE,Gillette India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0241,INE068V01023,GLAND,GLAND,Gland Pharma Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0242,INE159A01016,GLAXO,GLAXO,Glaxosmithkline Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0243,INE935A01035,GLENMARK,GLENMARK,Glenmark Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0244,INSUFFICIENT_ISIN_COVERAGE,GLS,GLS,Glenmark Life Sciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0245,INE131A01031,GMDCLTD,GMDCLTD,Gujarat Mineral Development Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0246,INSUFFICIENT_ISIN_COVERAGE,GMMPFAUDLR,GMMPFAUDLR,GMM Pfaudler Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0247,INE776C01039,GMRAIRPORT,GMRAIRPORT,GMR Airports Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0248,INSUFFICIENT_ISIN_COVERAGE,GMRINFRA,GMRINFRA,GMR Infrastructure Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0249,INSUFFICIENT_ISIN_COVERAGE,GNFC,GNFC,Gujarat Narmada Valley Fertilizers and Chemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0250,INSUFFICIENT_ISIN_COVERAGE,GOCOLORS,GOCOLORS,Go Fashion (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0251,INE260B01028,GODFRYPHLP,GODFRYPHLP,Godfrey Phillips India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0252,INE03JT01014,GODIGIT,GODIGIT,Go Digit General Insurance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0253,INSUFFICIENT_ISIN_COVERAGE,GODREJAGRO,GODREJAGRO,Godrej Agrovet Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0254,INE102D01028,GODREJCP,GODREJCP,Godrej Consumer Products Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0255,INE233A01035,GODREJIND,GODREJIND,Godrej Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0256,INE484J01027,GODREJPROP,GODREJPROP,Godrej Properties Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0257,INE177H01039,GPIL,GPIL,Godawari Power & Ispat Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0258,INSUFFICIENT_ISIN_COVERAGE,GPPL,GPPL,Gujarat Pipavav Port Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0259,INE101D01020,GRANULES,GRANULES,Granules India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0260,INE371A01025,GRAPHITE,GRAPHITE,Graphite India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0261,INE047A01021,GRASIM,GRASIM,Grasim Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0262,INE024L01027,GRAVITA,GRAVITA,Gravita India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0263,INSUFFICIENT_ISIN_COVERAGE,GREAVESCOT,GREAVESCOT,Greaves Cotton Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0264,INSUFFICIENT_ISIN_COVERAGE,GREENPANEL,GREENPANEL,Greenpanel Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0265,INSUFFICIENT_ISIN_COVERAGE,GRINDWELL,GRINDWELL,Grindwell Norton Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0266,INSUFFICIENT_ISIN_COVERAGE,GRINFRA,GRINFRA,G R Infraprojects Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0267,INE0HOQ01053,GROWW,GROWW,Billionbrains Garage Ventures Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0268,INE382Z01011,GRSE,GRSE,Garden Reach Shipbuilders & Engineers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0269,INSUFFICIENT_ISIN_COVERAGE,GSFC,GSFC,Gujarat State Fertilizers & Chemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0270,INSUFFICIENT_ISIN_COVERAGE,GSPL,GSPL,Gujarat State Petronet Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0271,INSUFFICIENT_ISIN_COVERAGE,GUJALKALI,GUJALKALI,Gujarat Alkalies & Chemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0272,INSUFFICIENT_ISIN_COVERAGE,GUJGASLTD,GUJGASLTD,Gujarat Gas Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0273,INE200A01026,GVT&D,GVT&D,GE Vernova T&D India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0274,INE066F01020,HAL,HAL,Hindustan Aeronautics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0275,INSUFFICIENT_ISIN_COVERAGE,HAPPSTMNDS,HAPPSTMNDS,Happiest Minds Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0276,INSUFFICIENT_ISIN_COVERAGE,HAPPYFORGE,HAPPYFORGE,Happy Forgings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0277,INSUFFICIENT_ISIN_COVERAGE,HATHWAY,HATHWAY,Hathway Cable & Datacom Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0278,INSUFFICIENT_ISIN_COVERAGE,HATSUN,HATSUN,Hatsun Agro Product Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0279,INE176B01034,HAVELLS,HAVELLS,Havells India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0280,INE292B01021,HBLENGINE,HBLENGINE,HBL Engineering Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0281,INSUFFICIENT_ISIN_COVERAGE,HBLPOWER,HBLPOWER,HBL Power Systems Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0282,INE860A01027,HCLTECH,HCLTECH,HCL Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0283,INE756I01012,HDBFS,HDBFS,HDB Financial Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0284,INSUFFICIENT_ISIN_COVERAGE,HDFC,HDFC,Housing Development Finance Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0285,INE127D01025,HDFCAMC,HDFCAMC,HDFC Asset Management Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0286,INE040A01034,HDFCBANK,HDFCBANK,HDFC Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0287,INE795G01014,HDFCLIFE,HDFCLIFE,HDFC Life Insurance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0288,INE545A01024,HEG,HEG,H.E.G. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0289,INSUFFICIENT_ISIN_COVERAGE,HEIDELBERG,HEIDELBERG,HeidelbergCement India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0290,INSUFFICIENT_ISIN_COVERAGE,HEMIPROP,HEMIPROP,Hemisphere Properties India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0291,INSUFFICIENT_ISIN_COVERAGE,HERITGFOOD,HERITGFOOD,Heritage Foods Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0292,INE158A01026,HEROMOTOCO,HEROMOTOCO,Hero MotoCorp Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0293,INE093A01041,HEXT,HEXT,Hexaware Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0294,INE548A01028,HFCL,HFCL,HFCL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0295,INSUFFICIENT_ISIN_COVERAGE,HGS,HGS,Hinduja Global Solutions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0296,INSUFFICIENT_ISIN_COVERAGE,HIKAL,HIKAL,Hikal Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0297,INE038A01020,HINDALCO,HINDALCO,Hindalco Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0298,INE531E01026,HINDCOPPER,HINDCOPPER,Hindustan Copper Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0299,INE094A01015,HINDPETRO,HINDPETRO,Hindustan Petroleum Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0300,INE030A01027,HINDUNILVR,HINDUNILVR,Hindustan Unilever Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0301,INE267A01025,HINDZINC,HINDZINC,Hindustan Zinc Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0302,INSUFFICIENT_ISIN_COVERAGE,HLEGLAS,HLEGLAS,HLE Glascoat Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0303,INE481N01025,HOMEFIRST,HOMEFIRST,Home First Finance Company India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0304,INE0J5401028,HONASA,HONASA,Honasa Consumer Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0305,INE671A01010,HONAUT,HONAUT,Honeywell Automation India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0306,INE019C01026,HSCL,HSCL,Himadri Speciality Chemical Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0307,INE031A01017,HUDCO,HUDCO,Housing & Urban Development Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0308,INE0V6F01027,HYUNDAI,HYUNDAI,Hyundai Motor India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0309,INSUFFICIENT_ISIN_COVERAGE,IBREALEST,IBREALEST,Indiabulls Real Estate Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0310,INSUFFICIENT_ISIN_COVERAGE,IBULHSGFIN,IBULHSGFIN,Indiabulls Housing Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0311,INE346A01027,ICICIAMC,ICICIAMC,ICICI Prudential Asset Management Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0312,INE090A01021,ICICIBANK,ICICIBANK,ICICI Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0313,INE765G01017,ICICIGI,ICICIGI,ICICI Lombard General Insurance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0314,INE726G01019,ICICIPRULI,ICICIPRULI,ICICI Prudential Life Insurance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0315,INSUFFICIENT_ISIN_COVERAGE,ICIL,ICIL,Indo Count Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0316,INSUFFICIENT_ISIN_COVERAGE,ICRA,ICRA,ICRA Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0317,INE008A01015,IDBI,IDBI,IDBI Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0318,INE669E01016,IDEA,IDEA,Vodafone Idea Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0319,INSUFFICIENT_ISIN_COVERAGE,IDFC,IDFC,IDFC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0320,INE092T01019,IDFCFIRSTB,IDFCFIRSTB,IDFC First Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0321,INE022Q01020,IEX,IEX,Indian Energy Exchange Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0322,INSUFFICIENT_ISIN_COVERAGE,IFBIND,IFBIND,IFB Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0323,INE039A01010,IFCI,IFCI,IFCI Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0324,INE0Q9301021,IGIL,IGIL,International Gemological Institute Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0325,INE203G01027,IGL,IGL,Indraprastha Gas Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0326,INE530B01024,IIFL,IIFL,IIFL Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0327,INE115Q01022,IKS,IKS,Inventurus Knowledge Solutions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0328,INE065X01017,INDGN,INDGN,Indegene Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0329,INE053A01029,INDHOTEL,INDHOTEL,Indian Hotels Co. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0330,INE383A01012,INDIACEM,INDIACEM,India Cements Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0331,INE933S01016,INDIAMART,INDIAMART,Indiamart Intermesh Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0332,INSUFFICIENT_ISIN_COVERAGE,"INDIAN RENEWABLE ENERGY DEV.
+AGENCY LTD.","INDIAN RENEWABLE ENERGY DEV.
+AGENCY LTD.",Nifty 500,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0333,INE562A01011,INDIANB,INDIANB,Indian Bank,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0334,INE646L01027,INDIGO,INDIGO,InterGlobe Aviation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0335,INSUFFICIENT_ISIN_COVERAGE,INDIGOPNTS,INDIGOPNTS,Indigo Paints Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0336,INSUFFICIENT_ISIN_COVERAGE,INDOCO,INDOCO,Indoco Remedies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0337,INE095A01012,INDUSINDBK,INDUSINDBK,IndusInd Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0338,INE121J01017,INDUSTOWER,INDUSTOWER,Indus Towers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0339,INSUFFICIENT_ISIN_COVERAGE,INFIBEAM,INFIBEAM,Infibeam Avenues Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0340,INE009A01021,INFY,INFY,Infosys Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0341,INSUFFICIENT_ISIN_COVERAGE,INGERRAND,INGERRAND,Ingersoll Rand (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0342,INSUFFICIENT_ISIN_COVERAGE,INOXINDIA,INOXINDIA,INOX India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0343,INSUFFICIENT_ISIN_COVERAGE,INOXLEISUR,INOXLEISUR,INOX Leisure Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0344,INE066P01011,INOXWIND,INOXWIND,Inox Wind Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0345,INE306R01017,INTELLECT,INTELLECT,Intellect Design Arena Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0346,INE565A01014,IOB,IOB,Indian Overseas Bank,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0347,INE242A01010,IOC,IOC,Indian Oil Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0348,INSUFFICIENT_ISIN_COVERAGE,IOLCP,IOLCP,IOL Chem and Pharma Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0349,INE571A01038,IPCALAB,IPCALAB,Ipca Laboratories Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0350,INE821I01022,IRB,IRB,IRB Infrastructure Developers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0351,INE962Y01021,IRCON,IRCON,IRCON International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0352,INE335Y01020,IRCTC,IRCTC,Indian Railway Catering And Tourism Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0353,INE202E01016,IREDA,IREDA,Indian Renewable Energy Development Agency Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0354,INE053F01010,IRFC,IRFC,Indian Railway Finance Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0355,INSUFFICIENT_ISIN_COVERAGE,ISEC,ISEC,ICICI Securities Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0356,INE154A01025,ITC,ITC,ITC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0357,INE379A01028,ITCHOTELS,ITCHOTELS,ITC Hotels Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0358,INE248A01017,ITI,ITI,ITI Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0359,INE168A01041,J&KBANK,J&KBANK,Jammu & Kashmir Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0360,INSUFFICIENT_ISIN_COVERAGE,JAGRAN,JAGRAN,Jagran Prakashan Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0361,INSUFFICIENT_ISIN_COVERAGE,JAIBALAJI,JAIBALAJI,Jai Balaji Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0362,INSUFFICIENT_ISIN_COVERAGE,JAICORPLTD,JAICORPLTD,Jai Corp Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0363,INE0YD401026,JAINREC,JAINREC,Jain Resource Recycling Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0364,INSUFFICIENT_ISIN_COVERAGE,JAMNAAUTO,JAMNAAUTO,Jamna Auto Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0365,INSUFFICIENT_ISIN_COVERAGE,JBCHEPHARM,JBCHEPHARM,J.B. Chemicals & Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0366,INE927D01051,JBMA,JBMA,JBM Auto Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0367,INSUFFICIENT_ISIN_COVERAGE,JCHAC,JCHAC,"Johnson Controls - Hitachi Air Conditioning India
+Ltd.",2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0368,INE324A01032,JINDALSAW,JINDALSAW,Jindal Saw Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0369,INE749A01030,JINDALSTEL,JINDALSTEL,Jindal Steel Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0370,INSUFFICIENT_ISIN_COVERAGE,JINDWORLD,JINDWORLD,Jindal Worldwide Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0371,INE758E01017,JIOFIN,JIOFIN,Jio Financial Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0372,INE823G01014,JKCEMENT,JKCEMENT,J.K. Cement Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0373,INSUFFICIENT_ISIN_COVERAGE,JKLAKSHMI,JKLAKSHMI,JK Lakshmi Cement Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0374,INSUFFICIENT_ISIN_COVERAGE,JKPAPER,JKPAPER,JK Paper Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0375,INE573A01042,JKTYRE,JKTYRE,JK Tyre & Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0376,INE780C01023,JMFINANCIL,JMFINANCIL,JM Financial Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0377,INE351F01018,JPPOWER,JPPOWER,Jaiprakash Power Ventures Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0378,INE220G01021,JSL,JSL,Jindal Stainless Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0379,INSUFFICIENT_ISIN_COVERAGE,JSLHISAR,JSLHISAR,Jindal Stainless (Hisar) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0380,INSUFFICIENT_ISIN_COVERAGE,JSLL,JSLL,Jeena Sikho Lifecare Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0381,INE718I01012,JSWCEMENT,JSWCEMENT,JSW Cement Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0382,INE133A01011,JSWDULUX,JSWDULUX,JSW Dulux Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0383,INE121E01018,JSWENERGY,JSWENERGY,JSW Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0384,INSUFFICIENT_ISIN_COVERAGE,JSWHL,JSWHL,JSW Holdings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0385,INE880J01026,JSWINFRA,JSWINFRA,JSW Infrastructure Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0386,INE019A01038,JSWSTEEL,JSWSTEEL,JSW Steel Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0387,INSUFFICIENT_ISIN_COVERAGE,JTEKTINDIA,JTEKTINDIA,JTEKT India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0388,INE797F01020,JUBLFOOD,JUBLFOOD,Jubilant Foodworks Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0389,INE0BY001018,JUBLINGREA,JUBLINGREA,Jubilant Ingrevia Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0390,INE700A01033,JUBLPHARMA,JUBLPHARMA,Jubilant Pharmova Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0391,INSUFFICIENT_ISIN_COVERAGE,JUSTDIAL,JUSTDIAL,Justdial Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0392,INE209L01016,JWL,JWL,Jupiter Wagons Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0393,INSUFFICIENT_ISIN_COVERAGE,JYOTHYLAB,JYOTHYLAB,Jyothy Labs Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0394,INE980O01024,JYOTICNC,JYOTICNC,Jyoti CNC Automation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0395,INE217B01036,KAJARIACER,KAJARIACER,Kajaria Ceramics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0396,INE303R01014,KALYANKJIL,KALYANKJIL,Kalyan Jewellers India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0397,INSUFFICIENT_ISIN_COVERAGE,KANSAINER,KANSAINER,Kansai Nerolac Paints Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0398,INE036D01028,KARURVYSYA,KARURVYSYA,Karur Vysya Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0399,INE918Z01012,KAYNES,KAYNES,Kaynes Technology India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0400,INE389H01022,KEC,KEC,Kec International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0401,INE878B01027,KEI,KEI,KEI Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0402,INSUFFICIENT_ISIN_COVERAGE,KENNAMET,KENNAMET,Kennametal India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0403,INE138Y01010,KFINTECH,KFINTECH,Kfin Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0404,INE967H01025,KIMS,KIMS,Krishna Institute of Medical Sciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0405,INSUFFICIENT_ISIN_COVERAGE,KIRLFER,KIRLFER,Kirloskar Ferrous Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0406,INSUFFICIENT_ISIN_COVERAGE,KIRLOSBROS,KIRLOSBROS,Kirloskar Brothers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0407,INE146L01010,KIRLOSENG,KIRLOSENG,Kirloskar Oil Eng Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0408,INSUFFICIENT_ISIN_COVERAGE,KNRCON,KNRCON,KNR Constructions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0409,INSUFFICIENT_ISIN_COVERAGE,KOLTEPATIL,KOLTEPATIL,Kolte-Patil Developers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0410,INE237A01036,KOTAKBANK,KOTAKBANK,Kotak Mahindra Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0411,INE220B01022,KPIL,KPIL,Kalpataru Projects International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0412,INSUFFICIENT_ISIN_COVERAGE,KPIT,KPIT,KPIT Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0413,INE04I401011,KPITTECH,KPITTECH,KPIT Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0414,INE930H01031,KPRMILL,KPRMILL,K.P.R. Mill Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0415,INSUFFICIENT_ISIN_COVERAGE,KRBL,KRBL,KRBL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0416,INSUFFICIENT_ISIN_COVERAGE,KSB,KSB,KSB Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0417,INSUFFICIENT_ISIN_COVERAGE,KSCL,KSCL,Kaveri Seed Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0418,INSUFFICIENT_ISIN_COVERAGE,KTKBANK,KTKBANK,Karnataka Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0419,INE600L01024,LALPATHLAB,LALPATHLAB,Dr. Lal Path Labs Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0420,INSUFFICIENT_ISIN_COVERAGE,LAOPALA,LAOPALA,La Opala RG Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0421,INE0I7C01011,LATENTVIEW,LATENTVIEW,Latent View Analytics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0422,INE947Q01028,LAURUSLABS,LAURUSLABS,Laurus Labs Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0423,INSUFFICIENT_ISIN_COVERAGE,LAXMIMACH,LAXMIMACH,Lakshmi Machine Works Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0424,INE970X01018,LEMONTREE,LEMONTREE,Lemon Tree Hotels Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0425,INE956O01016,LENSKART,LENSKART,Lenskart Solutions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0426,INE324D01010,LGEINDIA,LGEINDIA,LG Electronics India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0427,INE115A01026,LICHSGFIN,LICHSGFIN,LIC Housing Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0428,INE0J1Y01017,LICI,LICI,Life Insurance Corporation of India,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0429,INE473A01011,LINDEINDIA,LINDEINDIA,Linde India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0430,INE281B01032,LLOYDSME,LLOYDSME,Lloyds Metals And Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0431,INE670K01029,LODHA,LODHA,Lodha Developers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0432,INE018A01030,LT,LT,Larsen & Toubro Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0433,INE498L01015,LTF,LTF,L&T Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0434,INE818H01020,LTFOODS,LTFOODS,LT Foods Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0435,INE214T01019,LTI,LTM,LTM Ltd.,2018-01-01,9999-12-31,TICKER_SYMBOL_CHANGE,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0436,INE214T01019,LTIM,LTM,LTM Ltd.,2018-01-01,9999-12-31,TICKER_SYMBOL_CHANGE,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0437,INE214T01019,LTM,LTM,LTM Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0438,INE010V01017,LTTS,LTTS,L&T Technology Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0439,INE326A01037,LUPIN,LUPIN,Lupin Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0440,INSUFFICIENT_ISIN_COVERAGE,LUXIND,LUXIND,Lux Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0441,INSUFFICIENT_ISIN_COVERAGE,LXCHEM,LXCHEM,Laxmi Organic Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0442,INE101A01026,M&M,M&M,Mahindra & Mahindra Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0443,INE774D01024,M&MFIN,M&MFIN,Mahindra & Mahindra Financial Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0444,INE457A01014,MAHABANK,MAHABANK,Bank of Maharashtra,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0445,INSUFFICIENT_ISIN_COVERAGE,MAHINDCIE,MAHINDCIE,Mahindra CIE Automotive Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0446,INSUFFICIENT_ISIN_COVERAGE,MAHLIFE,MAHLIFE,Mahindra Lifespace Developers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0447,INSUFFICIENT_ISIN_COVERAGE,MAHLOG,MAHLOG,Mahindra Logistics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0448,INSUFFICIENT_ISIN_COVERAGE,MAHSCOOTER,MAHSCOOTER,Maharashtra Scooters Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0449,INSUFFICIENT_ISIN_COVERAGE,MAHSEAMLES,MAHSEAMLES,Maharashtra Seamless Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0450,INE522D01027,MANAPPURAM,MANAPPURAM,Manappuram Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0451,INE634S01028,MANKIND,MANKIND,Mankind Pharma Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0452,INSUFFICIENT_ISIN_COVERAGE,MANYAVAR,MANYAVAR,Vedant Fashions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0453,INE0BV301023,MAPMYINDIA,MAPMYINDIA,C.E. Info Systems Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0454,INE196A01026,MARICO,MARICO,Marico Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0455,INE585B01010,MARUTI,MARUTI,Maruti Suzuki India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0456,INSUFFICIENT_ISIN_COVERAGE,MASTEK,MASTEK,Mastek Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0457,INE027H01010,MAXHEALTH,MAXHEALTH,Max Healthcare Institute Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0458,INSUFFICIENT_ISIN_COVERAGE,MAXINDIA,MAXINDIA,Max India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0459,INE249Z01020,MAZDOCK,MAZDOCK,Mazagoan Dock Shipbuilders Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0460,INE745G01043,MCX,MCX,Multi Commodity Exchange of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0461,INE474Q01031,MEDANTA,MEDANTA,Global Health Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0462,INSUFFICIENT_ISIN_COVERAGE,MEDPLUS,MEDPLUS,Medplus Health Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0463,INE0VDM01015,MEESHO,MEESHO,Meesho Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0464,INSUFFICIENT_ISIN_COVERAGE,METROBRAND,METROBRAND,Metro Brands Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0465,INSUFFICIENT_ISIN_COVERAGE,METROPOLIS,METROPOLIS,Metropolis Healthcare Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0466,INSUFFICIENT_ISIN_COVERAGE,MFL,MFL,Meghmani Finechem Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0467,INE180A01020,MFSL,MFSL,Max Financial Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0468,INE002S01010,MGL,MGL,Mahanagar Gas Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0469,INSUFFICIENT_ISIN_COVERAGE,MHRIL,MHRIL,Mahindra Holidays & Resorts India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0470,INSUFFICIENT_ISIN_COVERAGE,MIDHANI,MIDHANI,Mishra Dhatu Nigam Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0471,INE842C01021,MINDACORP,MINDACORP,Minda Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0472,INE214T01019,MINDTREE,LTM,LTM Ltd.,2018-01-01,9999-12-31,TICKER_SYMBOL_CHANGE,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0473,INE123F01029,MMTC,MMTC,MMTC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0474,INSUFFICIENT_ISIN_COVERAGE,MOIL,MOIL,MOIL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0475,INE775A01035,MOTHERSON,MOTHERSON,Samvardhana Motherson International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0476,INSUFFICIENT_ISIN_COVERAGE,MOTHERSUMI,MOTHERSUMI,Motherson Sumi Systems Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0477,INE338I01027,MOTILALOFS,MOTILALOFS,Motilal Oswal Financial Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0478,INE356A01018,MPHASIS,MPHASIS,MphasiS Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0479,INE883A01011,MRF,MRF,MRF Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0480,INE103A01014,MRPL,MRPL,Mangalore Refinery & Petrochemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0481,INE0FS801015,MSUMI,MSUMI,Motherson Sumi Wiring India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0482,INSUFFICIENT_ISIN_COVERAGE,MTARTECH,MTARTECH,MTAR Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0483,INE414G01012,MUTHOOTFIN,MUTHOOTFIN,Muthoot Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0484,INSUFFICIENT_ISIN_COVERAGE,MYSOREBANK,MYSOREBANK,State Bank of Mysore,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0485,INE298J01013,NAM-INDIA,NAM-INDIA,Nippon Life India Asset Management Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0486,INE987B01026,NATCOPHARM,NATCOPHARM,NATCO Pharma Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0487,INE139A01034,NATIONALUM,NATIONALUM,National Aluminium Co. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0488,INE663F01032,NAUKRI,NAUKRI,Info Edge (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0489,INE725A01030,NAVA,NAVA,Nava Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0490,INE048G01026,NAVINFLUOR,NAVINFLUOR,Navin Fluorine International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0491,INSUFFICIENT_ISIN_COVERAGE,NAVNETEDUL,NAVNETEDUL,Navneet Education Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0492,INSUFFICIENT_ISIN_COVERAGE,NAZARA,NAZARA,Nazara Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0493,INE095N01031,NBCC,NBCC,NBCC (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0494,INE868B01028,NCC,NCC,NCC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0495,INSUFFICIENT_ISIN_COVERAGE,NESCO,NESCO,NESCO Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0496,INE239A01024,NESTLEIND,NESTLEIND,Nestle India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0497,INE0NT901020,NETWEB,NETWEB,Netweb Technologies India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0498,INSUFFICIENT_ISIN_COVERAGE,NETWORK18,NETWORK18,Network18 Media & Investments Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0499,INE794A01010,NEULANDLAB,NEULANDLAB,Neuland Laboratories Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0500,INE619B01017,NEWGEN,NEWGEN,Newgen Software Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0501,INSUFFICIENT_ISIN_COVERAGE,NFL,NFL,National Fertilizers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0502,INE410P01011,NH,NH,Narayana Hrudayalaya Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0503,INE848E01016,NHPC,NHPC,NHPC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0504,INE470Y01017,NIACL,NIACL,The New India Assurance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0505,INSUFFICIENT_ISIN_COVERAGE,NIITLTD,NIITLTD,NIIT Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0506,INSUFFICIENT_ISIN_COVERAGE,NILKAMAL,NILKAMAL,Nilkamal Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0507,INE995S01015,NIVABUPA,NIVABUPA,Niva Bupa Health Insurance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0508,INE589A01014,NLCINDIA,NLCINDIA,NLC India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0509,INE584A01023,NMDC,NMDC,NMDC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0510,INSUFFICIENT_ISIN_COVERAGE,NOCIL,NOCIL,NOCIL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0511,INE0NNS01018,NSLNISP,NSLNISP,NMDC Steel Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0512,INE733E01010,NTPC,NTPC,NTPC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0513,INE0ONG01011,NTPCGREEN,NTPCGREEN,NTPC Green Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0514,INE531F01023,NUVAMA,NUVAMA,Nuvama Wealth Management Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0515,INE118D01016,NUVOCO,NUVOCO,Nuvoco Vistas Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0516,INE388Y01029,NYKAA,NYKAA,FSN E-Commerce Ventures Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0517,INE093I01010,OBEROIRLTY,OBEROIRLTY,Oberoi Realty Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0518,INE881D01027,OFSS,OFSS,Oracle Financial Services Software Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0519,INE274J01014,OIL,OIL,Oil India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0520,INE0LXG01040,OLAELEC,OLAELEC,Ola Electric Mobility Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0521,INE260D01016,OLECTRA,OLECTRA,Olectra Greentech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0522,INSUFFICIENT_ISIN_COVERAGE,OMAXE,OMAXE,Omaxe Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0523,INE013P01021,ONESOURCE,ONESOURCE,Onesource Specialty Pharma Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0524,INE213A01029,ONGC,ONGC,Oil & Natural Gas Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0525,INSUFFICIENT_ISIN_COVERAGE,ORIENTCEM,ORIENTCEM,Orient Cement Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0526,INSUFFICIENT_ISIN_COVERAGE,ORIENTELEC,ORIENTELEC,Orient Electric Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0527,INE761H01022,PAGEIND,PAGEIND,Page Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0528,INE088F01024,PARADEEP,PARADEEP,Paradeep Phosphates Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0529,INE619A01035,PATANJALI,PATANJALI,Patanjali Foods Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0530,INE982J01020,PAYTM,PAYTM,One 97 Communications Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0531,INE602A01031,PCBL,PCBL,PCBL Chemical Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0532,INSUFFICIENT_ISIN_COVERAGE,PEL,PEL,Piramal Enterprises Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0533,INE262H01021,PERSISTENT,PERSISTENT,Persistent Systems Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0534,INE347G01014,PETRONET,PETRONET,Petronet LNG Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0535,INE134E01011,PFC,PFC,Power Finance Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0536,INE182A01018,PFIZER,PFIZER,Pfizer Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0537,INE367G01038,PFOCUS,PFOCUS,Prime Focus Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0538,INE457L01029,PGEL,PGEL,PG Electroplast Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0539,INSUFFICIENT_ISIN_COVERAGE,PGHH,PGHH,Procter & Gamble Hygiene & Health Care Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0540,INSUFFICIENT_ISIN_COVERAGE,PGHL,PGHL,Procter & Gamble Health Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0541,INE211B01039,PHOENIXLTD,PHOENIXLTD,Phoenix Mills Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0542,INE318A01026,PIDILITIND,PIDILITIND,Pidilite Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0543,INE603J01030,PIIND,PIIND,PI Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0544,INE15B701018,PINELABS,PINELABS,Pine Labs Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0545,INE202B01038,PIRAMALFIN,PIRAMALFIN,Piramal Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0546,INE160A01022,PNB,PNB,Punjab National Bank,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0547,INE572E01012,PNBHOUSING,PNBHOUSING,PNB Housing Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0548,INSUFFICIENT_ISIN_COVERAGE,PNCINFRA,PNCINFRA,PNC Infratech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0549,INE417T01026,POLICYBZR,POLICYBZR,PB Fintech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0550,INE455K01017,POLYCAB,POLYCAB,Polycab India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0551,INE205C01021,POLYMED,POLYMED,Poly Medicure Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0552,INSUFFICIENT_ISIN_COVERAGE,POLYPLEX,POLYPLEX,Polyplex Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0553,INE511C01022,POONAWALLA,POONAWALLA,Poonawalla Fincorp Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0554,INE752E01010,POWERGRID,POWERGRID,Power Grid Corporation of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0555,INE07Y701011,POWERINDIA,POWERINDIA,Hitachi Energy India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0556,INSUFFICIENT_ISIN_COVERAGE,PPAP,PPAPMG,,2018-01-01,9999-12-31,TICKER_SYMBOL_CHANGE,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0557,INE0DK501011,PPLPHARMA,PPLPHARMA,Piramal Pharma Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0558,INSUFFICIENT_ISIN_COVERAGE,PRAJIND,PRAJIND,Praj Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0559,INE0BS701011,PREMIERENE,PREMIERENE,Premier Energies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0560,INE811K01011,PRESTIGE,PRESTIGE,Prestige Estates Projects Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0561,INSUFFICIENT_ISIN_COVERAGE,PRINCEPIPE,PRINCEPIPE,Prince Pipes and Fittings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0562,INSUFFICIENT_ISIN_COVERAGE,PRIVISCL,PRIVISCL,Privi Speciality Chemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0563,INSUFFICIENT_ISIN_COVERAGE,PRSMJOHNSN,PRSMJOHNSN,Prism Johnson Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0564,INSUFFICIENT_ISIN_COVERAGE,PSPPROJECT,PSPPROJECT,PSP Projects Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0565,INSUFFICIENT_ISIN_COVERAGE,PTC,PTC,PTC India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0566,INE596F01018,PTCIL,PTCIL,PTC Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0567,INE191H01014,PVRINOX,PVRINOX,PVR INOX Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0568,INE0LP301011,PWL,PWL,Physicswallah Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0569,INSUFFICIENT_ISIN_COVERAGE,QUESS,QUESS,Quess Corp Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0570,INE944F01028,RADICO,RADICO,Radico Khaitan Ltd,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0571,INE0DD101019,RAILTEL,RAILTEL,Railtel Corporation Of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0572,INSUFFICIENT_ISIN_COVERAGE,RAIN,RAIN,Rain Industries Ltd,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0573,INE961O01016,RAINBOW,RAINBOW,Rainbow Childrens Medicare Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0574,INSUFFICIENT_ISIN_COVERAGE,RAJESHEXPO,RAJESHEXPO,Rajesh Exports Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0575,INSUFFICIENT_ISIN_COVERAGE,RALLIS,RALLIS,Rallis India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0576,INE331A01037,RAMCOCEM,RAMCOCEM,The Ramco Cements Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0577,INSUFFICIENT_ISIN_COVERAGE,RATNAMANI,RATNAMANI,Ratnamani Metals & Tubes Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0578,INSUFFICIENT_ISIN_COVERAGE,RAYMOND,RAYMOND,Raymond Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0579,INSUFFICIENT_ISIN_COVERAGE,RAYMONDLSL,RAYMONDLSL,Raymond Lifestyle Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0580,INSUFFICIENT_ISIN_COVERAGE,RBA,RBA,Restaurant Brands Asia Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0581,INE976G01028,RBLBANK,RBLBANK,RBL Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0582,INSUFFICIENT_ISIN_COVERAGE,RCF,RCF,Rashtriya Chemicals & Fertilizers Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0583,INE020B01018,RECLTD,RECLTD,REC Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0584,INE891D01026,REDINGTON,REDINGTON,Redington Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0585,INSUFFICIENT_ISIN_COVERAGE,RELAXO,RELAXO,Relaxo Footwears Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0586,INSUFFICIENT_ISIN_COVERAGE,RELCAPITAL,RELCAPITAL,Reliance Capital Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0587,INE002A01018,RELIANCE,RELIANCE,Reliance Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0588,INSUFFICIENT_ISIN_COVERAGE,RELINFRA,RELINFRA,Reliance Infrastructure Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0589,INSUFFICIENT_ISIN_COVERAGE,RENUKA,RENUKA,Shree Renuka Sugars Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0590,INSUFFICIENT_ISIN_COVERAGE,RESPONIND,RESPONIND,Responsive Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0591,INE743M01012,RHIM,RHIM,RHI MAGNESITA INDIA LTD.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0592,INE320J01015,RITES,RITES,RITES Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0593,INE399G01023,RKFORGE,RKFORGE,Ramkrishna Forgings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0594,INSUFFICIENT_ISIN_COVERAGE,ROSSARI,ROSSARI,Rossari Biotech Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0595,INSUFFICIENT_ISIN_COVERAGE,ROUTE,ROUTE,Route Mobile Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0596,INE614G01033,RPOWER,RPOWER,Reliance Power Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0597,INE777K01022,RRKABEL,RRKABEL,R R Kabel Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0598,INSUFFICIENT_ISIN_COVERAGE,RTNINDIA,RTNINDIA,RattanIndia Enterprises Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0599,INSUFFICIENT_ISIN_COVERAGE,RUSTOMJEE,RUSTOMJEE,Keystone Realtors Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0600,INE415G01027,RVNL,RVNL,Rail Vikas Nigam Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0601,INSUFFICIENT_ISIN_COVERAGE,SAFARI,SAFARI,Safari Industries (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0602,INE0W2G01015,SAGILITY,SAGILITY,Sagility Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0603,INE114A01011,SAIL,SAIL,Steel Authority of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0604,INE570L01029,SAILIFE,SAILIFE,Sai Life Sciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0605,INE148I01020,SAMMAANCAP,SAMMAANCAP,Sammaan Capital Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0606,INSUFFICIENT_ISIN_COVERAGE,SANOFI,SANOFI,Sanofi India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0607,INE806T01020,SAPPHIRE,SAPPHIRE,Sapphire Foods India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0608,INE385C01021,SARDAEN,SARDAEN,Sarda Energy and Minerals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0609,INE979A01025,SAREGAMA,SAREGAMA,Saregama India Ltd,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0610,INSUFFICIENT_ISIN_COVERAGE,SBBJ,SBBJ,State Bank of Bikaner & Jaipur Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0611,INE423Y01016,SBFC,SBFC,SBFC Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0612,INE018E01016,SBICARD,SBICARD,SBI Cards and Payment Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0613,INE123W01016,SBILIFE,SBILIFE,SBI Life Insurance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0614,INE062A01020,SBIN,SBIN,State Bank of India,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0615,INSUFFICIENT_ISIN_COVERAGE,SBT,SBT,State Bank of Travancore,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0616,INE513A01022,SCHAEFFLER,SCHAEFFLER,Schaeffler India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0617,INE839M01018,SCHNEIDER,SCHNEIDER,Schneider Electric Infrastructure Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0618,INE109A01011,SCI,SCI,Shipping Corporation of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0619,INSUFFICIENT_ISIN_COVERAGE,SEQUENT,SEQUENT,Sequent Scientific Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0620,INSUFFICIENT_ISIN_COVERAGE,SFL,SFL,Sheela Foam Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0621,INSUFFICIENT_ISIN_COVERAGE,SHARDACROP,SHARDACROP,Sharda Cropchem Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0622,INSUFFICIENT_ISIN_COVERAGE,SHILPAMED,SHILPAMED,Shilpa Medicare Ltd.*,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0623,INSUFFICIENT_ISIN_COVERAGE,SHOPERSTOP,SHOPERSTOP,Shoppers Stop Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0624,INE070A01015,SHREECEM,SHREECEM,Shree Cement Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0625,INSUFFICIENT_ISIN_COVERAGE,SHRIRAMCIT,SHRIRAMCIT,Shriram City Union Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0626,INE721A01047,SHRIRAMFIN,SHRIRAMFIN,Shriram Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0627,INE810G01011,SHYAMMETL,SHYAMMETL,Shyam Metalics and Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0628,INE003A01024,SIEMENS,SIEMENS,Siemens Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0629,INE903U01023,SIGNATURE,SIGNATURE,Signatureglobal (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0630,INSUFFICIENT_ISIN_COVERAGE,SIS,SIS,SIS Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0631,INE002L01015,SJVN,SJVN,SJVN Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0632,INSUFFICIENT_ISIN_COVERAGE,SKFINDIA,SKFINDIA,SKF India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0633,INE671H01015,SOBHA,SOBHA,Sobha Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0634,INSUFFICIENT_ISIN_COVERAGE,SOLARA,SOLARA,Solara Active Pharma Sciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0635,INE343H01029,SOLARINDS,SOLARINDS,Solar Industries India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0636,INE073K01018,SONACOMS,SONACOMS,Sona BLW Precision Forgings Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0637,INE269A01021,SONATSOFTW,SONATSOFTW,Sonata Software Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0638,INSUFFICIENT_ISIN_COVERAGE,SOUTHBANK,SOUTHBANK,South Indian Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0639,INSUFFICIENT_ISIN_COVERAGE,SPANDANA,SPANDANA,Spandana Sphoorty Financial Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0640,INSUFFICIENT_ISIN_COVERAGE,SPARC,SPARC,Sun Pharma Advanced Research Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0641,INSUFFICIENT_ISIN_COVERAGE,SPICEJET,SPICEJET,Spicejet Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0642,INE663A01033,SPLPETRO,SPLPETRO,Supreme Petrochem Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0643,INE647A01010,SRF,SRF,SRF Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0644,INSUFFICIENT_ISIN_COVERAGE,SRTRANSFIN,SRTRANSFIN,Shriram Transport Finance Co. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0645,INSUFFICIENT_ISIN_COVERAGE,STAR,STAR,Strides Pharma Science Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0646,INSUFFICIENT_ISIN_COVERAGE,STARCEMENT,STARCEMENT,Star Cement Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0647,INE575P01011,STARHEALTH,STARHEALTH,Star Health and Allied Insurance Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0648,INSUFFICIENT_ISIN_COVERAGE,STLTECH,STLTECH,Sterlite Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0649,INSUFFICIENT_ISIN_COVERAGE,SUDARSCHEM,SUDARSCHEM,Sudarshan Chemical Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0650,INE258G01013,SUMICHEM,SUMICHEM,Sumitomo Chemical India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0651,INSUFFICIENT_ISIN_COVERAGE,SUNCLAYLTD,SUNCLAYLTD,Sundaram Clayton Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0652,INE660A01013,SUNDARMFIN,SUNDARMFIN,Sundaram Finance Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0653,INSUFFICIENT_ISIN_COVERAGE,SUNDRMFAST,SUNDRMFAST,Sundram Fasteners Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0654,INE044A01036,SUNPHARMA,SUNPHARMA,Sun Pharmaceutical Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0655,INSUFFICIENT_ISIN_COVERAGE,SUNTECK,SUNTECK,Sunteck Realty Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0656,INE424H01027,SUNTV,SUNTV,Sun TV Network Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0657,INSUFFICIENT_ISIN_COVERAGE,SUPPETRO,SUPPETRO,Supreme Petrochem Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0658,INSUFFICIENT_ISIN_COVERAGE,SUPRAJIT,SUPRAJIT,Suprajit Engineering Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0659,INE195A01028,SUPREMEIND,SUPREMEIND,Supreme Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0660,INSUFFICIENT_ISIN_COVERAGE,SUVEN,SUVEN,Suven Life Sciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0661,INSUFFICIENT_ISIN_COVERAGE,SUVENPHAR,SUVENPHAR,Suven Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0662,INE040H01021,SUZLON,SUZLON,Suzlon Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0663,INE665A01038,SWANCORP,SWANCORP,Swan Corp Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0664,INSUFFICIENT_ISIN_COVERAGE,SWANENERGY,SWANENERGY,Swan Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0665,INSUFFICIENT_ISIN_COVERAGE,SWARAJENG,SWARAJENG,Swaraj Engines Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0666,INE00H001014,SWIGGY,SWIGGY,Swiggy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0667,INSUFFICIENT_ISIN_COVERAGE,SWSOLAR,SWSOLAR,Sterling and Wilson Renewable Energy Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0668,INSUFFICIENT_ISIN_COVERAGE,SYMPHONY,SYMPHONY,Symphony Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0669,INE398R01022,SYNGENE,SYNGENE,Syngene International Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0670,INE0DYJ01015,SYRMA,SYRMA,Syrma SGS Technology Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0671,INSUFFICIENT_ISIN_COVERAGE,TANLA,TANLA,Tanla Platforms Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0672,INE763I01026,TARIL,TARIL,Transformers And Rectifiers (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0673,INSUFFICIENT_ISIN_COVERAGE,TASTYBITE,TASTYBITE,Tasty Bite Eatables Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0674,INE976I01016,TATACAP,TATACAP,Tata Capital Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0675,INE092A01019,TATACHEM,TATACHEM,Tata Chemicals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0676,INSUFFICIENT_ISIN_COVERAGE,TATACOFFEE,TATACOFFEE,Tata Coffee Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0677,INE151A01013,TATACOMM,TATACOMM,Tata Communications Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0678,INE192A01025,TATACONSUM,TATACONSUM,Tata Consumer Products Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0679,INE670A01012,TATAELXSI,TATAELXSI,Tata Elxsi Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0680,INE672A01026,TATAINVEST,TATAINVEST,Tata Investment Corporation Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0681,INSUFFICIENT_ISIN_COVERAGE,TATAMOTORS,TATAMOTORS,Tata Motors Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0682,INE245A01021,TATAPOWER,TATAPOWER,Tata Power Co. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0683,INE081A01020,TATASTEEL,TATASTEEL,Tata Steel Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0684,INE081A01020,TATASTEELBS,TATASTEEL,Tata Steel Ltd.,2018-01-01,9999-12-31,TICKER_SYMBOL_CHANGE,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0685,INSUFFICIENT_ISIN_COVERAGE,TATASTLBSL,TATASTLBSL,Tata Steel BSL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0686,INSUFFICIENT_ISIN_COVERAGE,TATASTLLP,TATASTLLP,Tata Steel Long Products Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0687,INE142M01025,TATATECH,TATATECH,Tata Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0688,INE673O01025,TBOTEK,TBOTEK,TBO Tek Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0689,INSUFFICIENT_ISIN_COVERAGE,TCI,TCI,Transport Corporation of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0690,INSUFFICIENT_ISIN_COVERAGE,TCIEXP,TCIEXP,TCI Express Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0691,INSUFFICIENT_ISIN_COVERAGE,TCNSBRANDS,TCNSBRANDS,TCNS Clothing Co. Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0692,INE467B01029,TCS,TCS,Tata Consultancy Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0693,INSUFFICIENT_ISIN_COVERAGE,TEAMLEASE,TEAMLEASE,Teamlease Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0694,INE669C01036,TECHM,TECHM,Tech Mahindra Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0695,INSUFFICIENT_ISIN_COVERAGE,TECHNO,TECHNO,Techno Electric & Engineering Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0696,INE285K01026,TECHNOE,TECHNOE,Techno Electric & Engineering Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0697,INE011K01018,TEGA,TEGA,Tega Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0698,INE010J01012,TEJASNET,TEJASNET,Tejas Networks Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0699,INE19RI01016,TENNIND,TENNIND,Tenneco Clean Air India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0700,INE0AQ201015,THELEELA,THELEELA,Leela Palaces Hotels & Resorts Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0701,INE152A01029,THERMAX,THERMAX,Thermax Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0702,INSUFFICIENT_ISIN_COVERAGE,THOMASCOOK,THOMASCOOK,Thomas Cook (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0703,INSUFFICIENT_ISIN_COVERAGE,THYROCARE,THYROCARE,Thyrocare Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0704,INE974X01010,TIINDIA,TIINDIA,Tube Investments of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0705,INE325A01013,TIMKEN,TIMKEN,Timken India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0706,INE615H01020,TITAGARH,TITAGARH,Titagarh Rail Systems Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0707,INE280A01028,TITAN,TITAN,Titan Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0708,INSUFFICIENT_ISIN_COVERAGE,TMB,TMB,Tamilnad Mercantile Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0709,INE1TAE01010,TMCV,TMCV,Tata Motors Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0710,INE155A01022,TMPV,TMPV,Tata Motors Passenger Vehicles Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0711,INE685A01028,TORNTPHARM,TORNTPHARM,Torrent Pharmaceuticals Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0712,INE813H01021,TORNTPOWER,TORNTPOWER,Torrent Power Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0713,INE103V01028,TRAVELFOOD,TRAVELFOOD,Travel Food Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0714,INE849A01020,TRENT,TRENT,Trent Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0715,INE064C01022,TRIDENT,TRIDENT,Trident Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0716,INE152M01016,TRITURBINE,TRITURBINE,Triveni Turbine Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0717,INSUFFICIENT_ISIN_COVERAGE,TRIVENI,TRIVENI,Triveni Engineering & Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0718,INSUFFICIENT_ISIN_COVERAGE,TTKPRESTIG,TTKPRESTIG,TTK Prestige Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0719,INE517B01013,TTML,TTML,Tata Teleservices (Maharashtra) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0720,INSUFFICIENT_ISIN_COVERAGE,TUBEINVEST,TUBEINVEST,Tube Investments of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0721,INSUFFICIENT_ISIN_COVERAGE,TV18BRDCST,TV18BRDCST,TV18 Broadcast Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0722,INE494B01023,TVSMOTOR,TVSMOTOR,TVS Motor Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0723,INSUFFICIENT_ISIN_COVERAGE,TVSSCS,TVSSCS,TVS Supply Chain Solutions Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0724,INSUFFICIENT_ISIN_COVERAGE,TVTODAY,TVTODAY,TV Today Network Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0725,INE686F01025,UBL,UBL,United Breweries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0726,INE691A01018,UCOBANK,UCOBANK,UCO Bank,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0727,INSUFFICIENT_ISIN_COVERAGE,UFLEX,UFLEX,UFLEX Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0728,INSUFFICIENT_ISIN_COVERAGE,UJJIVAN,UJJIVAN,Ujjivan Financial Services Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0729,INSUFFICIENT_ISIN_COVERAGE,UJJIVANSFB,UJJIVANSFB,Ujjivan Small Finance Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0730,INE481G01011,ULTRACEMCO,ULTRACEMCO,UltraTech Cement Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0731,INE692A01016,UNIONBANK,UNIONBANK,Union Bank of India,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0732,INE854D01024,UNITDSPR,UNITDSPR,United Spirits Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0733,INE405E01023,UNOMINDA,UNOMINDA,UNO Minda Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0734,INE628A01036,UPL,UPL,UPL Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0735,INE0CAZ01013,URBANCO,URBANCO,Urban Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0736,INE228A01035,USHAMART,USHAMART,Usha Martin Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0737,INE094J01016,UTIAMC,UTIAMC,UTI Asset Management Company Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0738,INSUFFICIENT_ISIN_COVERAGE,VAIBHAVGBL,VAIBHAVGBL,Vaibhav Global Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0739,INSUFFICIENT_ISIN_COVERAGE,VAKRANGEE,VAKRANGEE,Vakrangee Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0740,INSUFFICIENT_ISIN_COVERAGE,VALIANTORG,VALIANTORG,Valiant Organics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0741,INSUFFICIENT_ISIN_COVERAGE,VARROC,VARROC,Varroc Engineering Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0742,INE200M01039,VBL,VBL,Varun Beverages Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0743,INE205A01025,VEDL,VEDL,Vedanta Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0744,INSUFFICIENT_ISIN_COVERAGE,VENKEYS,VENKEYS,Venky's (India) Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0745,INSUFFICIENT_ISIN_COVERAGE,VENTIVE,VENTIVE,Ventive Hospitality Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0746,INSUFFICIENT_ISIN_COVERAGE,VGUARD,VGUARD,V-Guard Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0747,INSUFFICIENT_ISIN_COVERAGE,VIDEOIND,VIDEOIND,Videocon Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0748,INE043W01024,VIJAYA,VIJAYA,Vijaya Diagnostic Centre Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0749,INSUFFICIENT_ISIN_COVERAGE,VINATIORGA,VINATIORGA,Vinati Organics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0750,INSUFFICIENT_ISIN_COVERAGE,VIPIND,VIPIND,V.I.P. Industries Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0751,INSUFFICIENT_ISIN_COVERAGE,VMART,VMART,V-Mart Retail Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0752,INE01EA01019,VMM,VMM,Vishal Mega Mart Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0753,INE226A01021,VOLTAS,VOLTAS,Voltas Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0754,INSUFFICIENT_ISIN_COVERAGE,VRLLOG,VRLLOG,VRL Logistics Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0755,INE825A01020,VTL,VTL,Vardhman Textiles Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0756,INE377N01017,WAAREEENER,WAAREEENER,Waaree Energies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0757,INE191B01025,WELCORP,WELCORP,Welspun Corp Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0758,INE192B01031,WELSPUNLIV,WELSPUNLIV,Welspun Living Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0759,INSUFFICIENT_ISIN_COVERAGE,WESTLIFE,WESTLIFE,Westlife Foodworld Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0760,INE716A01013,WHIRLPOOL,WHIRLPOOL,Whirlpool of India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0761,INE075A01022,WIPRO,WIPRO,Wipro Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0762,INE049B01025,WOCKPHARMA,WOCKPHARMA,Wockhardt Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0763,INE528G01035,YESBANK,YESBANK,Yes Bank Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0764,INE256A01028,ZEEL,ZEEL,Zee Entertainment Enterprises Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0765,INE520A01027,ZENSARTECH,ZENSARTECH,Zensar Technolgies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0766,INE251B01027,ZENTEC,ZENTEC,Zen Technologies Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0767,INE342J01019,ZFCVINDIA,ZFCVINDIA,ZF Commercial Vehicle Control Systems India Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0768,INSUFFICIENT_ISIN_COVERAGE,ZOMATO,ZOMATO,Zomato Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,MEDIUM,nifty500_constituents.csv & parent_events.csv
+SEC_0769,INE010B01027,ZYDUSLIFE,ZYDUSLIFE,Zydus Lifesciences Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv
+SEC_0770,INE768C01028,ZYDUSWELL,ZYDUSWELL,Zydus Wellness Ltd.,2018-01-01,9999-12-31,IDENTITY_DIRECT,HIGH,nifty500_constituents.csv & parent_events.csv

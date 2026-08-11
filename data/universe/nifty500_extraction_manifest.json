@@ -1,0 +1,20 @@
+{
+  "extraction_timestamp": "2026-08-09T21:31:30.844062+00:00",
+  "extractor_version": "3B.3_BATCH_V1",
+  "pdfplumber_version": "0.11.10",
+  "total_source_files": 306,
+  "unique_documents": 306,
+  "pass_documents": 112,
+  "ambiguous_documents": 0,
+  "failed_documents": 0,
+  "not_present_documents": 194,
+  "total_events": 1305,
+  "total_additions": 596,
+  "total_deletions": 706,
+  "total_corporate_events": 0,
+  "review_queue_count": 0,
+  "override_count": 42,
+  "prototype_counts_preserved": true,
+  "bscdcl_negative_test": "PASS",
+  "final_readiness_decision": "A. COMPLETE EVENT LEDGER \u2014 READY FOR MEMBERSHIP RECONSTRUCTION"
+}

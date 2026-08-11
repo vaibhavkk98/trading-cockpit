@@ -1,0 +1,12 @@
+step_name,request_url,http_method,status_code,content_type,response_size_bytes,discovered_mechanism,notes
+Main Nifty 500 Page Fetch,https://www.niftyindices.com/indices/equity/broad-based-indices/nifty-500,GET,200,text/html; charset=utf-8,208885,HTML Document Load,Main page fetched successfully (208885 bytes)
+JS Bundle Inspection (bootstrap.bundle.min.js),https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js,GET,200,application/javascript; charset=utf-8,78743,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+JS Bundle Inspection (jquery-3.7.1.min.js),https://www.niftyindices.com/assets/js/jquery-3.7.1.min.js,GET,200,application/x-javascript,105294,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+JS Bundle Inspection (developer.js),https://www.niftyindices.com/assets/js/developer.js,GET,200,application/x-javascript,31047,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+JS Bundle Inspection (indices_foamtree.js),https://liveindexsa.niftyindices.com/assets/js/indices_foamtree.js,GET,200,text/javascript,1298564,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+JS Bundle Inspection (foamtree.js),https://liveindexsa.niftyindices.com/assets/js/foamtree.js,GET,200,text/javascript,328365,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+JS Bundle Inspection (common_chart.js),https://liveindexsa.niftyindices.com/assets/js/common_chart.js,GET,200,text/javascript,142545,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+JS Bundle Inspection (jquery.mCustomScrollbar.js),https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.js,GET,200,application/javascript; charset=utf-8,92949,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+JS Bundle Inspection (vendor.js),https://liveindexsa.niftyindices.com/assets/js/vendor.js,GET,200,text/javascript,138065,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+JS Bundle Inspection (global.js),https://liveindexsa.niftyindices.com/assets/js/global.js,GET,200,text/javascript,44191,JavaScript Bundle Analysis,Analyzed bundle. Discovered APIs: 0
+Current Constituent Direct Download,https://www.niftyindices.com/IndexConstituent/ind_nifty500list.csv,GET,200,application/octet-stream,32766,Direct Static CSV Link (ind_nifty500list.csv),"SHA256: 637b99dc20a36a994b8dd43ae8449781258a9c94fab20ca3b87741fb39bd67db, Rows: 500, File: ind_nifty500list_baseline_20260810.csv"

@@ -1,0 +1,11 @@
+split_name,mode_code,mode_name,executed_trades,mean_mfe_pct,mean_mae_pct,pct_trades_reached_positive,pct_positive_became_loser,avg_giveback_pct
+VALIDATION,A_CONTROL,A. Control (Fixed 10-Day Exit),50,4.21,-2.67,100.0,48.0,2745638.0
+TEST,A_CONTROL,A. Control (Fixed 10-Day Exit),30,7.06,-5.69,76.7,26.7,123.0
+VALIDATION,B_ATR_TRAILING,B. ATR Trailing Stop (2.5x ATR),66,4.0,-2.71,100.0,53.0,1270.8
+TEST,B_ATR_TRAILING,B. ATR Trailing Stop (2.5x ATR),47,8.18,-3.88,91.5,40.4,231.1
+VALIDATION,C_TIME_DECAY,C. Time-Decay Exit (Day 3 Return <= 0%),83,3.42,-2.35,95.2,61.4,10993.8
+TEST,C_TIME_DECAY,C. Time-Decay Exit (Day 3 Return <= 0%),54,6.92,-3.95,88.9,63.0,387.6
+VALIDATION,D_COMBINED,D. ATR Stop + Time-Decay (Combined B+C),91,3.27,-2.48,97.8,72.5,1538361.9
+TEST,D_COMBINED,D. ATR Stop + Time-Decay (Combined B+C),66,5.85,-3.78,89.4,57.6,543.2
+VALIDATION,E_VOL_SIZING,E. Volatility-Adjusted Sizing (1.5% Risk),30,3.41,-2.77,100.0,53.3,4573778.0
+TEST,E_VOL_SIZING,E. Volatility-Adjusted Sizing (1.5% Risk),18,8.45,-5.23,83.3,27.8,129.5

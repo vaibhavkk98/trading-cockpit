@@ -1,0 +1,9 @@
+review_period,found_document_count,ledger_additions,ledger_deletions,addition_gap,status,reason
+2018-MAR,1,0,2,2,FOUND_DOCUMENT_BUT_PRESS_RELEASE_OMITTED_ADDITIONS,Downloaded PDF for 2018-MAR published exclusion lists (2 dels) but omitted addition tables
+2018-SEP,2,0,4,4,FOUND_DOCUMENT_BUT_PRESS_RELEASE_OMITTED_ADDITIONS,Downloaded PDF for 2018-SEP published exclusion lists (4 dels) but omitted addition tables
+2019-MAR,0,0,0,0,FOUND_DOCUMENT_BUT_PRESS_RELEASE_OMITTED_ADDITIONS,Downloaded PDF for 2019-MAR published exclusion lists (0 dels) but omitted addition tables
+2019-SEP,1,0,2,2,FOUND_DOCUMENT_BUT_PRESS_RELEASE_OMITTED_ADDITIONS,Downloaded PDF for 2019-SEP published exclusion lists (2 dels) but omitted addition tables
+2020-MAR,2,0,4,4,FOUND_DOCUMENT_BUT_PRESS_RELEASE_OMITTED_ADDITIONS,Downloaded PDF for 2020-MAR published exclusion lists (4 dels) but omitted addition tables
+2020-SEP,1,0,2,2,FOUND_DOCUMENT_BUT_PRESS_RELEASE_OMITTED_ADDITIONS,Downloaded PDF for 2020-SEP published exclusion lists (2 dels) but omitted addition tables
+2021-MAR,2,24,28,4,FOUND,Published both additions (24) and deletions (28)
+2021-SEP,1,0,2,2,FOUND,Published both additions (0) and deletions (2)

@@ -1,0 +1,38 @@
+# Python and local environments
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Secrets and local runtime state
+.env
+.streamlit/secrets.toml
+paper_trading.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs, caches, and temporary files
+*.log
+.cache/
+tmp/
+.DS_Store
+paper_trading.db*
+
+# Research-only artifacts not required for cloud runtime
+data/backtests/
+data/foundation/
+data/paper_trading/
+data/sentiment/
+
+# Historical / exploratory ML outputs
+data/ml/
+
+# Research outputs excluded by default
+data/research/*
+!data/research/d2_trade_economics_display_payload.json
+!data/research/c2_live_market_risk_payload.json
+!data/research/
+!data/research/d2_trade_economics_display_payload.json
+!data/research/c2_live_market_risk_payload.json

@@ -1,0 +1,7 @@
+strategy_name,category,val_candidate_signals,test_candidate_signals,val_executed_trades,test_executed_trades,val_win_rate_pct,test_win_rate_pct,val_avg_return_pct,test_avg_return_pct,val_median_return_pct,test_median_return_pct,val_total_pnl_inr,test_total_pnl_inr,val_portfolio_return_contrib_pct,test_portfolio_return_contrib_pct
+Donchian Channel Breakout,Trend,262,353,8,8,50.0,37.5,2.49,0.14,0.43,-2.5,19904.1,1097.59,1.99,0.11
+EMA Pullback / Bounce,Trend,728,710,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+RS Momentum Breakout,Trend,751,1151,18,11,44.4,54.5,0.56,0.92,-0.41,0.2,10038.53,10080.1,1.0,1.01
+True Connors RSI Mean Reversion,Volatility,442,370,6,5,83.3,20.0,3.89,-3.48,3.32,-2.63,23330.49,-17420.59,2.33,-1.74
+True NR7 Volatility Expansion Breakout,Volatility,462,540,9,4,66.7,75.0,1.0,2.95,1.41,3.98,9008.68,11785.51,0.9,1.18
+VCP Volatility Contraction Breakout,Trend,991,771,9,2,55.6,50.0,0.6,-0.87,0.72,-0.87,5368.03,-1743.79,0.54,-0.17

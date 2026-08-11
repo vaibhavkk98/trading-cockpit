@@ -1,0 +1,310 @@
+symbol,event_id,event_type,effective_date,previous_event,sequence_issue
+AARTIDRUGS,PEVT_01234,DELETION,"March 28, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ABB,PEVT_00344,DELETION,"December 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ABLBL,PEVT_00659,ADDITION,"October 31, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ABSLAMC,PEVT_00384,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ACI,PEVT_01023,ADDITION,"August 31, 2023",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ACI,PEVT_00713,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ADANIPOWER,PEVT_00129,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+AETHER,PEVT_01081,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+AFCONS,PEVT_00744,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+AFFLE,PEVT_00808,ADDITION,"May 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+AFFLE,PEVT_00693,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+AKUMS,PEVT_00936,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+AKZOINDIA,PEVT_00855,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ALIVUS,PEVT_00745,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ALIVUS,PEVT_00835,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ALKYLAMINE,PEVT_00938,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ALLCARGO,PEVT_00629,ADDITION,"September 29, 2023",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ALLCARGO,PEVT_01082,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ALLCARGO,PEVT_00084,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+AMBER,PEVT_00385,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ANANDRATHI,PEVT_00130,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ANANTRAJ,PEVT_01108,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ANANTRAJ,PEVT_00386,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ANURAS,PEVT_01083,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+APARINDS,PEVT_00186,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+APLLTD,PEVT_00937,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ASTRAZEN,PEVT_00940,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ASTRAZEN,PEVT_00055,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+AUROPHARMA,PEVT_00160,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+AVANTIFEED,PEVT_00714,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+AWL,PEVT_00198,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+BALAMINES,PEVT_00715,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+BASF,PEVT_01109,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+BASF,PEVT_00941,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+BASF,PEVT_00497,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+BCG,PEVT_01187,DELETION,"April 26, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+BDL,PEVT_00002,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+BEL,PEVT_00351,DELETION,"December 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+BEML,PEVT_00284,DELETION,"October 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+BHARATRAS,PEVT_00056,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+BHEL,PEVT_00352,DELETION,"December 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+BIKAJI,PEVT_00063,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+BIRLACORPN,PEVT_00716,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+BLUEJET,PEVT_00857,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+BORORENEW,PEVT_01006,ADDITION,"August 30, 2022",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+BORORENEW,PEVT_00499,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+BSE,PEVT_00189,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+CAMPUS,PEVT_00942,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+CAPLIPOINT,PEVT_00811,ADDITION,"May 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+CARERATING,PEVT_00889,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+CELLO,PEVT_00717,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+CEMPRO,PEVT_00976,ADDITION,"March 30, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+CENTURYPLY,PEVT_00943,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+CERA,PEVT_00944,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+CGCL,PEVT_00052,DELETION,"April 12, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+CGPOWER,PEVT_00555,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+CHEMPLASTS,PEVT_01216,ADDITION,"August 08, 2022",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+CIEINDIA,PEVT_00719,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+CIEINDIA,PEVT_00044,DELETION,"May 12, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+CLEAN,PEVT_01007,ADDITION,"August 30, 2022",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+COFORGE,PEVT_00389,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+CPPLUS,PEVT_00968,ADDITION,"March 30, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+CUMMINSIND,PEVT_00354,DELETION,"December 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+DCBBANK,PEVT_01128,DELETION,"March
+31, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+DCMSHRIRAM,PEVT_01032,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+DEEPAKFERT,PEVT_00391,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+DEEPAKFERT,PEVT_00166,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+DIVISLAB,PEVT_00788,DELETION,"May 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ENGINERSIN,PEVT_01086,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ENRIN,PEVT_00691,ADDITION,"February 27, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+EPL,PEVT_01087,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+EQUITAS,PEVT_00559,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+EQUITASBNK,PEVT_00176,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+ERIS,PEVT_00004,DELETION,"September 30, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ERIS,PEVT_00286,DELETION,"October 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ERIS,PEVT_00685,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+EXIDEIND,PEVT_00161,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+FDC,PEVT_01088,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+FINEORG,PEVT_00722,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+FINPIPE,PEVT_00946,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+FINPIPE,PEVT_00500,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+FIRSTCRY,PEVT_00748,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+FORCEMOT,PEVT_00860,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+FORTIS,PEVT_00394,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+FRETAIL,PEVT_00322,ADDITION,"January 1, 2021",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+FRETAIL,PEVT_01130,DELETION,"March
+31, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GABRIEL,PEVT_00978,ADDITION,"March 30, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+GAEL,PEVT_00725,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GALLANTT,PEVT_00979,ADDITION,"March 30, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+GAYAPROJ,PEVT_00998,DELETION,"March 27, 2020",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GET&D,PEVT_01112,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+GHCL,PEVT_00777,DELETION,"April 29, 2021",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GILLETTE,PEVT_00512,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+GLS,PEVT_01089,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GMMPFAUDLR,PEVT_01090,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GMRINFRA,PEVT_00882,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+GNFC,PEVT_00287,DELETION,"October 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GNFC,PEVT_00836,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GNFC,PEVT_00199,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+GODREJAGRO,PEVT_00613,DELETION,"September 29, 2023",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GPPL,PEVT_00837,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GRASIM,PEVT_00340,DELETION,"January 1, 2021",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GRASIM,PEVT_00789,DELETION,"May 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GRAVITA,PEVT_00543,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+GREENPANEL,PEVT_00501,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+GRINDWELL,PEVT_00724,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GSFC,PEVT_00726,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+GUJGASLTD,PEVT_00948,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+HAL,PEVT_00503,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+HAPPYFORGE,PEVT_01091,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+HATHWAY,PEVT_00006,DELETION,"September 30, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+HATHWAY,PEVT_00894,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+HBLPOWER,PEVT_00137,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+HBLPOWER,PEVT_00357,DELETION,"December 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+HEXT,PEVT_00861,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+HGS,PEVT_00502,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+HINDCOPPER,PEVT_00138,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+HINDZINC,PEVT_00608,ADDITION,"July 31, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+HSCL,PEVT_00397,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+HYUNDAI,PEVT_00751,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+IDFC,PEVT_00047,DELETION,"October 10, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+IFBIND,PEVT_00504,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+IGIL,PEVT_00752,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+IIFL,PEVT_00314,DELETION,"January 1, 2021",DELETION,Consecutive DELETION -> DELETION without intervening state change
+IIFL,PEVT_01188,DELETION,"April 26, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+INDIACEM,PEVT_00398,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+INDIGOPNTS,PEVT_01092,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+INDOCO,PEVT_00057,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+INDUSTOWER,PEVT_00817,ADDITION,"May 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+INFIBEAM,PEVT_00780,DELETION,"April 29, 2021",DELETION,Consecutive DELETION -> DELETION without intervening state change
+INFY,PEVT_01208,DELETION,"July 31, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+INOXINDIA,PEVT_01114,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+INOXINDIA,PEVT_00950,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+INOXWIND,PEVT_00661,ADDITION,"October 31, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+IRCON,PEVT_00106,DELETION,"June 28, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+IREDA,PEVT_01065,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+JAIBALAJI,PEVT_01094,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+JINDALSAW,PEVT_00108,DELETION,"June 28, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+JINDALSAW,PEVT_01209,DELETION,"July 31, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+JKLAKSHMI,PEVT_00727,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+JMFINANCIL,PEVT_00163,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+JUBLPHARMA,PEVT_00547,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+JWL,PEVT_00142,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+JYOTHYLAB,PEVT_00434,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+JYOTHYLAB,PEVT_00951,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+JYOTICNC,PEVT_00299,ADDITION,"October 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+KANSAINER,PEVT_00840,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+KAYNES,PEVT_01095,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+KEI,PEVT_00190,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+KFINTECH,PEVT_00067,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+KIRLOSBROS,PEVT_01115,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+KIRLOSBROS,PEVT_00952,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+KNRCON,PEVT_00841,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+KRBL,PEVT_01097,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+KSB,PEVT_00728,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+KSB,PEVT_00863,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+KSB,PEVT_00953,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+LLOYDSME,PEVT_00405,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+LTFOODS,PEVT_00755,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+LXCHEM,PEVT_01099,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MAHLIFE,PEVT_00729,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MAHLOG,PEVT_00622,DELETION,"September 29, 2023",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MAHSEAMLES,PEVT_00955,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MANKIND,PEVT_00669,DELETION,"February 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MANKIND,PEVT_00531,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MANYAVAR,PEVT_00964,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MASTEK,PEVT_00842,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MAXHEALTH,PEVT_00922,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+MCX,PEVT_00191,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+MEDPLUS,PEVT_00820,ADDITION,"May 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+MEDPLUS,PEVT_01100,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+METROBRAND,PEVT_00821,ADDITION,"May 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+METROBRAND,PEVT_00730,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+METROPOLIS,PEVT_00956,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+MGL,PEVT_00492,ADDITION,"June 30, 2022",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+MINDACORP,PEVT_00822,ADDITION,"May 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+MOTHERSON,PEVT_00151,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+MTARTECH,PEVT_01045,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+NATIONALUM,PEVT_00145,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+NAVA,PEVT_00756,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+NETWEB,PEVT_01116,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+NETWEB,PEVT_00409,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+NETWORK18,PEVT_00843,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+NEULANDLAB,PEVT_00757,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+NLCINDIA,PEVT_00115,DELETION,"June 28, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+NMDC,PEVT_01213,DELETION,"August 08, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+NMDC,PEVT_00271,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+NOCIL,PEVT_00507,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+NUVOCO,PEVT_01009,ADDITION,"August 30, 2022",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+NUVOCO,PEVT_00731,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+NUVOCO,PEVT_00865,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+NYKAA,PEVT_00816,ADDITION,"May 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+OLECTRA,PEVT_00706,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+PAYTM,PEVT_00192,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+PCBL,PEVT_01101,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+PFC,PEVT_00201,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+PFIZER,PEVT_01250,DELETION,"March 28, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+PGEL,PEVT_00761,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+PGHH,PEVT_00732,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+PGHH,PEVT_00867,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+PGHH,PEVT_00958,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+PGHL,PEVT_00058,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+PNB,PEVT_00149,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+PNBHOUSING,PEVT_00181,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+PNCINFRA,PEVT_00844,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+POLICYBZR,PEVT_00411,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+POLICYBZR,PEVT_00193,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+POLYPLEX,PEVT_00264,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+PPLPHARMA,PEVT_00797,DELETION,"May 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+PPLPHARMA,PEVT_00712,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+PRAJIND,PEVT_00905,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+PRESTIGE,PEVT_00369,DELETION,"December 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+PRINCEPIPE,PEVT_01102,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RADICO,PEVT_00416,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+RAIN,PEVT_00164,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+RAJESHEXPO,PEVT_00667,DELETION,"February 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RAJESHEXPO,PEVT_00733,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RATNAMANI,PEVT_00734,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RAYMOND,PEVT_00878,ADDITION,"August 29, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+RAYMOND,PEVT_00847,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RAYMOND,PEVT_00182,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+RAYMONDLSL,PEVT_00846,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RCF,PEVT_00666,DELETION,"November 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RCF,PEVT_00439,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RCF,PEVT_00959,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RELINFRA,PEVT_00960,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RESPONIND,PEVT_00925,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+RKFORGE,PEVT_01117,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ROUTE,PEVT_00848,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RTNINDIA,PEVT_00845,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+RVNL,PEVT_00300,ADDITION,"October 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SAFARI,PEVT_01048,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SAFARI,PEVT_01104,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SAGILITY,PEVT_00773,ADDITION,"April 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SAIL,PEVT_00710,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SAILIFE,PEVT_00551,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SANOFI,PEVT_00735,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SANOFI,PEVT_00165,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+SAREGAMA,PEVT_00641,ADDITION,"September 29, 2023",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SBICARD,PEVT_00205,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+SCHNEIDER,PEVT_00279,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SCI,PEVT_01118,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SFL,PEVT_00059,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+SHILPAMED,PEVT_00425,DELETION,"March 27, 2020",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SHILPAMED,PEVT_00574,DELETION,"March 31, 2023",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SHOPERSTOP,PEVT_00560,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+SJVN,PEVT_00374,DELETION,"December 31, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SOBHA,PEVT_00153,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SONACOMS,PEVT_00883,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+SONATSOFTW,PEVT_00183,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+SPLPETRO,PEVT_00990,ADDITION,"March 30, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SUDARSCHEM,PEVT_00576,DELETION,"March 31, 2023",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SUNDRMFAST,PEVT_00737,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SUNDRMFAST,PEVT_00042,DELETION,"April 11, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SUNDRMFAST,PEVT_00961,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SWIGGY,PEVT_00552,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+SWSOLAR,PEVT_00850,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+SYRMA,PEVT_00521,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TANLA,PEVT_00851,DELETION,"September 30, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+TARIL,PEVT_00768,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TASTYBITE,PEVT_01151,DELETION,"March
+31, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+TATACHEM,PEVT_01197,ADDITION,"July 31, 2023",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TATACOFFEE,PEVT_00060,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+TATAMOTORS,PEVT_00076,DELETION,"June 30,
+2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+TATAMOTORS,PEVT_01210,DELETION,"July 31, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+TATASTLBSL,PEVT_00778,DELETION,"April 29, 2021",DELETION,Consecutive DELETION -> DELETION without intervening state change
+TATASTLLP,PEVT_00017,DELETION,"September 30, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+TBOTEK,PEVT_00301,ADDITION,"October 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TCI,PEVT_00509,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+TCIEXP,PEVT_00508,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+TEGA,PEVT_00993,ADDITION,"March 30, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TENNIND,PEVT_00994,ADDITION,"March 30, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+THERMAX,PEVT_00155,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+THYROCARE,PEVT_00061,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+TITAGARH,PEVT_00156,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TMCV,PEVT_00610,ADDITION,"July 31, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TRENT,PEVT_00196,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TRIDENT,PEVT_00553,ADDITION,"September 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+TRIVENI,PEVT_00962,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+TV18BRDCST,PEVT_00266,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+TVSSCS,PEVT_00738,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+UJJIVAN,PEVT_00490,DELETION,"June 30, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+USHAMART,PEVT_00522,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+VAIBHAVGBL,PEVT_01105,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+VARROC,PEVT_00695,DELETION,,DELETION,Consecutive DELETION -> DELETION without intervening state change
+VBL,PEVT_00775,ADDITION,"April 30, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+VBL,PEVT_00665,DELETION,"November 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+VEDL,PEVT_00341,DELETION,"January 1, 2021",DELETION,Consecutive DELETION -> DELETION without intervening state change
+VEDL,PEVT_00935,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+VGUARD,PEVT_00442,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+VGUARD,PEVT_00966,DELETION,"March 30, 2026",DELETION,Consecutive DELETION -> DELETION without intervening state change
+VINATIORGA,PEVT_01121,ADDITION,"September 30, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+VINATIORGA,PEVT_00742,DELETION,"March 28, 2025",DELETION,Consecutive DELETION -> DELETION without intervening state change
+VMM,PEVT_00769,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+WAAREEENER,PEVT_00770,ADDITION,"March 28, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+WELCORP,PEVT_01005,DELETION,"August 30, 2022",DELETION,Consecutive DELETION -> DELETION without intervening state change
+WELCORP,PEVT_00125,DELETION,"June 28, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+WOCKPHARMA,PEVT_00881,ADDITION,"August 29, 2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ZENSARTECH,PEVT_01107,DELETION,"September 30, 2024",DELETION,Consecutive DELETION -> DELETION without intervening state change
+ZENTEC,PEVT_00083,ADDITION,"June 30,
+2025",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ZOMATO,PEVT_00421,ADDITION,"December 31, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ZOMATO,PEVT_00197,ADDITION,,ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ZYDUSLIFE,PEVT_00157,ADDITION,"June 28, 2024",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change
+ZYDUSWELL,PEVT_00997,ADDITION,"March 30, 2026",ADDITION,Consecutive ADDITION -> ADDITION without intervening state change

@@ -1,0 +1,6 @@
+from pathlib import Path
+import sys
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));from market_risk_live import Source,classify,cluster,build_payload
+def run():
+ s=Source('Mock official','TIER_1_PRIMARY_OFFICIAL','https://example.test',('INDIA_CORE',));raw={'title':'RBI announces emergency liquidity action','summary':'Broad liquidity action.','url':'https://example.test/a','published':'Wed, 11 Aug 2026 10:00:00 +0000'};e=classify(raw,s);assert e and e['informational_only'] and e['source_reference'];assert len(cluster([e,e]))==1;normal=build_payload([{'check_status':'SUCCESS','source_tier':'TIER_1_PRIMARY_OFFICIAL','coverage_groups':['INDIA_CORE']},{'check_status':'SUCCESS','source_tier':'TIER_1_PRIMARY_OFFICIAL','coverage_groups':['GLOBAL_MACRO']},{'check_status':'SUCCESS','source_tier':'TIER_1_PRIMARY_OFFICIAL','coverage_groups':['GLOBAL_SYSTEMIC']}],[],[]);bad=build_payload([{'check_status':'FAILED','source_tier':'TIER_1_PRIMARY_OFFICIAL','coverage_groups':['INDIA_CORE']}],[],[]);assert normal['overall_level']=='NORMAL' and bad['overall_level']=='NOT_AVAILABLE' and len(normal['top_events'])<=3;assert 'prediction' not in str(e).lower() and 'sentiment' not in str(e).lower();print('C2 focused live-context tests: PASS')
+if __name__=='__main__':run()

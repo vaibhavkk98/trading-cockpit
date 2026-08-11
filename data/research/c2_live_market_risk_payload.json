@@ -1,0 +1,138 @@
+{
+  "overall_level": "HIGH",
+  "generated_at": "2026-08-11T13:39:34.255110+00:00",
+  "source_coverage_status": "SUFFICIENT",
+  "coverage_groups_achieved": [
+    "GLOBAL_MACRO",
+    "GLOBAL_SYSTEMIC",
+    "INDIA_CORE"
+  ],
+  "coverage_groups_required": [
+    "GLOBAL_MACRO",
+    "GLOBAL_SYSTEMIC",
+    "INDIA_CORE"
+  ],
+  "successful_source_checks": 4,
+  "failed_source_checks": 2,
+  "raw_item_count": 76,
+  "active_event_count": 3,
+  "high_materiality_count": 2,
+  "categories": {
+    "GEOPOLITICAL": 1,
+    "MONETARY_POLICY": 0,
+    "FISCAL_POLICY": 0,
+    "ECONOMIC_GROWTH": 0,
+    "FINANCIAL_SYSTEM": 0,
+    "COMMODITY_ENERGY": 1,
+    "TRADE_POLICY": 0,
+    "TECHNOLOGY_SYSTEMIC": 0,
+    "PUBLIC_HEALTH_NATURAL_DISASTER": 1,
+    "GLOBAL_MARKET_STRESS": 0
+  },
+  "top_events": [
+    {
+      "market_risk_event_id": "MR_GEOPOLITICAL_6647977558",
+      "category": "GEOPOLITICAL",
+      "headline_or_short_title": "Ousted Syrian dictator Bashar al-Assad sentenced to death in absentia",
+      "summary": "The ex-president is convicted of committing war crimes and crimes against humanity during the country's civil war.",
+      "event_timestamp": "Tue, 11 Aug 2026 10:43:07 GMT",
+      "published_timestamp": "Tue, 11 Aug 2026 10:43:07 GMT",
+      "observed_at_timestamp": "2026-08-11T13:39:34.254386+00:00",
+      "source_name": "BBC World",
+      "source_type": "OFFICIAL_RSS",
+      "source_tier": "TIER_3_SECONDARY_CONTEXT",
+      "source_reference": "https://www.bbc.co.uk/news/articles/ce34dkpnyg7o?at_medium=RSS&at_campaign=rss",
+      "geographic_scope": "GLOBAL_OR_INDIA",
+      "market_scope": "BROAD_MARKET_PLAUSIBLE",
+      "direction": "RISK_NEGATIVE",
+      "materiality": "HIGH",
+      "confidence": "MODERATE",
+      "freshness": "FRESH",
+      "status": "ACTIVE",
+      "expected_horizon": "DAYS",
+      "evidence_summary": "Ousted Syrian dictator Bashar al-Assad sentenced to death in absentia",
+      "possible_market_channels": [
+        "risk_off",
+        "oil",
+        "trade",
+        "supply_chain"
+      ],
+      "affected_asset_context": "Broad Indian-market / portfolio context",
+      "supporting_source_count": 1,
+      "supporting_source_references": [
+        "https://www.bbc.co.uk/news/articles/ce34dkpnyg7o?at_medium=RSS&at_campaign=rss"
+      ],
+      "informational_only": true
+    },
+    {
+      "market_risk_event_id": "MR_COMMODITY_ENERGY_3010776036",
+      "category": "COMMODITY_ENERGY",
+      "headline_or_short_title": "Libyan authorities battle big blaze at major oil refinery",
+      "summary": "Monday's drone strike on the Zawiya refinery was the third such incident in two days.",
+      "event_timestamp": "Tue, 11 Aug 2026 08:28:24 GMT",
+      "published_timestamp": "Tue, 11 Aug 2026 08:28:24 GMT",
+      "observed_at_timestamp": "2026-08-11T13:39:34.254537+00:00",
+      "source_name": "BBC World",
+      "source_type": "OFFICIAL_RSS",
+      "source_tier": "TIER_3_SECONDARY_CONTEXT",
+      "source_reference": "https://www.bbc.co.uk/news/articles/cp308z9pl30o?at_medium=RSS&at_campaign=rss",
+      "geographic_scope": "GLOBAL_OR_INDIA",
+      "market_scope": "BROAD_MARKET_PLAUSIBLE",
+      "direction": "RISK_NEGATIVE",
+      "materiality": "HIGH",
+      "confidence": "MODERATE",
+      "freshness": "FRESH",
+      "status": "ACTIVE",
+      "expected_horizon": "DAYS",
+      "evidence_summary": "Libyan authorities battle big blaze at major oil refinery",
+      "possible_market_channels": [
+        "oil",
+        "inflation",
+        "supply_chain"
+      ],
+      "affected_asset_context": "Broad Indian-market / portfolio context",
+      "supporting_source_count": 1,
+      "supporting_source_references": [
+        "https://www.bbc.co.uk/news/articles/cp308z9pl30o?at_medium=RSS&at_campaign=rss"
+      ],
+      "informational_only": true
+    },
+    {
+      "market_risk_event_id": "MR_PUBLIC_HEALTH_NATURAL_DISASTER_5636265632",
+      "category": "PUBLIC_HEALTH_NATURAL_DISASTER",
+      "headline_or_short_title": "At least 169 killed in Colombia's largest  earthquake in years",
+      "summary": "More than 480 people were injured in the quakes, with more feared trapped under collapsed buildings.",
+      "event_timestamp": "Tue, 11 Aug 2026 13:21:32 GMT",
+      "published_timestamp": "Tue, 11 Aug 2026 13:21:32 GMT",
+      "observed_at_timestamp": "2026-08-11T13:39:34.254477+00:00",
+      "source_name": "BBC World",
+      "source_type": "OFFICIAL_RSS",
+      "source_tier": "TIER_3_SECONDARY_CONTEXT",
+      "source_reference": "https://www.bbc.co.uk/news/articles/c20e360lx0vo?at_medium=RSS&at_campaign=rss",
+      "geographic_scope": "GLOBAL_OR_INDIA",
+      "market_scope": "BROAD_MARKET_PLAUSIBLE",
+      "direction": "RISK_NEGATIVE",
+      "materiality": "MODERATE",
+      "confidence": "MODERATE",
+      "freshness": "FRESH",
+      "status": "ACTIVE",
+      "expected_horizon": "DAYS",
+      "evidence_summary": "At least 169 killed in Colombia's largest  earthquake in years",
+      "possible_market_channels": [
+        "risk_off",
+        "growth",
+        "supply_chain"
+      ],
+      "affected_asset_context": "Broad Indian-market / portfolio context",
+      "supporting_source_count": 3,
+      "supporting_source_references": [
+        "https://www.bbc.co.uk/news/articles/c20e360lx0vo?at_medium=RSS&at_campaign=rss",
+        "https://www.bbc.co.uk/news/videos/cwyl3w1e6zxo?at_medium=RSS&at_campaign=rss",
+        "https://www.bbc.co.uk/news/videos/cz6473llqpwo?at_medium=RSS&at_campaign=rss"
+      ],
+      "informational_only": true
+    }
+  ],
+  "gap_risk_note": "Broad external risk is elevated. Overnight realized losses may exceed defined technical stop risk.",
+  "informational_only": true
+}
