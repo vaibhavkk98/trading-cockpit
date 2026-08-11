@@ -25,4 +25,4 @@ jobs:
       - name: Run canonical EOD pipeline
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python scripts/run_eod_daily_pipeline.py
+        run: PYTHONPATH=. python scripts/run_eod_daily_pipeline.py
