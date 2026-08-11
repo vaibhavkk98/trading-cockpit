@@ -136,10 +136,69 @@ class PortfolioSnapshot(Base):
     reference_heat_missing_count = Column(Integer, nullable=True)
     executable_stop_heat_pct = Column(Float, nullable=True)
     executable_stop_coverage_count = Column(Integer, nullable=True)
+    price_coverage_count = Column(Integer, nullable=True)
+    price_coverage_total = Column(Integer, nullable=True)
     snapshot_reason = Column(String(80), nullable=False)
     state_fingerprint = Column(String(64), nullable=False)
     source = Column(String(80), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AnalysisRun(Base):
+    """Canonical EOD decision record, safely retried once per market date."""
+    __tablename__ = "analysis_runs"
+    __table_args__ = (UniqueConstraint("analysis_date", name="uq_analysis_run_date"),)
+    run_id = Column(String(80), primary_key=True)
+    analysis_date = Column(Date, nullable=False, index=True)
+    started_at = Column(DateTime(timezone=True), nullable=False)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    status = Column(String(40), nullable=False, index=True)
+    symbols_requested = Column(Integer, nullable=False, default=0)
+    symbols_succeeded = Column(Integer, nullable=False, default=0)
+    symbols_failed = Column(Integer, nullable=False, default=0)
+    qualified_count = Column(Integer, nullable=False, default=0)
+    allocated_count = Column(Integer, nullable=False, default=0)
+    provider_summary = Column(Text, nullable=True)
+    decision_contract_version = Column(String(80), nullable=False)
+    error_summary = Column(Text, nullable=True)
+    source = Column(String(80), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class DailyOpportunity(Base):
+    __tablename__ = "daily_opportunities"
+    __table_args__ = (UniqueConstraint("run_id", "opportunity_id", name="uq_daily_opportunity_run"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_id = Column(String(80), ForeignKey("analysis_runs.run_id"), nullable=False, index=True)
+    analysis_date = Column(Date, nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False)
+    symbol = Column(String(32), nullable=False, index=True)
+    strategy = Column(String(120), nullable=False)
+    priority = Column(Integer, nullable=True)
+    volume_ratio_20 = Column(Float, nullable=True)
+    qualification_status = Column(String(80), nullable=False)
+    entry_price = Column(Float, nullable=True)
+    allocation_status = Column(String(120), nullable=True)
+    allocation_reason = Column(String(120), nullable=True)
+    decision_payload = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PositionMark(Base):
+    __tablename__ = "position_marks"
+    __table_args__ = (UniqueConstraint("trade_id", "mark_date", name="uq_position_mark_trade_date"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    trade_id = Column(Integer, ForeignKey("trades.id"), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    mark_price = Column(Float, nullable=False)
+    mark_date = Column(Date, nullable=False, index=True)
+    marked_at = Column(DateTime(timezone=True), nullable=False)
+    provider = Column(String(80), nullable=False)
+    mark_status = Column(String(40), nullable=False)
+    source_run_id = Column(String(80), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
 _TRADE_ADDITIONS = {
@@ -153,6 +212,7 @@ _TRADE_ADDITIONS = {
     "executable_risk_per_share": "FLOAT", "executable_risk_rupees": "FLOAT",
     "gap_risk_possible": "BOOLEAN", "target_status": "VARCHAR(40)",
 }
+_SNAPSHOT_ADDITIONS = {"price_coverage_count": "INTEGER", "price_coverage_total": "INTEGER"}
 
 
 def init_db() -> bool:
@@ -166,6 +226,10 @@ def init_db() -> bool:
                 if name not in existing:
                     # Names and types are module-owned constants, never user values.
                     connection.exec_driver_sql(f"ALTER TABLE trades ADD COLUMN {name} {sql_type}")
+            existing_snapshots = {column["name"] for column in inspect(engine).get_columns("portfolio_snapshots")}
+            for name, sql_type in _SNAPSHOT_ADDITIONS.items():
+                if name not in existing_snapshots:
+                    connection.exec_driver_sql(f"ALTER TABLE portfolio_snapshots ADD COLUMN {name} {sql_type}")
         _database_available, _database_error = True, None
         return True
     except SQLAlchemyError as exc:
@@ -279,7 +343,7 @@ def save_portfolio_snapshot(snapshot: Dict[str, Any], reason: str, source: str =
         state = {key: snapshot.get(key) for key in (
             "portfolio_equity", "cash", "deployed_capital", "realized_pnl", "unrealized_pnl", "open_positions",
             "reference_heat_pct", "reference_heat_coverage_count", "reference_heat_missing_count",
-            "executable_stop_heat_pct", "executable_stop_coverage_count")}
+            "executable_stop_heat_pct", "executable_stop_coverage_count", "price_coverage_count", "price_coverage_total")}
         fingerprint = __import__("hashlib").sha256(json.dumps(state, sort_keys=True, default=str).encode()).hexdigest()
         snapshot_date = snapshot.get("snapshot_date") or now.date()
         if isinstance(snapshot_date, str):
@@ -303,6 +367,128 @@ def save_portfolio_snapshot(snapshot: Dict[str, Any], reason: str, source: str =
 
 def load_portfolio_snapshots(limit: int = 365) -> List[PortfolioSnapshot]:
     return _safe_read(lambda s: s.query(PortfolioSnapshot).order_by(PortfolioSnapshot.snapshot_timestamp.desc()).limit(limit).all())
+
+
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    if hasattr(value, "item"):
+        return value.item()
+    if isinstance(value, (dt.date, dt.datetime)):
+        return value.isoformat()
+    return value
+
+
+def persist_analysis_run(run: Dict[str, Any], opportunities: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Upsert one canonical run and replace only that run's qualified payload."""
+    _require_database()
+    session = SessionLocal()
+    try:
+        analysis_date = run.get("analysis_date")
+        if isinstance(analysis_date, str):
+            analysis_date = dt.date.fromisoformat(analysis_date)
+        if not isinstance(analysis_date, dt.date):
+            raise ValueError("analysis_date is required")
+        now = dt.datetime.now(dt.timezone.utc)
+        run_id = str(run.get("run_id") or f"EOD-{analysis_date.isoformat()}")
+        row = session.query(AnalysisRun).filter_by(analysis_date=analysis_date).first()
+        values = {
+            "run_id": run_id, "analysis_date": analysis_date, "started_at": run.get("started_at") or now,
+            "completed_at": run.get("completed_at") or now, "status": str(run.get("status", "FAILED")),
+            "symbols_requested": int(run.get("symbols_requested") or 0), "symbols_succeeded": int(run.get("symbols_succeeded") or 0),
+            "symbols_failed": int(run.get("symbols_failed") or 0), "qualified_count": int(run.get("qualified_count") or 0),
+            "allocated_count": int(run.get("allocated_count") or 0), "provider_summary": json.dumps(_json_safe(run.get("provider_summary") or {}), sort_keys=True),
+            "decision_contract_version": str(run.get("decision_contract_version") or "V1_1_EOD"),
+            "error_summary": run.get("error_summary"), "source": run.get("source") or "MANUAL_REFRESH",
+        }
+        if row is None:
+            row = AnalysisRun(created_at=now, updated_at=now, **values)
+            session.add(row)
+        else:
+            # The unique date is the canonical identity; retries update it in place.
+            for key, value in values.items():
+                setattr(row, key, value)
+            row.updated_at = now
+            session.query(DailyOpportunity).filter_by(run_id=row.run_id).delete(synchronize_session=False)
+        for candidate in opportunities:
+            opportunity_id = str(candidate.get("opportunity_id") or f"{analysis_date.isoformat()}:{candidate.get('symbol')}:{candidate.get('strategy')}")
+            payload = dict(candidate); payload["opportunity_id"] = opportunity_id
+            session.add(DailyOpportunity(
+                run_id=row.run_id, analysis_date=analysis_date, opportunity_id=opportunity_id,
+                symbol=str(candidate.get("symbol") or ""), strategy=str(candidate.get("strategy") or "NOT_AVAILABLE"),
+                priority=candidate.get("opportunity_priority_rank"), volume_ratio_20=candidate.get("volume_ratio_20"),
+                qualification_status=str(candidate.get("qualification_status") or "QUALIFIED"), entry_price=candidate.get("entry_price"),
+                allocation_status=candidate.get("allocation_status"), allocation_reason=candidate.get("allocation_reason_code"),
+                decision_payload=json.dumps(_json_safe(payload), sort_keys=True, default=str), created_at=now,
+            ))
+        session.commit(); session.refresh(row)
+        return {"run_id": row.run_id, "saved": True}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def load_latest_analysis_run() -> Optional[Dict[str, Any]]:
+    """Read the newest valid completed run and its canonical decision payloads."""
+    if not init_db():
+        return None
+    session = SessionLocal()
+    try:
+        row = session.query(AnalysisRun).filter(AnalysisRun.status.in_(["SUCCESS", "PARTIAL_SUCCESS"])).order_by(AnalysisRun.analysis_date.desc(), AnalysisRun.completed_at.desc()).first()
+        if not row:
+            return None
+        items = session.query(DailyOpportunity).filter_by(run_id=row.run_id).order_by(DailyOpportunity.priority.asc(), DailyOpportunity.symbol.asc()).all()
+        return {
+            "run_id": row.run_id, "analysis_date": row.analysis_date.isoformat(), "started_at": row.started_at.isoformat() if row.started_at else None,
+            "scan_completed_at": row.completed_at.isoformat() if row.completed_at else None, "status": row.status,
+            "symbols_requested": row.symbols_requested, "symbols_succeeded": row.symbols_succeeded, "symbols_failed": row.symbols_failed,
+            "qualified_count": row.qualified_count, "allocated_count": row.allocated_count, "source": row.source,
+            "provider_summary": json.loads(row.provider_summary or "{}"), "decisions": [json.loads(item.decision_payload) for item in items],
+        }
+    except (SQLAlchemyError, ValueError, TypeError):
+        return None
+    finally:
+        session.close()
+
+
+def persist_position_marks(marks: List[Dict[str, Any]], source_run_id: Optional[str] = None) -> Dict[str, int]:
+    """Daily mark upsert keyed by trade/date; unavailable marks are never fabricated."""
+    _require_database()
+    session = SessionLocal(); saved = 0
+    try:
+        for mark in marks:
+            if not isinstance(mark.get("mark_price"), (int, float)) or mark["mark_price"] <= 0:
+                continue
+            mark_date = mark.get("mark_date") or dt.datetime.now(dt.timezone.utc).date()
+            if isinstance(mark_date, str): mark_date = dt.date.fromisoformat(mark_date)
+            marked_at = mark.get("marked_at") or dt.datetime.now(dt.timezone.utc)
+            existing = session.query(PositionMark).filter_by(trade_id=int(mark["trade_id"]), mark_date=mark_date).first()
+            values = {"symbol": str(mark.get("symbol") or ""), "mark_price": float(mark["mark_price"]), "marked_at": marked_at,
+                      "provider": str(mark.get("provider") or "YFINANCE"), "mark_status": str(mark.get("mark_status") or "AVAILABLE"),
+                      "source_run_id": source_run_id or mark.get("source_run_id")}
+            if existing:
+                for key, value in values.items(): setattr(existing, key, value)
+                existing.updated_at = dt.datetime.now(dt.timezone.utc)
+            else:
+                session.add(PositionMark(trade_id=int(mark["trade_id"]), mark_date=mark_date, created_at=dt.datetime.now(dt.timezone.utc), **values))
+            saved += 1
+        session.commit(); return {"saved": saved}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def get_latest_position_marks() -> Dict[int, Dict[str, Any]]:
+    rows = _safe_read(lambda s: s.query(PositionMark).order_by(PositionMark.trade_id.asc(), PositionMark.mark_date.desc(), PositionMark.marked_at.desc()).all())
+    latest: Dict[int, Dict[str, Any]] = {}
+    for row in rows:
+        if row.trade_id not in latest:
+            latest[row.trade_id] = {"mark_price": row.mark_price, "mark_date": row.mark_date.isoformat(), "marked_at": row.marked_at.isoformat(), "provider": row.provider, "mark_status": row.mark_status, "source_run_id": row.source_run_id}
+    return latest
 
 
 def sync_paper_trades() -> Dict[str, Any]:
@@ -343,7 +529,28 @@ def get_portfolio_performance_summary() -> Dict[str, Any]:
             "total_realized_pnl": round(realized, 2), "open_capital_deployed": round(deployed, 2)}
 
 
-def get_open_trades_with_live_data() -> List[Dict[str, Any]]:
+def get_open_trades_with_live_data(source_run_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Explicit provider refresh that persists valid marks before returning positions."""
+    trades = get_open_trades()
+    prices: Dict[str, float] = {}
+    mark_dates: Dict[str, dt.date] = {}
+    for symbol in {trade.symbol for trade in trades}:
+        try:
+            data = yf.Ticker(symbol).history(period="5d", interval="1d", auto_adjust=True)
+            if not data.empty:
+                prices[symbol] = float(data["Close"].iloc[-1])
+                mark_dates[symbol] = data.index[-1].date()
+        except Exception: pass
+    persist_position_marks([
+        {"trade_id": trade.id, "symbol": trade.symbol, "mark_price": prices[trade.symbol],
+         "mark_date": mark_dates.get(trade.symbol), "provider": "YFINANCE", "mark_status": "AVAILABLE"}
+        for trade in trades if trade.symbol in prices
+    ], source_run_id=source_run_id)
+    return get_open_trades_persisted()
+
+
+def _legacy_get_open_trades_with_live_data() -> List[Dict[str, Any]]:
+    """Compatibility implementation retained for historical reference only."""
     trades = get_open_trades()
     prices: Dict[str, float] = {}
     for symbol in {trade.symbol for trade in trades}:
@@ -377,13 +584,20 @@ def get_open_trades_with_live_data() -> List[Dict[str, Any]]:
 def get_open_trades_persisted() -> List[Dict[str, Any]]:
     """Load durable position state without requesting a current market price."""
     rows = []
+    latest_marks = get_latest_position_marks()
     for trade in get_open_trades():
         attr = trade.attribution
+        mark = latest_marks.get(trade.id)
+        current = mark.get("mark_price") if mark else None
         rows.append({"id": trade.id, "symbol": trade.symbol, "sector": trade.sector,
             "entry_date": trade.entry_date.strftime("%Y-%m-%d %H:%M") if trade.entry_date else "", "entry_price": trade.entry_price,
             "quantity": trade.quantity, "position_value": trade.position_value or trade.entry_price * trade.quantity,
-            "stop_loss": trade.stop_loss, "target": trade.target, "current_price": None, "price_status": "PRICE_NOT_REFRESHED",
-            "unrealized_pnl_inr": None, "unrealized_pnl_pct": None, "strategy_used": trade.strategy_used,
+            "stop_loss": trade.stop_loss, "target": trade.target, "current_price": current,
+            "price_status": "AVAILABLE" if current is not None else "PRICE_NOT_AVAILABLE",
+            "unrealized_pnl_inr": round((current - trade.entry_price) * trade.quantity, 2) if current is not None else None,
+            "unrealized_pnl_pct": round((current - trade.entry_price) / trade.entry_price * 100, 2) if current is not None and trade.entry_price else None,
+            "mark_date": mark.get("mark_date") if mark else None, "marked_at": mark.get("marked_at") if mark else None,
+            "mark_provider": mark.get("provider") if mark else None, "mark_status": mark.get("mark_status") if mark else "PRICE_NOT_AVAILABLE", "strategy_used": trade.strategy_used,
             "tech_score": attr.tech_score if attr else .85, "fund_score": attr.fund_score if attr else 7., "sent_score": attr.sent_score if attr else 0.,
             "reasoning": attr.agent_reasoning if attr else "", "risk_contract_version": trade.risk_contract_version,
             "allocation_status": trade.allocation_status, "opportunity_reference": trade.opportunity_reference,

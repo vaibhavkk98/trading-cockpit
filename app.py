@@ -40,6 +40,8 @@ from event_intelligence import EventIntelligenceService
 from market_risk_live import get_market_risk_context_for_ui
 from live_decision_adapter import assemble_live_decisions, summarize_live_portfolio_risk
 from operational_runtime import PRODUCT_VERSION, SCAN_FAILED, SCAN_NOT_RUN, SCAN_PARTIAL, SCAN_RUNNING, SCAN_SUCCESS, initial_scan_state, log_event, scan_freshness, utc_now
+from database import load_latest_analysis_run
+from eod_pipeline import execute_eod_pipeline, expected_indian_market_date
 from interaction_architecture import (
     candidate_identity,
     compact_allocation,
@@ -165,6 +167,19 @@ if st.session_state.get("candidate_contract_version") != COCKPIT_CANDIDATE_CONTR
     st.session_state["selected_opportunity_id"] = None
     st.session_state["candidate_contract_version"] = COCKPIT_CANDIDATE_CONTRACT_VERSION
 
+# Startup reads only durable state. It never starts a universe scan or price refresh.
+if not st.session_state.get("persisted_run_hydrated"):
+    persisted_run = load_latest_analysis_run()
+    if persisted_run:
+        st.session_state["scan_state"] = {**initial_scan_state(), **{key: persisted_run.get(key) for key in initial_scan_state()}, "source": persisted_run.get("source"), "run_id": persisted_run.get("run_id")}
+        st.session_state["last_analysis_date"] = persisted_run.get("analysis_date")
+        st.session_state["qualified_candidates"] = persisted_run.get("decisions", [])
+        st.session_state["allocated_candidates"] = persisted_run.get("decisions", [])
+        st.session_state["live_decisions"] = persisted_run.get("decisions", [])
+        st.session_state["diag_info"] = persisted_run.get("provider_summary", {})
+        reconcile_selection(st.session_state, persisted_run.get("decisions", []), st.session_state["scan_state"])
+    st.session_state["persisted_run_hydrated"] = True
+
 open_positions, persisted_portfolio_summary = hydrate_portfolio()
 if "database_health" not in st.session_state:
     st.session_state["database_health"] = adapters["execution"].database_diagnostics()
@@ -186,7 +201,7 @@ st.markdown(
 act_col1, act_col2, act_col3 = st.columns([2, 2, 4])
 
 with act_col1:
-    analysis_date = st.date_input("Analysis date", datetime.date.today())
+    analysis_date = st.date_input("Analysis date", expected_indian_market_date())
 
 with act_col2:
     st.write("")
@@ -199,74 +214,22 @@ with act_col3:
 # A full live-universe scan is intentional user work.  Do not begin it merely
 # because a fresh cockpit session has no saved candidates.
 if run_analysis_btn:
-    scan_state = initial_scan_state()
-    scan_state.update({"status": SCAN_RUNNING, "scan_started_at": utc_now(), "analysis_date": str(analysis_date)})
-    st.session_state["scan_state"] = scan_state
-    log_event(PROJECT_ROOT, "SCAN_START", analysis_date=str(analysis_date))
     with st.spinner("Scanning the NIFTY 500 universe and applying frozen qualification and allocation rules…"):
-      try:
-        symbols = adapters["universe"].get_universe(date_str=str(analysis_date))
-        scan_state["symbols_requested"] = len(symbols)
-        regime_info = adapters["market_data"].get_index_regime(as_of_date=str(analysis_date))
-
-        # Screen full universe as of date
-        shortlist_df, diag_info = adapters["signals"].run_stage1_screening(
-            symbols=symbols,
-            max_scan=None, # Full universe scan
-            as_of_date=str(analysis_date),
-            return_diagnostics=True
-        )
-
-        open_positions = adapters["execution"].get_open_positions()
-
-        allocator = PortfolioAllocationEngine(
-            max_positions=st.session_state["max_positions"],
-            max_trend=st.session_state["max_trend_slots"],
-            max_vol=st.session_state["max_vol_slots"]
-        )
-
-        allocated_candidates = allocator.allocate_candidates(
-            shortlist_df=shortlist_df,
-            regime_info=regime_info,
-            open_positions=open_positions,
-            position_sizing_mode=st.session_state["sizing_mode"],
-            exit_rule_mode=st.session_state["exit_mode"],
-            enabled_strategies=st.session_state["enabled_strategies"]
-        )
-
-        # P3A is informational only: it is applied after qualification/allocation
-        # and never feeds the allocator, score, or paper-trading execution path.
-        event_cutoff = datetime.datetime.combine(analysis_date, datetime.time.max, tzinfo=datetime.timezone.utc)
-        try:
-            EventIntelligenceService().enrich_candidates(allocated_candidates, cutoff=event_cutoff)
-        except Exception as event_exc:
-            log_event(PROJECT_ROOT, "EVENT_CONTEXT_UNAVAILABLE", error=type(event_exc).__name__)
-
-        symbols_succeeded = int(diag_info.get("valid_data_count", 0))
-        symbols_failed = max(0, len(symbols) - symbols_succeeded)
-        scan_state.update({
-            "status": SCAN_PARTIAL if symbols_succeeded and symbols_failed else SCAN_SUCCESS,
-            "scan_completed_at": utc_now(), "symbols_succeeded": symbols_succeeded,
-            "symbols_failed": symbols_failed, "qualified_count": sum(c.get("is_qualified", False) for c in allocated_candidates),
-            "allocated_count": sum(c.get("status") == "ALLOCATED" for c in allocated_candidates),
-        })
-        st.session_state["scan_state"] = scan_state
-        log_event(PROJECT_ROOT, "SCAN_PARTIAL" if scan_state["status"] == SCAN_PARTIAL else "SCAN_COMPLETE", requested=len(symbols), succeeded=symbols_succeeded, failed=symbols_failed)
-        st.session_state["last_analysis_date"] = str(analysis_date)
-        st.session_state["shortlist_df"] = shortlist_df
-        st.session_state["allocated_candidates"] = allocated_candidates
-        st.session_state["qualified_candidates"] = allocated_candidates
-        st.session_state["live_decisions"] = assemble_live_decisions(allocated_candidates)
-        st.session_state["regime_info"] = regime_info
-        st.session_state["diag_info"] = diag_info
-        reconcile_selection(st.session_state, st.session_state["live_decisions"], scan_state)
-        adapters["execution"].save_portfolio_snapshot("ANALYSIS_COMPLETED")
+        result = execute_eod_pipeline(analysis_date=analysis_date, source="MANUAL_REFRESH", dependencies={**adapters, "allocator": PortfolioAllocationEngine(max_positions=st.session_state["max_positions"], max_trend=st.session_state["max_trend_slots"], max_vol=st.session_state["max_vol_slots"])})
+    if result.get("persisted"):
+        st.session_state["scan_state"] = {key: result.get(key) for key in initial_scan_state()} | {"scan_started_at": result.get("started_at"), "scan_completed_at": result.get("completed_at"), "analysis_date": result.get("analysis_date")}
+        st.session_state["last_analysis_date"] = result.get("analysis_date")
+        st.session_state["qualified_candidates"] = result.get("decisions", [])
+        st.session_state["allocated_candidates"] = result.get("decisions", [])
+        st.session_state["live_decisions"] = result.get("decisions", [])
+        st.session_state["regime_info"] = result.get("regime_info")
+        st.session_state["diag_info"] = result.get("diagnostics", {})
+        reconcile_selection(st.session_state, result.get("decisions", []), st.session_state["scan_state"])
         hydrate_portfolio(force=True)
-      except Exception as exc:
-        scan_state.update({"status": SCAN_FAILED, "scan_completed_at": utc_now(), "error_summary": type(exc).__name__})
-        st.session_state["scan_state"] = scan_state
-        log_event(PROJECT_ROOT, "SCAN_FAILED", error=type(exc).__name__)
-        st.error("Analysis could not complete. Existing results, if any, were preserved.")
+    elif result.get("status") == "NO_COMPLETED_MARKET_BAR":
+        st.info("No completed market bar is available yet. The latest persisted analysis remains unchanged.")
+    else:
+        st.error("Analysis could not complete. Existing persisted results were preserved.")
 
 # ------------------------------------------------------------------------------
 # 6 MAIN NAVIGATION TABS
@@ -364,7 +327,7 @@ def render_signals_workbench():
 
 # Date Semantics Notice
 actual_data_date = regime_info.get('data_as_of')
-if str(analysis_date) == datetime.date.today().strftime("%Y-%m-%d"):
+if str(analysis_date) == expected_indian_market_date().isoformat():
     date_note = "Today's analysis uses the latest completed EOD session."
 else:
     date_note = "Historical analysis — no future data used."
@@ -417,7 +380,7 @@ with tab_today:
         freshness = scan_freshness(scan_state)
         state_label = {SCAN_NOT_RUN: "Not run", SCAN_RUNNING: "Running", SCAN_SUCCESS: "Success", SCAN_PARTIAL: "Partial success", SCAN_FAILED: "Failed"}.get(scan_state.get("status"), "Not available")
         freshness_label = "Current" if freshness == "CURRENT" else "Stale" if freshness == "STALE" else "Not available"
-        render_context_card("Analysis status", state_label, f"Completed: {display_value(scan_state.get('scan_completed_at'))}", "good" if freshness == "CURRENT" else "warn" if freshness == "STALE" else "unavailable", freshness_label)
+        render_context_card("Analysis status", state_label, f"Completed: {display_value(scan_state.get('scan_completed_at'))} · {display_value(scan_state.get('source'), 'Manual refresh')}", "good" if freshness == "CURRENT" else "warn" if freshness == "STALE" else "unavailable", freshness_label)
         render_context_card("Coverage", f"{scan_state.get('symbols_succeeded', 0)} / {scan_state.get('symbols_requested', 0)} histories", f"{scan_state.get('symbols_failed', 0)} unavailable · {scan_state.get('qualified_count', 0)} qualified", "neutral")
 
     # Sector Allocation Breakdown (Informational)
@@ -590,11 +553,16 @@ with tab_portfolio:
                 "Position value": format_currency(pos.get("position_value")),
                 "Current price": format_price(pos.get("current_price")) if pos.get("price_status") == "AVAILABLE" else "Price not available",
                 "P&L": format_currency(pos.get("unrealized_pnl_inr"), compact=False),
+                "Price as of": display_value(pos.get("marked_at") or pos.get("mark_date")),
                 "Reference risk": format_currency(pos.get("reference_risk_rupees"), compact=False) if pos.get("risk_reference_available") else "Not available",
                 "Executable stop": format_price(pos.get("initial_executable_stop")) if pos.get("executable_stop_enabled") else "—",
                 "Heat contribution": format_percent((pos.get("reference_risk_rupees") or 0) / 1_000_000 * 100) if pos.get("risk_reference_available") else "Not available",
             })
         st.dataframe(pd.DataFrame(df_open_tbl), width="stretch", hide_index=True)
+        marked_rows = [pos for pos in open_pos_list if pos.get("marked_at") or pos.get("mark_date")]
+        if marked_rows:
+            latest_mark = max(str(pos.get("marked_at") or pos.get("mark_date")) for pos in marked_rows)
+            st.caption(f"Latest persisted prices: {len(marked_rows)} / {len(open_pos_list)} positions · as of {latest_mark}")
 
         col_s1, col_s2 = st.columns([2, 4])
         with col_s1:
@@ -726,11 +694,17 @@ with tab_details:
             market_context = get_market_risk_context_for_ui(PROJECT_ROOT)
             render_context_card("Market risk", display_value(market_context.get("overall_level")).replace("_", " "), display_value(market_context.get("source_coverage_status")), "neutral", "Informational")
     with st.expander("Price trend", expanded=False):
-        chart_df = pd.DataFrame() if match_detail.get("status") == "UNAVAILABLE" else load_selected_chart(match_detail.get("symbol"), str(analysis_date))
-        if not chart_df.empty:
-            st.line_chart(chart_df[["Close", "EMA_20", "EMA_50"]].tail(120), width="stretch")
+        chart_key = candidate_identity(match_detail, st.session_state["scan_state"])
+        if st.button("Load price chart", key=f"load_chart_{chart_key}"):
+            st.session_state["chart_requested_for"] = chart_key
+        if st.session_state.get("chart_requested_for") == chart_key and match_detail.get("status") != "UNAVAILABLE":
+            chart_df = load_selected_chart(match_detail.get("symbol"), str(analysis_date))
+            if not chart_df.empty:
+                st.line_chart(chart_df[["Close", "EMA_20", "EMA_50"]].tail(120), width="stretch")
+            else:
+                render_empty_state("Price chart unavailable", "Completed-session OHLCV data is not available for this view.")
         else:
-            render_empty_state("Price chart unavailable", "Completed-session OHLCV data is not available for this view.")
+            st.caption("Load completed-session OHLCV only when chart context is needed.")
 
 # ==============================================================================
 # TAB 5 — PERFORMANCE (HISTORICAL RESEARCH VIEWER)

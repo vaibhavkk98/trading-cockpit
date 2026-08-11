@@ -1,5 +1,5 @@
 """F2 operational state, freshness, and low-volume event logging helpers."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import logging
 from pathlib import Path
 
@@ -26,7 +26,8 @@ def scan_freshness(state, today=None):
     if not state or state.get("status") in {SCAN_NOT_RUN, SCAN_RUNNING, SCAN_FAILED}:
         return "NOT_AVAILABLE"
     analysis_date = str(state.get("analysis_date") or "")
-    today = today or datetime.now(timezone.utc).date().isoformat()
+    # Cockpit/EOD decisions are dated in the Indian market calendar, not UTC.
+    today = today or datetime.now(timezone(timedelta(hours=5, minutes=30))).date().isoformat()
     return "CURRENT" if analysis_date == today and state.get("scan_completed_at") else "STALE"
 
 

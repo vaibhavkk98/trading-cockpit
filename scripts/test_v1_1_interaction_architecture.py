@@ -67,7 +67,8 @@ def run() -> None:
     assert "@st.fragment\ndef render_signals_workbench" in app
     assert "refresh_portfolio_positions" in app and "Refresh prices" in app
     assert "st.form(\"paper_trade_record_form\"" in app and "st.form(\"manual_paper_close_form\"" in app
-    assert "get_open_trades_persisted" in database and "PRICE_NOT_REFRESHED" in database
+    assert "get_open_trades_persisted" in database and "get_latest_position_marks" in database
+    assert "persist_position_marks" in database and "get_open_trades_with_live_data" in database
     assert "@lru_cache(maxsize=8)" in market and "never fetches" in market
     for forbidden in ("target_price", "risk_reward_ratio", "composite_score"):
         assert forbidden not in app

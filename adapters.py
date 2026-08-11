@@ -519,9 +519,9 @@ class ExecutionAdapter:
         # Navigation reads the durable ledger only. Provider marks are explicit.
         return get_open_trades_persisted()
 
-    def refresh_open_positions(self) -> List[Dict[str, Any]]:
+    def refresh_open_positions(self, source_run_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """The only position-read path allowed to request current market prices."""
-        return get_open_trades_with_live_data()
+        return get_open_trades_with_live_data(source_run_id=source_run_id)
 
     def get_closed_positions(self) -> List[Dict[str, Any]]:
         return get_closed_trades()
@@ -531,10 +531,10 @@ class ExecutionAdapter:
         self.save_portfolio_snapshot("PORTFOLIO_REFRESH")
         return result
 
-    def refresh_portfolio_positions(self) -> Dict[str, Any]:
+    def refresh_portfolio_positions(self, source_run_id: Optional[str] = None) -> Dict[str, Any]:
         """Explicit user action: sync frozen legacy lifecycle, then fetch fresh marks."""
         sync_result = self.sync_live_prices()
-        return {**sync_result, "positions": self.refresh_open_positions()}
+        return {**sync_result, "positions": self.refresh_open_positions(source_run_id=source_run_id)}
 
     def close_paper_trade(self, trade_id: int, exit_price: float) -> Dict[str, Any]:
         """Persist a user-confirmed manual paper close; no exit is inferred."""
@@ -572,6 +572,8 @@ class ExecutionAdapter:
                 "reference_heat_missing_count": risk.get("positions_without_reference"),
                 "executable_stop_heat_pct": risk.get("executable_stop_heat_pct_value"),
                 "executable_stop_coverage_count": risk.get("positions_with_executable_stop"),
+                "price_coverage_count": summary.get("price_coverage_count"),
+                "price_coverage_total": summary.get("price_coverage_total"),
             }, reason)
         except Exception:
             return {"saved": False, "snapshot_id": None}
@@ -584,8 +586,11 @@ class ExecutionAdapter:
         initial_cap = 1000000.0
         open_capital = float(raw.get("open_capital_deployed", 0.0))
         realized_pnl = float(raw.get("total_realized_pnl", 0.0))
+        persisted_positions = self.get_open_positions()
+        valid_marks = [position for position in persisted_positions if isinstance(position.get("current_price"), (int, float))]
+        unrealized_pnl = round(sum(position.get("unrealized_pnl_inr") or 0.0 for position in valid_marks), 2)
         cash = round(initial_cap - open_capital + realized_pnl, 2)
-        total_val = round(cash + open_capital, 2)
+        total_val = round(cash + open_capital + unrealized_pnl, 2)
         net_ret = round((total_val - initial_cap) / initial_cap * 100.0, 2)
 
         return {
@@ -598,6 +603,9 @@ class ExecutionAdapter:
             "closed_positions_count": raw.get("closed_trades_count", 0),
             "total_net_pnl_inr": round(realized_pnl, 2),
             "total_net_return_pct": net_ret,
+            "unrealized_pnl_inr": unrealized_pnl if valid_marks else None,
+            "price_coverage_count": len(valid_marks),
+            "price_coverage_total": len(persisted_positions),
             "win_rate_pct": raw.get("win_rate_pct", 0.0),
             "raw_summary": raw
         }

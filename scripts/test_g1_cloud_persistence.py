@@ -81,7 +81,7 @@ def run() -> None:
     assert "ALTER TABLE trades ADD COLUMN" in database_source
     app_source = (ROOT / "app.py").read_text()
     assert "database_diagnostics" in app_source and "Paper-trade storage is unavailable" in app_source
-    assert "save_portfolio_snapshot(\"ANALYSIS_COMPLETED\")" in app_source
+    assert "execute_eod_pipeline" in app_source and "load_latest_analysis_run" in app_source
     assert "target_price" not in app_source and "risk_reward_ratio" not in app_source
     print("G1 cloud persistence tests: PASS")
 
