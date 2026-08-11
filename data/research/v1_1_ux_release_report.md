@@ -36,7 +36,7 @@ Passed: compile check; V1.1 interaction architecture; F1; F1.5; F2; G1; and focu
 
 ## Release state
 
-- **GIT COMMIT HASH:** recorded in the final verification commit.
-- **PUSH RESULT:** pending the final secret-staging check and push.
-- **STREAMLIT DEPLOYMENT RESULT:** pending push; configured deployment tracks `origin/main`.
+- **GIT COMMIT HASH:** `a454947` (`Release Trading Cockpit V1.1 UX`).
+- **PUSH RESULT:** `SUCCESS` — `a454947` was pushed to `origin/main`.
+- **STREAMLIT DEPLOYMENT RESULT:** `PUSHED_FOR_AUTO_DEPLOY` — the connected Streamlit Community Cloud deployment tracks `origin/main`; direct live-app verification was not available in this workspace.
 - **Known remaining UX limitations:** dark mode is only a readable fallback; the smoke environment used SQLite, while production Postgres availability requires live deployment verification.
