@@ -26,6 +26,7 @@ from database import (
     add_paper_trade,
     get_database_diagnostics,
     get_open_trades_with_live_data,
+    refresh_open_trade_marks,
     get_open_trades_persisted,
     get_closed_trades,
     load_portfolio_snapshots,
@@ -533,9 +534,10 @@ class ExecutionAdapter:
         return result
 
     def refresh_portfolio_positions(self, source_run_id: Optional[str] = None) -> Dict[str, Any]:
-        """Explicit user action: sync frozen legacy lifecycle, then fetch fresh marks."""
-        sync_result = self.sync_live_prices()
-        return {**sync_result, "positions": self.refresh_open_positions(source_run_id=source_run_id)}
+        """Narrow OPEN-position mark refresh; no scan, allocation, or lifecycle work."""
+        result = refresh_open_trade_marks(source_run_id=source_run_id or "MANUAL_PRICE_REFRESH")
+        self.save_portfolio_snapshot("PORTFOLIO_REFRESH")
+        return result
 
     def close_paper_trade(self, trade_id: int, exit_price: float) -> Dict[str, Any]:
         """Persist a user-confirmed manual paper close; no exit is inferred."""

@@ -121,22 +121,16 @@ def run():
     missing = add_paper_trade("MISSING", 50.0, 4, "Donchian Channel Breakout")
     requested_provider_symbols = []
 
-    class FakeTicker:
-        def __init__(self, symbol):
-            requested_provider_symbols.append(symbol); self.symbol = symbol
-        def history(self, **kwargs):
-            assert kwargs.get("auto_adjust") is True
-            if self.symbol == "MISSING.NS":
-                return pd.DataFrame()
-            price = 112.0 if self.symbol == "FINCABLES.NS" else 220.0
-            return pd.DataFrame({"Close": [price], "High": [price], "Low": [price]}, index=pd.DatetimeIndex(["2026-08-12"], tz="Asia/Kolkata"))
+    def fake_mark_fetcher(symbols):
+        requested_provider_symbols.extend(yahoo_nse_symbol(symbol) for symbol in symbols)
+        marks = {
+            symbol: {"mark_price": 112.0 if symbol == "FINCABLES" else 220.0, "mark_date": date}
+            for symbol in symbols if symbol != "MISSING"
+        }
+        return {"marks": marks, "failed_symbols": [symbol for symbol in symbols if symbol == "MISSING"],
+                "provider_calls": 1, "unique_symbols": len(symbols), "elapsed_seconds": 0.01}
 
-    original_ticker = database.yf.Ticker
-    database.yf.Ticker = FakeTicker
-    try:
-        refreshed = get_open_trades_with_live_data(source_run_id="TEST-MARK-RUN")
-    finally:
-        database.yf.Ticker = original_ticker
+    refreshed = database.refresh_open_trade_marks(source_run_id="TEST-MARK-RUN", mark_fetcher=fake_mark_fetcher)["positions"]
     assert {"FINCABLES.NS", "GRASIM.NS"}.issubset(set(requested_provider_symbols))
     assert all(item not in requested_provider_symbols for item in ("FINCABLES", "GRASIM", "FINCABLES.NS.NS"))
     refreshed_by_id = {row["id"]: row for row in refreshed}
@@ -155,7 +149,8 @@ def run():
     assert "persistence.load_latest_analysis_run" not in app_source and "persisted_run_hydrated" in app_source
     assert "getattr(persistence, \"load_latest_analysis_run\", None)" in app_source
     assert "Load price chart" in app_source
-    assert "execute_eod_pipeline" in app_source and "refresh_portfolio_positions()" not in app_source.split("with tab_portfolio:")[0]
+    assert "execute_eod_pipeline" in app_source
+    assert "refresh_portfolio_positions()" not in app_source.split("def render_portfolio_workspace", 1)[0]
     assert "yahoo_nse_symbol" in screener_source and "auto_adjust=True" in screener_source
     assert "yf.Ticker(yahoo_nse_symbol(symbol))" in database_source
     print("Phase 1A EOD automation tests: PASS")

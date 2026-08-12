@@ -136,7 +136,9 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         execution.save_portfolio_snapshot(snapshot_reason)
         return {**run, "persisted": True, "decisions": decisions, "regime_info": regime, "diagnostics": diagnostics,
                 "market_date_diagnostics": market_date_diagnostics,
-                "mark_count": len([p for p in mark_result.get("positions", []) if p.get("current_price") is not None]), "snapshot_reason": snapshot_reason}
+                "mark_count": mark_result.get("successful_marks", 0), "mark_refresh": {key: mark_result.get(key) for key in (
+                    "open_positions", "unique_symbols", "provider_calls", "successful_marks", "failed_marks", "elapsed_seconds")},
+                "snapshot_reason": snapshot_reason}
     except Exception as exc:
         return {"status": "FAILED", "analysis_date": analysis_date.isoformat(), "run_id": run_id, "persisted": False,
                 "error_summary": type(exc).__name__}

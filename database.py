@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 import yfinance as yf
 from provider_symbols import yahoo_nse_symbol
+from position_mark_provider import fetch_latest_yahoo_marks
 from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, inspect
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import declarative_base, joinedload, relationship, sessionmaker
@@ -530,24 +531,37 @@ def get_portfolio_performance_summary() -> Dict[str, Any]:
             "total_realized_pnl": round(realized, 2), "open_capital_deployed": round(deployed, 2)}
 
 
-def get_open_trades_with_live_data(source_run_id: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Explicit provider refresh that persists valid marks before returning positions."""
+def refresh_open_trade_marks(source_run_id: Optional[str] = None, mark_fetcher=fetch_latest_yahoo_marks) -> Dict[str, Any]:
+    """Refresh OPEN trades only; successful marks persist and failures retain prior marks."""
     trades = get_open_trades()
-    prices: Dict[str, float] = {}
-    mark_dates: Dict[str, dt.date] = {}
-    for symbol in {trade.symbol for trade in trades}:
-        try:
-            data = yf.Ticker(yahoo_nse_symbol(symbol)).history(period="5d", interval="1d", auto_adjust=True)
-            if not data.empty:
-                prices[symbol] = float(data["Close"].iloc[-1])
-                mark_dates[symbol] = data.index[-1].date()
-        except Exception: pass
-    persist_position_marks([
-        {"trade_id": trade.id, "symbol": trade.symbol, "mark_price": prices[trade.symbol],
-         "mark_date": mark_dates.get(trade.symbol), "provider": "YFINANCE", "mark_status": "AVAILABLE"}
-        for trade in trades if trade.symbol in prices
-    ], source_run_id=source_run_id)
-    return get_open_trades_persisted()
+    fetched = mark_fetcher(sorted({trade.symbol for trade in trades}))
+    marks = fetched.get("marks", {})
+    marked_at = dt.datetime.now(dt.timezone.utc)
+    rows = [
+        {"trade_id": trade.id, "symbol": trade.symbol, "mark_price": marks[trade.symbol]["mark_price"],
+         "mark_date": marks[trade.symbol]["mark_date"], "marked_at": marked_at,
+         "provider": "YFINANCE", "mark_status": "LATEST_PROVIDER_MARK"}
+        for trade in trades if trade.symbol in marks
+    ]
+    persist_position_marks(rows, source_run_id=source_run_id)
+    positions = get_open_trades_persisted()
+    successful_trade_ids = {row["trade_id"] for row in rows}
+    return {
+        "positions": positions,
+        "open_positions": len(trades),
+        "unique_symbols": fetched.get("unique_symbols", 0),
+        "provider_calls": fetched.get("provider_calls", 0),
+        "successful_marks": len(successful_trade_ids),
+        "failed_marks": len(trades) - len(successful_trade_ids),
+        "price_unavailable": fetched.get("failed_symbols", []),
+        "elapsed_seconds": fetched.get("elapsed_seconds", 0.0),
+        "marked_at": marked_at.isoformat(),
+    }
+
+
+def get_open_trades_with_live_data(source_run_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Compatibility wrapper for callers that need refreshed position rows only."""
+    return refresh_open_trade_marks(source_run_id=source_run_id)["positions"]
 
 
 def _legacy_get_open_trades_with_live_data() -> List[Dict[str, Any]]:

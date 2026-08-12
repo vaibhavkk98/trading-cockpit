@@ -93,6 +93,28 @@ def default_signal_rows(candidates: Iterable[Dict[str, Any]], formatters: Dict[s
     return rows
 
 
+def portfolio_position_rows(positions: Iterable[Dict[str, Any]], formatters: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Build the persisted Portfolio comparison surface without provider work."""
+    rows = []
+    for position in positions:
+        pnl = position.get("unrealized_pnl_inr")
+        pnl_display = (
+            f"{formatters['currency'](pnl, compact=False)} · {formatters['percent'](position.get('unrealized_pnl_pct'))}"
+            if isinstance(pnl, (int, float)) else "Not available"
+        )
+        rows.append({
+            "Symbol": position.get("symbol", ""),
+            "Strategy": short_strategy_name(position.get("strategy_used")),
+            "Entry price": formatters["price"](position.get("entry_price")),
+            "Entry value": formatters["currency"](position.get("position_value")),
+            "Current price": formatters["price"](position.get("current_price")) if position.get("price_status") == "AVAILABLE" else "Price not available",
+            "P&L": pnl_display,
+            "Price as of": formatters["display"](position.get("marked_at") or position.get("mark_date")),
+            "Executable stop": formatters["price"](position.get("initial_executable_stop")) if position.get("executable_stop_enabled") else "—",
+        })
+    return rows
+
+
 def initial_workspace_state() -> Dict[str, Any]:
     return {
         "scan_summary": {}, "qualified_candidates": [], "live_decisions": [],

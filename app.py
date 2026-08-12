@@ -49,6 +49,7 @@ from interaction_architecture import (
     default_signal_rows,
     initial_workspace_state,
     ordered_decisions,
+    portfolio_position_rows,
     reconcile_selection,
     select_candidate,
     short_strategy_name,
@@ -511,10 +512,31 @@ with tab_signals:
 # ==============================================================================
 # TAB 3 — PORTFOLIO (LIVE PAPER PORTFOLIO & POSITION ENGINE)
 # ==============================================================================
-with tab_portfolio:
+@st.fragment
+def render_portfolio_workspace():
+    """Persisted portfolio by default; explicit refresh reruns this fragment only."""
     render_section_header("Portfolio", "Live paper-portfolio state", "Paper trading", "neutral")
-
-    perf_summary = persisted_portfolio_summary
+    open_pos_list = st.session_state.get("portfolio_positions", [])
+    perf_summary = st.session_state.get("portfolio_summary", {})
+    if open_pos_list:
+        if st.button("Refresh prices", key="refresh_portfolio_prices"):
+            with st.spinner(f"Refreshing {len(open_pos_list)} open position(s)…"):
+                refresh_result = adapters["execution"].refresh_portfolio_positions()
+            hydrate_portfolio(force=True, positions=refresh_result.get("positions", []))
+            open_pos_list = st.session_state.get("portfolio_positions", [])
+            perf_summary = st.session_state.get("portfolio_summary", {})
+            st.session_state["last_price_refresh_at"] = refresh_result.get("marked_at") or utc_now()
+            st.session_state["last_price_refresh_metrics"] = refresh_result
+            log_event(
+                PROJECT_ROOT, "PRICE_REFRESH", open_positions=refresh_result.get("open_positions"),
+                unique_symbols=refresh_result.get("unique_symbols"), provider_calls=refresh_result.get("provider_calls"),
+                successful_marks=refresh_result.get("successful_marks"), failed_marks=refresh_result.get("failed_marks"),
+                elapsed_seconds=refresh_result.get("elapsed_seconds"),
+            )
+            st.success(
+                f"Prices refreshed · {refresh_result.get('successful_marks', 0)} / "
+                f"{refresh_result.get('open_positions', 0)} · {display_value(st.session_state['last_price_refresh_at'])}"
+            )
 
     val_inr = perf_summary.get('total_portfolio_value_inr', 1000000.0)
     cash_inr = perf_summary.get('current_cash_inr', perf_summary.get('cash_inr', 1000000.0))
@@ -523,7 +545,7 @@ with tab_portfolio:
     net_pnl = perf_summary.get('total_net_pnl_inr', 0.0)
     net_ret = perf_summary.get('total_net_return_pct', 0.0)
 
-    live_portfolio_risk = summarize_live_portfolio_risk(open_positions)
+    live_portfolio_risk = summarize_live_portfolio_risk(open_pos_list)
     p1, p2, p3, p4, p5, p6 = st.columns(6)
     with p1:
         render_metric_card("Portfolio equity", format_currency(val_inr), "Paper portfolio")
@@ -541,41 +563,18 @@ with tab_portfolio:
 
     render_section_header("Open positions", "Risk fields are available only where the paper ledger carries the frozen lifecycle data")
 
-    open_pos_list = open_positions
-
     if not open_pos_list:
         render_empty_state("No open paper positions", "Run today's analysis and explicitly record a paper trade to begin tracking.")
     else:
-        df_open_tbl = []
-        for pos in open_pos_list:
-            df_open_tbl.append({
-                "Symbol": pos.get("symbol", ""),
-                "Strategy": pos.get("strategy_used", ""),
-                "Position value": format_currency(pos.get("position_value")),
-                "Current price": format_price(pos.get("current_price")) if pos.get("price_status") == "AVAILABLE" else "Price not available",
-                "P&L": format_currency(pos.get("unrealized_pnl_inr"), compact=False),
-                "Price as of": display_value(pos.get("marked_at") or pos.get("mark_date")),
-                "Reference risk": format_currency(pos.get("reference_risk_rupees"), compact=False) if pos.get("risk_reference_available") else "Not available",
-                "Executable stop": format_price(pos.get("initial_executable_stop")) if pos.get("executable_stop_enabled") else "—",
-                "Heat contribution": format_percent((pos.get("reference_risk_rupees") or 0) / 1_000_000 * 100) if pos.get("risk_reference_available") else "Not available",
-            })
+        df_open_tbl = portfolio_position_rows(open_pos_list, {
+            "currency": format_currency, "percent": format_percent, "price": format_price, "display": display_value,
+        })
         st.dataframe(pd.DataFrame(df_open_tbl), width="stretch", hide_index=True)
         marked_rows = [pos for pos in open_pos_list if pos.get("marked_at") or pos.get("mark_date")]
         if marked_rows:
             latest_mark = max(str(pos.get("marked_at") or pos.get("mark_date")) for pos in marked_rows)
             st.caption(f"Latest persisted prices: {len(marked_rows)} / {len(open_pos_list)} positions · as of {latest_mark}")
 
-        col_s1, col_s2 = st.columns([2, 4])
-        with col_s1:
-            refresh_label = "Refresh prices"
-            if st.button(refresh_label):
-                with st.spinner("Refreshing live paper-position marks…"):
-                    res_sync = adapters["execution"].refresh_portfolio_positions()
-                hydrate_portfolio(force=True, positions=res_sync.get("positions", []))
-                st.session_state["last_price_refresh_at"] = utc_now()
-                log_event(PROJECT_ROOT, "PRICE_REFRESH", positions=len(res_sync.get("positions", [])))
-                st.success(f"Price refresh completed · {len(res_sync.get('price_unavailable', []))} price(s) unavailable")
-                st.rerun()
         if st.session_state.get("last_price_refresh_at"):
             st.caption(f"Last explicit price refresh: {st.session_state['last_price_refresh_at']}")
 
@@ -602,6 +601,10 @@ with tab_portfolio:
                         st.rerun()
                     else:
                         st.error(close_result.get("message", "Paper-trade close failed."))
+
+
+with tab_portfolio:
+    render_portfolio_workspace()
 
 # ==============================================================================
 # TAB 4 — TRADE DETAILS (DECISION CARD & WHY THIS TRADE?)
