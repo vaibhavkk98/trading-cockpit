@@ -8,6 +8,14 @@ from eod_pipeline import execute_eod_pipeline
 
 def main() -> int:
     result = execute_eod_pipeline(source="AUTOMATED_EOD")
+    for check in result.get("market_date_diagnostics", []):
+        print(
+            f"Market-date candidate: {check.get('candidate')} · "
+            f"completed bar: {'YES' if check.get('completed_bar_available') else 'NO'} · "
+            f"provider latest bar: {check.get('provider_latest_bar_date') or 'NOT_AVAILABLE'}"
+        )
+    if result.get("analysis_date"):
+        print(f"Resolved expected market date: {result['analysis_date']}")
     summary = {key: result.get(key) for key in ("status", "analysis_date", "run_id", "symbols_requested", "symbols_succeeded", "symbols_failed", "qualified_count", "allocated_count", "mark_count")}
     print(json.dumps(summary, sort_keys=True, default=str))
     return 0 if result.get("status") in {"SUCCESS", "PARTIAL_SUCCESS", "NO_COMPLETED_MARKET_BAR"} else 1

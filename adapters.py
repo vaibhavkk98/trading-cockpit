@@ -21,6 +21,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 from universe_engine import get_universe_as_of, get_universe_metadata
 from screener import run_stage1_screener, fetch_stock_data, calculate_indicators, DEFAULT_NIFTY_SYMBOLS
+from provider_symbols import yahoo_nse_symbol
 from database import (
     add_paper_trade,
     get_database_diagnostics,
@@ -124,12 +125,12 @@ class UniverseProvider:
             date_str = datetime.date.today().strftime("%Y-%m-%d")
         try:
             symbols = get_universe_as_of(date_str, mode="research")
-            clean_syms = [s if s.endswith(".NS") else f"{s}.NS" for s in symbols]
+            clean_syms = [yahoo_nse_symbol(s) for s in symbols]
             if max_symbols:
                 return clean_syms[:max_symbols]
             return clean_syms
         except Exception:
-            clean_default = [s if s.endswith(".NS") else f"{s}.NS" for s in DEFAULT_NIFTY_SYMBOLS]
+            clean_default = [yahoo_nse_symbol(s) for s in DEFAULT_NIFTY_SYMBOLS]
             if max_symbols:
                 return clean_default[:max_symbols]
             return clean_default

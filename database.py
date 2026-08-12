@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import yfinance as yf
+from provider_symbols import yahoo_nse_symbol
 from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, inspect
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import declarative_base, joinedload, relationship, sessionmaker
@@ -499,7 +500,7 @@ def sync_paper_trades() -> Dict[str, Any]:
     bars, unavailable, details = {}, [], []
     for symbol in sorted({trade.symbol for trade in open_trades}):
         try:
-            data = yf.Ticker(symbol).history(period="5d", interval="1d", auto_adjust=True)
+            data = yf.Ticker(yahoo_nse_symbol(symbol)).history(period="5d", interval="1d", auto_adjust=True)
             if not data.empty: bars[symbol] = data.iloc[-1]
             else: unavailable.append(symbol)
         except Exception: unavailable.append(symbol)
@@ -536,7 +537,7 @@ def get_open_trades_with_live_data(source_run_id: Optional[str] = None) -> List[
     mark_dates: Dict[str, dt.date] = {}
     for symbol in {trade.symbol for trade in trades}:
         try:
-            data = yf.Ticker(symbol).history(period="5d", interval="1d", auto_adjust=True)
+            data = yf.Ticker(yahoo_nse_symbol(symbol)).history(period="5d", interval="1d", auto_adjust=True)
             if not data.empty:
                 prices[symbol] = float(data["Close"].iloc[-1])
                 mark_dates[symbol] = data.index[-1].date()
@@ -555,7 +556,7 @@ def _legacy_get_open_trades_with_live_data() -> List[Dict[str, Any]]:
     prices: Dict[str, float] = {}
     for symbol in {trade.symbol for trade in trades}:
         try:
-            data = yf.Ticker(symbol).history(period="5d", interval="1d", auto_adjust=True)
+            data = yf.Ticker(yahoo_nse_symbol(symbol)).history(period="5d", interval="1d", auto_adjust=True)
             if not data.empty: prices[symbol] = float(data["Close"].iloc[-1])
         except Exception: pass
     rows = []

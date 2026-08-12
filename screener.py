@@ -6,6 +6,7 @@ import datetime
 from typing import List, Dict, Any, Optional, Tuple
 
 import universe_engine
+from provider_symbols import yahoo_nse_symbol
 
 # Dynamic Nifty 500 Symbol List from Universe Engine
 DEFAULT_NIFTY_SYMBOLS = universe_engine.get_current_universe()
@@ -52,7 +53,7 @@ def fetch_stock_data(symbol: str, period: str = "2y", as_of_date: Optional[str] 
     Slices historical bars as of `as_of_date` when provided.
     """
     try:
-        clean_sym = symbol if symbol.endswith(".NS") else f"{symbol}.NS"
+        clean_sym = yahoo_nse_symbol(symbol)
         ticker = yf.Ticker(clean_sym)
         df = ticker.history(period=period, interval="1d", auto_adjust=True)
         if df.empty:
@@ -74,11 +75,11 @@ def fetch_bulk_stock_data(symbols: List[str], period: str = "2y") -> Dict[str, p
     Bulk download historical EOD daily price data for a list of ticker symbols using yfinance multi-threading.
     Returns a dictionary mapping clean_symbol (with .NS) to its OHLCV DataFrame.
     """
-    clean_map = {s: (s if s.endswith(".NS") else f"{s}.NS") for s in symbols}
+    clean_map = {s: yahoo_nse_symbol(s) for s in symbols}
     clean_syms = list(set(clean_map.values()))
 
     try:
-        data_df = yf.download(clean_syms, period=period, interval="1d", group_by="ticker", threads=True, progress=False)
+        data_df = yf.download(clean_syms, period=period, interval="1d", group_by="ticker", threads=True, progress=False, auto_adjust=True)
         result = {}
         for clean_sym in clean_syms:
             try:
@@ -364,7 +365,7 @@ def run_screener(
     stock_data_map = fetch_bulk_stock_data(symbols, period="2y") if len(symbols) > 5 else {}
 
     for idx, raw_symbol in enumerate(symbols, 1):
-        clean_sym = raw_symbol if raw_symbol.endswith(".NS") else f"{raw_symbol}.NS"
+        clean_sym = yahoo_nse_symbol(raw_symbol)
         df = stock_data_map.get(clean_sym)
         
         if df is None or df.empty:

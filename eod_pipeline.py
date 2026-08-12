@@ -47,8 +47,29 @@ def expected_indian_market_date(now: Optional[dt.datetime] = None) -> dt.date:
     return resolved
 
 
+def normalize_market_date(value: Any) -> Optional[dt.date]:
+    """Normalize provider timestamps to an Asia/Kolkata trading date."""
+    if value is None:
+        return None
+    if isinstance(value, dt.datetime):
+        localized = value.replace(tzinfo=INDIAN_MARKET_TIMEZONE) if value.tzinfo is None else value.astimezone(INDIAN_MARKET_TIMEZONE)
+        return localized.date()
+    if isinstance(value, dt.date):
+        return value
+    text = str(value).strip()
+    try:
+        parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+        localized = parsed.replace(tzinfo=INDIAN_MARKET_TIMEZONE) if parsed.tzinfo is None else parsed.astimezone(INDIAN_MARKET_TIMEZONE)
+        return localized.date()
+    except ValueError:
+        try:
+            return dt.date.fromisoformat(text[:10])
+        except ValueError:
+            return None
+
+
 def has_completed_market_bar(regime_info: Dict[str, Any], expected_date: dt.date) -> bool:
-    return str(regime_info.get("data_as_of") or "") == expected_date.isoformat()
+    return normalize_market_date(regime_info.get("data_as_of")) == expected_date
 
 
 def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = "AUTOMATED_EOD", dependencies: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -61,10 +82,18 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
     allocator = deps.get("allocator") or PortfolioAllocationEngine()
     event_service = deps.get("event_service") or EventIntelligenceService()
     regime_cache: Dict[dt.date, Dict[str, Any]] = {}
+    market_date_diagnostics = []
     if analysis_date is None:
         def completed_bar_lookup(candidate_date: dt.date) -> bool:
             regime_cache[candidate_date] = market.get_index_regime(as_of_date=candidate_date.isoformat())
-            return has_completed_market_bar(regime_cache[candidate_date], candidate_date)
+            completed = has_completed_market_bar(regime_cache[candidate_date], candidate_date)
+            provider_date = normalize_market_date(regime_cache[candidate_date].get("data_as_of"))
+            market_date_diagnostics.append({
+                "candidate": candidate_date.isoformat(),
+                "completed_bar_available": completed,
+                "provider_latest_bar_date": provider_date.isoformat() if provider_date else None,
+            })
+            return completed
 
         analysis_date = resolve_expected_completed_market_date(
             now=deps.get("now"), completed_bar_lookup=completed_bar_lookup
@@ -73,7 +102,8 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
             fallback_date = expected_indian_market_date(now=deps.get("now"))
             return {"status": "NO_COMPLETED_MARKET_BAR", "analysis_date": fallback_date.isoformat(),
                     "run_id": f"EOD-{fallback_date.isoformat()}", "persisted": False,
-                    "reason": "No completed daily market bar was found in the bounded session search."}
+                    "reason": "No completed daily market bar was found in the bounded session search.",
+                    "market_date_diagnostics": market_date_diagnostics}
     if isinstance(analysis_date, str):
         analysis_date = dt.date.fromisoformat(analysis_date)
     started = dt.datetime.now(dt.timezone.utc)
@@ -105,6 +135,7 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         snapshot_reason = "AUTOMATED_EOD" if source == "AUTOMATED_EOD" else "ANALYSIS_COMPLETED"
         execution.save_portfolio_snapshot(snapshot_reason)
         return {**run, "persisted": True, "decisions": decisions, "regime_info": regime, "diagnostics": diagnostics,
+                "market_date_diagnostics": market_date_diagnostics,
                 "mark_count": len([p for p in mark_result.get("positions", []) if p.get("current_price") is not None]), "snapshot_reason": snapshot_reason}
     except Exception as exc:
         return {"status": "FAILED", "analysis_date": analysis_date.isoformat(), "run_id": run_id, "persisted": False,
