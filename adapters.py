@@ -23,7 +23,13 @@ from universe_engine import get_universe_as_of, get_universe_metadata
 from screener import run_stage1_screener, fetch_stock_data, calculate_indicators, DEFAULT_NIFTY_SYMBOLS
 from provider_symbols import yahoo_nse_symbol
 from database import (
-    add_paper_trade,
+    add_constrained_paper_trade,
+    get_portfolio_capital,
+    get_portfolio_configuration,
+    set_portfolio_capital,
+    set_portfolio_configuration,
+    canonical_position_symbol,
+    PaperTradeConstraintError,
     get_database_diagnostics,
     get_open_trades_with_live_data,
     refresh_open_trade_marks,
@@ -171,11 +177,11 @@ class SignalEngine:
 # 4. PORTFOLIO ALLOCATION ENGINE (7 TREND / 3 VOLATILITY BUCKET ALLOCATOR)
 # ------------------------------------------------------------------------------
 class PortfolioAllocationEngine:
-    def __init__(self, max_positions: int = 10, max_trend: int = 7, max_vol: int = 3, initial_capital: float = 1000000.0):
+    def __init__(self, max_positions: int = 10, max_trend: int = 7, max_vol: int = 3, initial_capital: Optional[float] = None):
         self.max_positions = max_positions
         self.max_trend = max_trend
         self.max_vol = max_vol
-        self.initial_capital = initial_capital
+        self.initial_capital = get_portfolio_capital() if initial_capital is None else initial_capital
 
 # Sector Metadata Helper Map for Nifty Constituents
 SECTOR_MAP = {
@@ -198,11 +204,11 @@ SECTOR_MAP = {
 # 4. PORTFOLIO ALLOCATION ENGINE (7 TREND / 3 VOLATILITY BUCKET ALLOCATOR)
 # ------------------------------------------------------------------------------
 class PortfolioAllocationEngine:
-    def __init__(self, max_positions: int = 10, max_trend: int = 7, max_vol: int = 3, initial_capital: float = 1000000.0):
+    def __init__(self, max_positions: int = 10, max_trend: int = 7, max_vol: int = 3, initial_capital: Optional[float] = None):
         self.max_positions = max_positions
         self.max_trend = max_trend
         self.max_vol = max_vol
-        self.initial_capital = initial_capital
+        self.initial_capital = get_portfolio_capital() if initial_capital is None else initial_capital
 
     def allocate_candidates(
         self,
@@ -438,6 +444,8 @@ class PortfolioAllocationEngine:
                 "volume_confirmed": vol_confirmed,
                 "price_confirmed": price_confirmed,
                 "volume_price_confirmed": vol_price_confirmed,
+                "ha_features": row.get("ha_features"),
+                "ha_stock_percentiles": row.get("ha_stock_percentiles"),
                 "atr_20": round(atr_val, 2),
                 "atr_20_available": atr_available,
                 "risk_per_share": risk_per_share,
@@ -474,12 +482,79 @@ class ExecutionAdapter:
             "mode": "RESEARCH / PAPER TRADING"
         }
 
-    def execute_paper_trade(self, candidate: Dict[str, Any]) -> Dict[str, Any]:
+    def preview_paper_trade(self, candidate: Dict[str, Any], investment_amount: Optional[float] = None) -> Dict[str, Any]:
+        """Read-only preview using the same qualification and portfolio semantics as execution."""
+        qualification_status = str(candidate.get("qualification_status") or "").upper()
+        qualification_flag = candidate.get("is_qualified")
+        is_qualified = qualification_flag is not False and (
+            qualification_flag is True or qualification_status == "QUALIFIED"
+        )
+        errors: List[str] = []
+        if not is_qualified:
+            errors.append("Only a qualified opportunity can be paper traded; this opportunity is no longer available.")
+
+        requested_amount = 100_000.0 if investment_amount is None else investment_amount
         try:
+            requested_amount = float(requested_amount)
+        except (TypeError, ValueError):
+            requested_amount = 0.0
+        if isinstance(investment_amount, bool) or not np.isfinite(requested_amount) or requested_amount <= 0:
+            errors.append("Investment amount must be greater than zero.")
+
+        try:
+            entry = float(candidate["entry_price"])
+        except (KeyError, TypeError, ValueError):
+            entry = 0.0
+        if not np.isfinite(entry) or entry <= 0:
+            errors.append("A positive current/reference execution price is required.")
+
+        quantity = int(requested_amount / entry) if requested_amount > 0 and entry > 0 else 0
+        if requested_amount > 0 and entry > 0 and quantity <= 0:
+            errors.append("Investment amount is too small to purchase one whole share.")
+        executed_value = round(entry * quantity, 2) if quantity > 0 else 0.0
+
+        summary = self.get_portfolio_summary()
+        available_cash = float(summary.get("current_cash_inr") or 0.0)
+        open_positions = self.get_open_positions()
+        symbol = candidate.get("symbol")
+        canonical = canonical_position_symbol(symbol)
+        if canonical and any(canonical_position_symbol(position.get("symbol")) == canonical for position in open_positions):
+            errors.append(f"An open paper position already exists for {canonical}.")
+        max_positions = summary.get("configured_max_open_positions")
+        if max_positions is not None and len(open_positions) >= int(max_positions):
+            errors.append(f"The configured maximum of {int(max_positions)} open paper positions has been reached.")
+        if executed_value > available_cash + 0.005:
+            errors.append(f"Insufficient available cash: ₹{available_cash:,.2f} available; ₹{executed_value:,.2f} required.")
+
+        return {
+            "valid": not errors,
+            "validation_errors": errors,
+            "message": errors[0] if errors else "Ready for explicit paper-trade submission.",
+            "symbol": symbol,
+            "execution_price_inr": entry if entry > 0 else None,
+            "available_cash_inr": round(available_cash, 2),
+            "requested_investment_amount_inr": round(requested_amount, 2),
+            "estimated_quantity": quantity,
+            "executed_position_value_inr": executed_value,
+            "remaining_cash_inr": round(available_cash - executed_value, 2) if executed_value <= available_cash else None,
+            "configured_max_open_positions": max_positions,
+            "open_positions_count": len(open_positions),
+            "allocator_selected": candidate.get("allocation_status") == "ALLOCATED",
+        }
+
+    def execute_paper_trade(self, candidate: Dict[str, Any], investment_amount: Optional[float] = None) -> Dict[str, Any]:
+        """Record one explicit, qualified paper trade under portfolio constraints."""
+        try:
+            preview = self.preview_paper_trade(candidate, investment_amount)
+            if not preview["valid"]:
+                return {"success": False, "message": preview["message"], "validation_errors": preview["validation_errors"]}
+
+            requested_amount = preview["requested_investment_amount_inr"]
+            entry = preview["execution_price_inr"]
+            quantity = preview["estimated_quantity"]
+            executed_value = preview["executed_position_value_inr"]
             reference_available = candidate.get("risk_reference_available") is True
             executable_enabled = candidate.get("executable_stop_enabled") is True
-            entry = candidate["entry_price"]
-            quantity = candidate.get("quantity", max(1, int(100000.0 / entry)))
             reference_per_share = candidate.get("reference_risk_per_share") if reference_available else None
             executable_per_share = candidate.get("executable_risk_per_share") if executable_enabled else None
             metadata = {
@@ -494,11 +569,11 @@ class ExecutionAdapter:
                 "executable_stop_enabled": executable_enabled,
                 "initial_executable_stop": candidate.get("initial_executable_stop") if executable_enabled else None,
                 "executable_risk_per_share": executable_per_share if isinstance(executable_per_share, (int, float)) else None,
-                "executable_risk_rupees": candidate.get("executable_stop_risk_inr") if executable_enabled and isinstance(candidate.get("executable_stop_risk_inr"), (int, float)) else None,
+                "executable_risk_rupees": (executable_per_share * quantity) if isinstance(executable_per_share, (int, float)) else None,
                 "gap_risk_possible": candidate.get("gap_risk_possible") is True,
                 "target_status": "NOT_AVAILABLE",
             }
-            trade = add_paper_trade(
+            trade = add_constrained_paper_trade(
                 symbol=candidate["symbol"],
                 strategy_used=candidate["strategy"],
                 entry_price=entry,
@@ -509,13 +584,51 @@ class ExecutionAdapter:
                 risk_metadata=metadata,
             )
             self.save_portfolio_snapshot("PAPER_TRADE_RECORDED")
+            remaining_cash = round(self.get_portfolio_summary()["current_cash_inr"], 2)
             return {
                 "success": True,
                 "trade_id": trade.id,
+                "quantity": quantity,
+                "requested_investment_amount_inr": round(requested_amount, 2),
+                "executed_position_value_inr": executed_value,
+                "remaining_cash_inr": remaining_cash,
                 "message": f"Successfully recorded paper trade #{trade.id} for {candidate['symbol']} ({candidate['strategy']})"
             }
+        except PaperTradeConstraintError as exc:
+            return {"success": False, "message": str(exc)}
+        except (KeyError, TypeError, ValueError):
+            return {"success": False, "message": "The qualified opportunity has no valid execution/reference price."}
         except Exception:
             return {"success": False, "message": "Paper-trade storage is unavailable. No trade was recorded."}
+
+    def configure_portfolio(self, initial_capital: float, max_open_positions: Optional[int]) -> Dict[str, Any]:
+        """Persist the complete paper-portfolio control set without changing trades."""
+        try:
+            configuration = set_portfolio_configuration(initial_capital, max_open_positions)
+            self.save_portfolio_snapshot("PORTFOLIO_CONFIGURATION_UPDATED")
+            limit = configuration["max_open_positions"]
+            limit_text = "No position-count limit" if limit is None else f"{limit} maximum open positions"
+            return {
+                "success": True,
+                "portfolio_capital_inr": configuration["initial_capital"],
+                "max_open_positions": limit,
+                "message": f"Portfolio controls saved: ₹{configuration['initial_capital']:,.2f}; {limit_text}.",
+            }
+        except PaperTradeConstraintError as exc:
+            return {"success": False, "message": str(exc)}
+        except Exception:
+            return {"success": False, "message": "Portfolio controls could not be saved."}
+
+    def configure_portfolio_capital(self, initial_capital: float) -> Dict[str, Any]:
+        """Persist a user-requested capital change without modifying ledger rows."""
+        try:
+            capital = set_portfolio_capital(initial_capital)
+            self.save_portfolio_snapshot("PORTFOLIO_CAPITAL_UPDATED")
+            return {"success": True, "portfolio_capital_inr": capital, "message": f"Portfolio capital set to ₹{capital:,.2f}."}
+        except PaperTradeConstraintError as exc:
+            return {"success": False, "message": str(exc)}
+        except Exception:
+            return {"success": False, "message": "Portfolio capital could not be saved."}
 
     def get_open_positions(self) -> List[Dict[str, Any]]:
         # Navigation reads the durable ledger only. Provider marks are explicit.
@@ -586,7 +699,8 @@ class ExecutionAdapter:
 
     def get_portfolio_summary(self) -> Dict[str, Any]:
         raw = get_portfolio_performance_summary()
-        initial_cap = 1000000.0
+        configuration = get_portfolio_configuration()
+        initial_cap = float(configuration["initial_capital"])
         open_capital = float(raw.get("open_capital_deployed", 0.0))
         realized_pnl = float(raw.get("total_realized_pnl", 0.0))
         persisted_positions = self.get_open_positions()
@@ -597,6 +711,8 @@ class ExecutionAdapter:
         net_ret = round((total_val - initial_cap) / initial_cap * 100.0, 2)
 
         return {
+            "configured_portfolio_capital_inr": initial_cap,
+            "configured_max_open_positions": configuration["max_open_positions"],
             "total_portfolio_value_inr": total_val,
             "current_cash_inr": cash,
             "cash_inr": cash,

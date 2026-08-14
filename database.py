@@ -7,6 +7,7 @@ that configured backend is unavailable.
 
 import datetime as dt
 import json
+import math
 import os
 from typing import Any, Dict, List, Optional
 
@@ -14,7 +15,7 @@ import pandas as pd
 import yfinance as yf
 from provider_symbols import yahoo_nse_symbol
 from position_mark_provider import fetch_latest_yahoo_marks
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, inspect
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, inspect, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import declarative_base, joinedload, relationship, sessionmaker
 
@@ -64,6 +65,14 @@ _database_error: Optional[str] = None
 
 class DatabaseUnavailableError(RuntimeError):
     """Raised for a configured backend that cannot safely service a write."""
+
+
+class PaperTradeConstraintError(ValueError):
+    """Raised when a requested paper trade would violate the portfolio contract."""
+
+
+DEFAULT_PORTFOLIO_CAPITAL_INR = 1_000_000.0
+DEFAULT_MAX_OPEN_POSITIONS = 10
 
 
 class PaperTrade(Base):
@@ -203,6 +212,54 @@ class PositionMark(Base):
     updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class PortfolioConfiguration(Base):
+    """Singleton paper-portfolio configuration; trade history remains the ledger."""
+    __tablename__ = "portfolio_configuration"
+
+    id = Column(Integer, primary_key=True)
+    initial_capital = Column(Float, nullable=False)
+    max_open_positions = Column(Integer, nullable=True, default=DEFAULT_MAX_OPEN_POSITIONS)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class HistoricalAnalogSnapshot(Base):
+    """Immutable production evidence captured for one qualified opportunity."""
+    __tablename__ = "historical_analog_snapshots"
+    __table_args__ = (
+        UniqueConstraint("opportunity_id", "signal_date", "methodology_hash", name="uq_ha_snapshot_identity"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    methodology_id = Column(String(160), nullable=False)
+    methodology_hash = Column(String(64), nullable=False, index=True)
+    evidence_quality = Column(String(20), nullable=False)
+    analog_count = Column(Integer, nullable=False)
+    summary_payload = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class HistoricalAnalogMapping(Base):
+    """Ranked immutable constituents of a production HA snapshot."""
+    __tablename__ = "historical_analog_mappings"
+    __table_args__ = (UniqueConstraint("snapshot_id", "rank", name="uq_ha_snapshot_rank"),)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    snapshot_id = Column(Integer, ForeignKey("historical_analog_snapshots.id"), nullable=False, index=True)
+    rank = Column(Integer, nullable=False)
+    analog_opportunity_id = Column(String(180), nullable=False)
+    analog_symbol = Column(String(32), nullable=False)
+    analog_signal_date = Column(Date, nullable=False)
+    analog_label_end_date = Column(Date, nullable=False)
+    distance = Column(Float, nullable=False)
+    feature_coverage = Column(Float, nullable=False)
+    outcome_payload = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 _TRADE_ADDITIONS = {
     "entry_timestamp": "TIMESTAMP", "position_value": "FLOAT", "exit_timestamp": "TIMESTAMP",
     "realized_return_pct": "FLOAT", "created_at": "TIMESTAMP", "updated_at": "TIMESTAMP",
@@ -215,6 +272,7 @@ _TRADE_ADDITIONS = {
     "gap_risk_possible": "BOOLEAN", "target_status": "VARCHAR(40)",
 }
 _SNAPSHOT_ADDITIONS = {"price_coverage_count": "INTEGER", "price_coverage_total": "INTEGER"}
+_PORTFOLIO_CONFIGURATION_ADDITIONS = {"max_open_positions": "INTEGER DEFAULT 10"}
 
 
 def init_db() -> bool:
@@ -232,6 +290,10 @@ def init_db() -> bool:
             for name, sql_type in _SNAPSHOT_ADDITIONS.items():
                 if name not in existing_snapshots:
                     connection.exec_driver_sql(f"ALTER TABLE portfolio_snapshots ADD COLUMN {name} {sql_type}")
+            existing_configuration = {column["name"] for column in inspect(engine).get_columns("portfolio_configuration")}
+            for name, sql_type in _PORTFOLIO_CONFIGURATION_ADDITIONS.items():
+                if name not in existing_configuration:
+                    connection.exec_driver_sql(f"ALTER TABLE portfolio_configuration ADD COLUMN {name} {sql_type}")
         _database_available, _database_error = True, None
         return True
     except SQLAlchemyError as exc:
@@ -266,6 +328,146 @@ def _safe_read(query):
         session.close()
 
 
+def get_portfolio_configuration() -> Dict[str, Any]:
+    """Return the canonical persisted paper-portfolio configuration."""
+    if not init_db():
+        return {
+            "initial_capital": DEFAULT_PORTFOLIO_CAPITAL_INR,
+            "max_open_positions": DEFAULT_MAX_OPEN_POSITIONS,
+        }
+    session = SessionLocal()
+    try:
+        row = session.query(PortfolioConfiguration).filter_by(id=1).first()
+        if row is None:
+            return {
+                "initial_capital": DEFAULT_PORTFOLIO_CAPITAL_INR,
+                "max_open_positions": DEFAULT_MAX_OPEN_POSITIONS,
+            }
+        return {
+            "initial_capital": float(row.initial_capital),
+            "max_open_positions": row.max_open_positions,
+        }
+    except SQLAlchemyError:
+        return {
+            "initial_capital": DEFAULT_PORTFOLIO_CAPITAL_INR,
+            "max_open_positions": DEFAULT_MAX_OPEN_POSITIONS,
+        }
+    finally:
+        session.close()
+
+
+def get_portfolio_capital() -> float:
+    """Backward-compatible capital-only accessor."""
+    return float(get_portfolio_configuration()["initial_capital"])
+
+
+def set_portfolio_configuration(initial_capital: float, max_open_positions: Optional[int]) -> Dict[str, Any]:
+    """Persist validated controls without rewriting or deleting ledger state."""
+    try:
+        capital = float(initial_capital)
+    except (TypeError, ValueError) as exc:
+        raise PaperTradeConstraintError("Portfolio capital must be a positive amount.") from exc
+    if not math.isfinite(capital) or capital <= 0:
+        raise PaperTradeConstraintError("Portfolio capital must be a positive amount.")
+    if max_open_positions is not None:
+        if isinstance(max_open_positions, bool):
+            raise PaperTradeConstraintError("Maximum open positions must be a positive whole number or no limit.")
+        try:
+            parsed_limit = int(max_open_positions)
+        except (TypeError, ValueError) as exc:
+            raise PaperTradeConstraintError("Maximum open positions must be a positive whole number or no limit.") from exc
+        if parsed_limit <= 0 or float(max_open_positions) != parsed_limit:
+            raise PaperTradeConstraintError("Maximum open positions must be a positive whole number or no limit.")
+        max_open_positions = parsed_limit
+
+    _require_database()
+    session = SessionLocal()
+    try:
+        if DATABASE_BACKEND == "SQLITE":
+            session.execute(text("BEGIN IMMEDIATE"))
+        row = session.query(PortfolioConfiguration).filter_by(id=1).with_for_update().first()
+        now = dt.datetime.now(dt.timezone.utc)
+        if row is None:
+            row = PortfolioConfiguration(
+                id=1, initial_capital=DEFAULT_PORTFOLIO_CAPITAL_INR,
+                max_open_positions=DEFAULT_MAX_OPEN_POSITIONS, created_at=now, updated_at=now
+            )
+            session.add(row)
+            session.flush()
+        open_trades = session.query(PaperTrade).filter(PaperTrade.status == "OPEN").all()
+        closed_trades = session.query(PaperTrade).filter(PaperTrade.status != "OPEN").all()
+        deployed = sum(float(trade.entry_price) * int(trade.quantity) for trade in open_trades)
+        realized = sum(float(trade.realized_pnl or 0.0) for trade in closed_trades)
+        if capital - deployed + realized < -0.005:
+            raise PaperTradeConstraintError(
+                f"Portfolio capital cannot be below existing net capital commitments of ₹{deployed - realized:,.2f}."
+            )
+        row.initial_capital = capital
+        row.max_open_positions = max_open_positions
+        row.updated_at = now
+        session.commit()
+        return {"initial_capital": capital, "max_open_positions": max_open_positions}
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def set_portfolio_capital(initial_capital: float) -> float:
+    """Backward-compatible capital-only mutator preserving the position limit."""
+    current = get_portfolio_configuration()
+    saved = set_portfolio_configuration(initial_capital, current["max_open_positions"])
+    return float(saved["initial_capital"])
+
+
+def canonical_position_symbol(symbol: str) -> str:
+    value = str(symbol or "").strip().upper()
+    if value.startswith("NSE:"):
+        value = value[4:]
+    return value[:-3] if value.endswith(".NS") else value
+
+
+def _new_paper_trade(
+    symbol: str,
+    entry_price: float,
+    quantity: int,
+    strategy_used: str,
+    stop_loss: Optional[float],
+    target: Optional[float],
+    sector: str,
+    tech_score: float,
+    fund_score: float,
+    sent_score: float,
+    weights_used: Optional[Dict[str, float]],
+    agent_reasoning: str,
+    risk_metadata: Optional[Dict[str, Any]],
+) -> PaperTrade:
+    metadata = risk_metadata or {}
+    now = dt.datetime.now(dt.timezone.utc)
+    storage_stop = stop_loss if isinstance(stop_loss, (int, float)) else entry_price
+    storage_target = target if isinstance(target, (int, float)) else entry_price
+    trade = PaperTrade(
+        symbol=symbol, sector=sector, entry_date=now, entry_timestamp=now, entry_price=entry_price,
+        quantity=quantity, position_value=round(entry_price * quantity, 2), stop_loss=storage_stop,
+        target=storage_target, status="OPEN", strategy_used=strategy_used, created_at=now, updated_at=now,
+        risk_contract_version=metadata.get("risk_contract_version", "F2_V1"),
+        allocation_status=metadata.get("allocation_status"), opportunity_reference=metadata.get("opportunity_reference"),
+        risk_reference_type=metadata.get("risk_reference_type"), risk_reference_value=metadata.get("risk_reference_value"),
+        risk_reference_available=bool(metadata.get("risk_reference_available")),
+        reference_risk_per_share=metadata.get("reference_risk_per_share"), reference_risk_rupees=metadata.get("reference_risk_rupees"),
+        executable_stop_enabled=bool(metadata.get("executable_stop_enabled")), initial_executable_stop=metadata.get("initial_executable_stop"),
+        executable_risk_per_share=metadata.get("executable_risk_per_share"), executable_risk_rupees=metadata.get("executable_risk_rupees"),
+        gap_risk_possible=bool(metadata.get("gap_risk_possible")), target_status=metadata.get("target_status", "NOT_AVAILABLE"),
+    )
+    trade.attribution = AgentAttribution(
+        tech_score=tech_score, fund_score=fund_score, sent_score=sent_score,
+        weights_used=json.dumps(weights_used or {"w_tech": .5, "w_fund": .3, "w_sent": .2}),
+        agent_reasoning=agent_reasoning,
+    )
+    return trade
+
+
 def add_paper_trade(symbol: str, entry_price: float, quantity: int, strategy_used: str,
                     stop_loss: Optional[float] = None, target: Optional[float] = None,
                     sector: str = "General", tech_score: float = 0.85, fund_score: float = 7.0,
@@ -274,32 +476,84 @@ def add_paper_trade(symbol: str, entry_price: float, quantity: int, strategy_use
     _require_database()
     session = SessionLocal()
     try:
-        metadata = risk_metadata or {}
-        now = dt.datetime.now(dt.timezone.utc)
-        # Retained legacy fields are compatibility-only for F2/V1 records.
-        storage_stop = stop_loss if isinstance(stop_loss, (int, float)) else entry_price
-        storage_target = target if isinstance(target, (int, float)) else entry_price
-        trade = PaperTrade(
-            symbol=symbol, sector=sector, entry_date=now, entry_timestamp=now, entry_price=entry_price,
-            quantity=quantity, position_value=round(entry_price * quantity, 2), stop_loss=storage_stop,
-            target=storage_target, status="OPEN", strategy_used=strategy_used, created_at=now, updated_at=now,
-            risk_contract_version=metadata.get("risk_contract_version", "F2_V1"),
-            allocation_status=metadata.get("allocation_status"), opportunity_reference=metadata.get("opportunity_reference"),
-            risk_reference_type=metadata.get("risk_reference_type"), risk_reference_value=metadata.get("risk_reference_value"),
-            risk_reference_available=bool(metadata.get("risk_reference_available")),
-            reference_risk_per_share=metadata.get("reference_risk_per_share"), reference_risk_rupees=metadata.get("reference_risk_rupees"),
-            executable_stop_enabled=bool(metadata.get("executable_stop_enabled")), initial_executable_stop=metadata.get("initial_executable_stop"),
-            executable_risk_per_share=metadata.get("executable_risk_per_share"), executable_risk_rupees=metadata.get("executable_risk_rupees"),
-            gap_risk_possible=bool(metadata.get("gap_risk_possible")), target_status=metadata.get("target_status", "NOT_AVAILABLE"),
+        trade = _new_paper_trade(
+            symbol, entry_price, quantity, strategy_used, stop_loss, target, sector,
+            tech_score, fund_score, sent_score, weights_used, agent_reasoning, risk_metadata,
         )
-        trade.attribution = AgentAttribution(tech_score=tech_score, fund_score=fund_score, sent_score=sent_score,
-                                             weights_used=json.dumps(weights_used or {"w_tech": .5, "w_fund": .3, "w_sent": .2}),
-                                             agent_reasoning=agent_reasoning)
         session.add(trade)
         session.commit()
         session.refresh(trade)
         return trade
     except SQLAlchemyError:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def add_constrained_paper_trade(
+    symbol: str,
+    entry_price: float,
+    quantity: int,
+    strategy_used: str,
+    stop_loss: Optional[float] = None,
+    target: Optional[float] = None,
+    sector: str = "General",
+    tech_score: float = 0.85,
+    fund_score: float = 7.0,
+    sent_score: float = 0.0,
+    weights_used: Optional[Dict[str, float]] = None,
+    agent_reasoning: str = "",
+    risk_metadata: Optional[Dict[str, Any]] = None,
+) -> PaperTrade:
+    """Atomically enforce the live paper-portfolio cash/position contract."""
+    if not isinstance(quantity, int) or isinstance(quantity, bool) or quantity <= 0:
+        raise PaperTradeConstraintError("Paper-trade quantity must be at least one whole share.")
+    if not isinstance(entry_price, (int, float)) or isinstance(entry_price, bool) or not math.isfinite(float(entry_price)) or entry_price <= 0:
+        raise PaperTradeConstraintError("A positive execution/reference price is required.")
+
+    _require_database()
+    session = SessionLocal()
+    try:
+        if DATABASE_BACKEND == "SQLITE":
+            session.execute(text("BEGIN IMMEDIATE"))
+        configuration = session.query(PortfolioConfiguration).filter_by(id=1).with_for_update().first()
+        if configuration is None:
+            now = dt.datetime.now(dt.timezone.utc)
+            configuration = PortfolioConfiguration(
+                id=1, initial_capital=DEFAULT_PORTFOLIO_CAPITAL_INR,
+                max_open_positions=DEFAULT_MAX_OPEN_POSITIONS, created_at=now, updated_at=now
+            )
+            session.add(configuration)
+            session.flush()
+        capital = float(configuration.initial_capital)
+        open_trades = session.query(PaperTrade).filter(PaperTrade.status == "OPEN").all()
+        canonical = canonical_position_symbol(symbol)
+        if any(canonical_position_symbol(trade.symbol) == canonical for trade in open_trades):
+            raise PaperTradeConstraintError(f"An open paper position already exists for {canonical}.")
+        max_positions = configuration.max_open_positions
+        if max_positions is not None and len(open_trades) >= int(max_positions):
+            raise PaperTradeConstraintError(f"The configured maximum of {int(max_positions)} open paper positions has been reached.")
+
+        closed_trades = session.query(PaperTrade).filter(PaperTrade.status != "OPEN").all()
+        deployed = sum(float(trade.entry_price) * int(trade.quantity) for trade in open_trades)
+        realized = sum(float(trade.realized_pnl or 0.0) for trade in closed_trades)
+        available_cash = round(capital - deployed + realized, 2)
+        position_value = round(float(entry_price) * quantity, 2)
+        if position_value > available_cash + 0.005:
+            raise PaperTradeConstraintError(
+                f"Insufficient available cash: ₹{available_cash:,.2f} available; ₹{position_value:,.2f} required."
+            )
+
+        trade = _new_paper_trade(
+            symbol, float(entry_price), quantity, strategy_used, stop_loss, target, sector,
+            tech_score, fund_score, sent_score, weights_used, agent_reasoning, risk_metadata,
+        )
+        session.add(trade)
+        session.commit()
+        session.refresh(trade)
+        return trade
+    except Exception:
         session.rollback()
         raise
     finally:
@@ -369,6 +623,86 @@ def save_portfolio_snapshot(snapshot: Dict[str, Any], reason: str, source: str =
 
 def load_portfolio_snapshots(limit: int = 365) -> List[PortfolioSnapshot]:
     return _safe_read(lambda s: s.query(PortfolioSnapshot).order_by(PortfolioSnapshot.snapshot_timestamp.desc()).limit(limit).all())
+
+
+def persist_historical_analog_snapshot(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Append one HA result once; an existing identity is never rewritten."""
+    _require_database()
+    signal_date = result["signal_date"]
+    if isinstance(signal_date, str):
+        signal_date = dt.date.fromisoformat(signal_date)
+    identity = {
+        "opportunity_id": str(result["opportunity_id"]),
+        "signal_date": signal_date,
+        "methodology_hash": str(result["methodology_hash"]),
+    }
+    session = SessionLocal()
+    try:
+        existing = session.query(HistoricalAnalogSnapshot).filter_by(**identity).first()
+        if existing:
+            return {"saved": False, "snapshot_id": existing.id}
+        summary = {key: value for key, value in result.items() if key != "analogs"}
+        row = HistoricalAnalogSnapshot(
+            **identity, symbol=str(result["symbol"]), methodology_id=str(result["methodology_id"]),
+            evidence_quality=str(result["evidence_quality"]), analog_count=int(result["analog_count"]),
+            summary_payload=json.dumps(_json_safe(summary), sort_keys=True, allow_nan=False),
+        )
+        session.add(row)
+        session.flush()
+        for analog in result.get("analogs", []):
+            analog_date = analog["signal_date"]
+            label_end = analog["label_end_date"]
+            if isinstance(analog_date, str): analog_date = dt.date.fromisoformat(analog_date)
+            if isinstance(label_end, str): label_end = dt.date.fromisoformat(label_end)
+            identity_fields = {
+                "opportunity_id", "symbol", "signal_date", "label_end_date", "rank",
+                "distance", "feature_coverage",
+            }
+            session.add(HistoricalAnalogMapping(
+                snapshot_id=row.id, rank=int(analog["rank"]),
+                analog_opportunity_id=str(analog["opportunity_id"]), analog_symbol=str(analog["symbol"]),
+                analog_signal_date=analog_date, analog_label_end_date=label_end,
+                distance=float(analog["distance"]), feature_coverage=float(analog["feature_coverage"]),
+                outcome_payload=json.dumps(_json_safe({k: v for k, v in analog.items() if k not in identity_fields}), sort_keys=True, allow_nan=False),
+            ))
+        session.commit()
+        return {"saved": True, "snapshot_id": row.id}
+    except IntegrityError:
+        session.rollback()
+        existing = session.query(HistoricalAnalogSnapshot).filter_by(**identity).first()
+        return {"saved": False, "snapshot_id": existing.id if existing else None}
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def load_historical_analog_snapshot(opportunity_id: str, signal_date: Any, methodology_hash: str) -> Optional[Dict[str, Any]]:
+    """Load one inspectable snapshot and its persisted ranked mapping."""
+    if isinstance(signal_date, str): signal_date = dt.date.fromisoformat(signal_date)
+    if not init_db(): return None
+    session = SessionLocal()
+    try:
+        row = session.query(HistoricalAnalogSnapshot).filter_by(
+            opportunity_id=str(opportunity_id), signal_date=signal_date, methodology_hash=str(methodology_hash)
+        ).first()
+        if not row: return None
+        result = json.loads(row.summary_payload)
+        mappings = session.query(HistoricalAnalogMapping).filter_by(snapshot_id=row.id).order_by(HistoricalAnalogMapping.rank.asc()).all()
+        result["analogs"] = [
+            {
+                "rank": item.rank, "opportunity_id": item.analog_opportunity_id,
+                "symbol": item.analog_symbol, "signal_date": item.analog_signal_date.isoformat(),
+                "label_end_date": item.analog_label_end_date.isoformat(), "distance": item.distance,
+                "feature_coverage": item.feature_coverage, **json.loads(item.outcome_payload),
+            }
+            for item in mappings
+        ]
+        result["snapshot_id"] = row.id
+        return result
+    finally:
+        session.close()
 
 
 def _json_safe(value: Any) -> Any:

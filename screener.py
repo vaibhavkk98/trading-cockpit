@@ -46,6 +46,19 @@ def fetch_nifty50_benchmark(period: str = "1y", as_of_date: Optional[str] = None
         return None, {"1m": 0.0, "3m": 0.0, "6m": 0.0}
 
 
+def fetch_ha_market_histories(period: str = "2y", as_of_date: Optional[str] = None) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+    """Fetch advisory Nifty 500/VIX histories once per scan; failures never affect qualification."""
+    try:
+        nifty500 = yf.Ticker("^CRSLDX").history(period=period, interval="1d", auto_adjust=True)
+        india_vix = yf.Ticker("^INDIAVIX").history(period=period, interval="1d", auto_adjust=True)
+        if as_of_date:
+            nifty500 = nifty500[nifty500.index.strftime("%Y-%m-%d") <= as_of_date]
+            india_vix = india_vix[india_vix.index.strftime("%Y-%m-%d") <= as_of_date]
+        return (nifty500 if not nifty500.empty else None, india_vix if not india_vix.empty else None)
+    except Exception:
+        return None, None
+
+
 def fetch_stock_data(symbol: str, period: str = "2y", as_of_date: Optional[str] = None) -> Optional[pd.DataFrame]:
     """
     Fetch historical EOD daily price data for a given ticker symbol using yfinance.
@@ -360,6 +373,7 @@ def run_screener(
     }
 
     _, nifty_returns = fetch_nifty50_benchmark(period="1y", as_of_date=as_of_date)
+    ha_nifty500, ha_vix = fetch_ha_market_histories(period="2y", as_of_date=as_of_date)
 
     # Fast bulk fetch for multi-ticker universes
     stock_data_map = fetch_bulk_stock_data(symbols, period="2y") if len(symbols) > 5 else {}
@@ -406,7 +420,7 @@ def run_screener(
 
         if eval_res["Technical_Pass"]:
             diagnostics["unique_signal_candidates"] += 1
-            results.append({
+            result_row = {
                 "Symbol": clean_sym,
                 # Every price/volume field below is derived from this exact final
                 # completed EOD bar.  Keep the date with the row so downstream
@@ -438,7 +452,16 @@ def run_screener(
                 "Avg_Turnover_Cr": eval_res["Turnover_Cr"],
                 "Technical_Pass": eval_res["Technical_Pass"],
                 "Passed": eval_res["Passed"]
-            })
+            }
+            if ha_nifty500 is not None and ha_vix is not None:
+                try:
+                    from historical_analogs_service import HistoricalAnalogService
+                    result_row.update(HistoricalAnalogService.build_causal_query_state(
+                        df, ha_nifty500, ha_vix, result_row["Data_As_Of"]
+                    ))
+                except Exception:
+                    pass
+            results.append(result_row)
         else:
             if not eval_res.get("Uptrend"):
                 reason = "Failed Uptrend (Price <= 50 EMA or 50 EMA <= 200 EMA)"

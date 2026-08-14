@@ -3,6 +3,56 @@ from copy import deepcopy
 from typing import Any, Dict, Iterable, List, Optional
 
 
+NAVIGATION_PAGES = {"today", "signals", "portfolio", "stock", "performance", "settings"}
+STOCK_TABS = {"overview", "rally", "historical_analogs", "events", "trade"}
+
+
+def canonical_route_symbol(symbol: Any) -> Optional[str]:
+    value = str(symbol or "").strip().upper()
+    if value.startswith("NSE:"):
+        value = value[4:]
+    if value.endswith(".NS"):
+        value = value[:-3]
+    return value if value and value.replace("-", "").replace("&", "").replace("_", "").isalnum() else None
+
+
+def navigation_state(query_params: Any, current: Optional[Dict[str, Any]] = None) -> Dict[str, Optional[str]]:
+    """Resolve a durable, read-only deep link without executing application work."""
+    current = current or {}
+
+    def scalar(name: str):
+        value = query_params.get(name) if hasattr(query_params, "get") else None
+        return value[-1] if isinstance(value, (list, tuple)) and value else value
+
+    page = str(scalar("page") or current.get("navigation_page") or "today").lower()
+    page = page if page in NAVIGATION_PAGES else "today"
+    symbol = canonical_route_symbol(scalar("symbol") or current.get("navigation_symbol"))
+    tab = str(scalar("tab") or current.get("navigation_tab") or "overview").lower()
+    tab = tab if tab in STOCK_TABS else "overview"
+    if page != "stock":
+        symbol, tab = None, "overview"
+    elif symbol is None:
+        page, tab = "today", "overview"
+    return {"page": page, "symbol": symbol, "tab": tab}
+
+
+def hydrate_navigation_state(session_state: Dict[str, Any], query_params: Any) -> Dict[str, Optional[str]]:
+    route = navigation_state(query_params, session_state)
+    session_state["navigation_page"] = route["page"]
+    session_state["navigation_symbol"] = route["symbol"]
+    session_state["navigation_tab"] = route["tab"]
+    return route
+
+
+def navigation_query(page: str, symbol: Any = None, tab: str = "overview") -> Dict[str, str]:
+    """Build canonical URL parameters; contains no trade or confirmation state."""
+    route = navigation_state({"page": page, "symbol": symbol, "tab": tab})
+    result = {"page": str(route["page"])}
+    if route["page"] == "stock":
+        result.update({"symbol": str(route["symbol"]), "tab": str(route["tab"])})
+    return result
+
+
 STRATEGY_LABELS = {
     "Donchian Channel Breakout": "Donchian",
     "EMA Pullback / Bounce": "EMA Pullback",
@@ -120,4 +170,5 @@ def initial_workspace_state() -> Dict[str, Any]:
         "scan_summary": {}, "qualified_candidates": [], "live_decisions": [],
         "selected_opportunity_id": None, "portfolio_loaded": False,
         "portfolio_positions": [], "portfolio_summary": {}, "portfolio_snapshots": [], "last_price_refresh_at": None,
+        "navigation_page": "today", "navigation_symbol": None, "navigation_tab": "overview",
     }

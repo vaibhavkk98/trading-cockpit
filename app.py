@@ -10,7 +10,7 @@ End-to-End Decision Support Application & Paper Trading Engine:
 - Interactive Stock Charts & Decision Cards
 - Live Paper Portfolio Engine & SQLite Tracker
 - Historical Research Performance Viewer
-- Frozen nominal sizing and paper-trade lifecycle
+- Configurable paper capital, explicit dynamic sizing, and frozen trade lifecycle
 
 Launch:
     PYTHONPATH=. streamlit run app.py
@@ -37,6 +37,7 @@ from adapters import (
     VOLATILITY_STRATEGIES
 )
 from event_intelligence import EventIntelligenceService
+from cockpit_ui import render_cockpit
 from market_risk_live import get_market_risk_context_for_ui
 from live_decision_adapter import assemble_live_decisions, summarize_live_portfolio_risk
 from operational_runtime import PRODUCT_VERSION, SCAN_FAILED, SCAN_NOT_RUN, SCAN_PARTIAL, SCAN_RUNNING, SCAN_SUCCESS, initial_scan_state, log_event, scan_freshness, utc_now
@@ -47,6 +48,7 @@ from interaction_architecture import (
     compact_allocation,
     current_scan_identity,
     default_signal_rows,
+    hydrate_navigation_state,
     initial_workspace_state,
     ordered_decisions,
     portfolio_position_rows,
@@ -77,7 +79,7 @@ st.set_page_config(
     page_title="Trading Cockpit V1.1",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 apply_theme()
@@ -152,6 +154,7 @@ if "scan_state" not in st.session_state:
 for workspace_key, workspace_value in initial_workspace_state().items():
     if workspace_key not in st.session_state:
         st.session_state[workspace_key] = workspace_value
+active_route = hydrate_navigation_state(st.session_state, st.query_params)
 
 # Candidate dictionaries are session-persisted by Streamlit.  Invalidate any
 # payload produced by the pre-Step-11.1 contract, which lacked canonical
@@ -183,6 +186,13 @@ if not st.session_state.get("persisted_run_hydrated"):
     st.session_state["persisted_run_hydrated"] = True
 
 open_positions, persisted_portfolio_summary = hydrate_portfolio()
+portfolio_capital = persisted_portfolio_summary.get(
+    "configured_portfolio_capital_inr", persistence.DEFAULT_PORTFOLIO_CAPITAL_INR
+)
+portfolio_position_limit = persisted_portfolio_summary.get(
+    "configured_max_open_positions", persistence.DEFAULT_MAX_OPEN_POSITIONS
+)
+portfolio_position_limit_label = "No limit" if portfolio_position_limit is None else str(portfolio_position_limit)
 if "database_health" not in st.session_state:
     st.session_state["database_health"] = adapters["execution"].database_diagnostics()
 
@@ -210,7 +220,7 @@ with act_col2:
     run_analysis_btn = st.button("Run today's analysis", type="primary", use_container_width=True)
 
 with act_col3:
-    st.caption(f"Frozen policy · ₹1L nominal ticket · Fixed 10-day lifecycle · {st.session_state['max_trend_slots']} trend / {st.session_state['max_vol_slots']} volatility slots")
+    st.caption(f"Paper capital {format_currency(portfolio_capital)} · User-specified trade amount · Fixed 10-day lifecycle · {st.session_state['max_trend_slots']} trend / {st.session_state['max_vol_slots']} volatility slots")
 
 # Handler for "Run Today's Analysis" (Does NOT execute paper trades automatically)
 # A full live-universe scan is intentional user work.  Do not begin it merely
@@ -233,17 +243,8 @@ if run_analysis_btn:
     else:
         st.error("Analysis could not complete. Existing persisted results were preserved.")
 
-# ------------------------------------------------------------------------------
-# 6 MAIN NAVIGATION TABS
-# ------------------------------------------------------------------------------
-tab_today, tab_signals, tab_portfolio, tab_details, tab_performance, tab_settings = st.tabs([
-    "Today",
-    "Signals",
-    "Portfolio",
-    "Trade Details",
-    "Performance",
-    "Settings"
-])
+# HA-P2 uses the sidebar/deep-link shell rendered below. Legacy tab renderers
+# remain after the rollout stop boundary for short-term source compatibility.
 
 regime_info = st.session_state.get("regime_info") or {"regime": "BULLISH", "status_text": "Bullish (Nifty +1.46% > 50 EMA)", "close": 24250.0, "ema50": 23900.0, "data_as_of": str(analysis_date)}
 all_candidates = st.session_state.get("qualified_candidates") or st.session_state.get("allocated_candidates") or []
@@ -262,6 +263,18 @@ if not live_qualified_decisions and all_candidates:
 reconcile_selection(st.session_state, live_qualified_decisions, st.session_state["scan_state"])
 selected_candidates = [c for c in live_qualified_decisions if c.get("allocation_status") == "ALLOCATED"]
 qualified_unallocated = [c for c in live_qualified_decisions if c.get("allocation_status") != "ALLOCATED"]
+
+# HA-P2 product shell. The retained V1.1 renderers below remain source-compatible
+# during rollout, but are not executed by the focused production interface.
+render_cockpit(
+    decisions=live_qualified_decisions,
+    positions=open_positions,
+    portfolio_summary=persisted_portfolio_summary,
+    adapters=adapters,
+    hydrate_portfolio=hydrate_portfolio,
+    route=active_route,
+)
+st.stop()
 
 def render_market_risk_context():
     """C3 consumer-only rendering; has no connection to trading decisions."""
@@ -346,7 +359,7 @@ with tab_today:
     # --------------------------------------------------------------------------
     tot_qualified_cnt = len(selected_candidates) + len(qualified_unallocated)
     tot_cap_req = sum(c.get("suggested_position_size", 100000.0) for c in selected_candidates)
-    tot_cap_rem = max(0.0, 1000000.0 - tot_cap_req)
+    tot_cap_rem = max(0.0, portfolio_capital - tot_cap_req)
     defined_stop_risk = sum(
         c.get("executable_stop_risk_inr", 0.0)
         for c in selected_candidates
@@ -365,7 +378,7 @@ with tab_today:
     with p2:
         render_metric_card("Cash", format_currency(today_portfolio.get("current_cash_inr")), "Available cash")
     with p3:
-        render_metric_card("Open positions", f"{len(open_positions)} / 10", "Paper positions")
+        render_metric_card("Open positions", f"{len(open_positions)} / {portfolio_position_limit_label}", "Paper positions")
     with p4:
         render_metric_card("Reference heat", live_risk_summary["reference_heat_pct"], f"Coverage {live_risk_summary['positions_with_reference']} / {len(open_positions)} · Informational", "unavailable")
     with p5:
@@ -404,7 +417,7 @@ with tab_today:
         st.write(f"- **Valid Price Data**: `{d_info.get('valid_data_count', 0)} symbols`")
         st.write(f"- **Unique Signal Candidates (Stocks)**: `{d_info.get('unique_signal_candidates', len(all_candidates))}`")
         st.write(f"- **Total Qualified Setups (Vol 20D >= 2.0x & Close > EMA20)**: `{tot_qualified_cnt}`")
-        st.write(f"- **Recommended Selected Positions (Allocated)**: `{len(selected_candidates)}` (Max 10 slots / ₹10L cap)")
+        st.write(f"- **Recommended Selected Positions (Allocated)**: `{len(selected_candidates)}` (Frozen allocator max 10 slots; paper execution limit {portfolio_position_limit_label})")
         st.write(f"- **Qualified Candidates — Capital Cap (Unallocated)**: `{len(qualified_unallocated)}`")
         st.write(f"- **Rejected Candidates**: `{len(rejected_candidates)}` (Failed volume ratio < 2.0x, Close <= EMA20, or regime)")
 
@@ -439,35 +452,62 @@ with tab_today:
         with column:
             render_metric_card(label, count, "Qualified opportunities", "good" if label == "Allocated" and count else "neutral")
 
-    if selected_candidates:
-        render_section_header("Paper trade", "Explicit manual record only", "Manual", "neutral")
+    if live_qualified_decisions:
+        render_section_header("Paper trade ticket", "Any qualified opportunity; explicit manual record only", "Manual", "neutral")
         db_health = st.session_state["database_health"]
         if db_health.get("database_status") != "AVAILABLE":
             st.error("Paper-trade storage is unavailable. No paper trade can be recorded until database connectivity is restored.")
+        opportunity_labels = {
+            f"{candidate['symbol']} · {short_strategy_name(candidate.get('strategy'))} · "
+            f"{'System preferred' if candidate.get('allocation_status') == 'ALLOCATED' else 'Qualified'}": candidate
+            for candidate in ordered_decisions(live_qualified_decisions)
+        }
+        selected_opportunity_label = st.selectbox("Qualified opportunity", list(opportunity_labels), key="paper_trade_symbol")
+        match_cand = opportunity_labels.get(selected_opportunity_label)
+        available_cash = max(0.0, float(today_portfolio.get("current_cash_inr") or 0.0))
+        default_amount = min(100_000.0, available_cash) if available_cash > 0 else 0.0
+        investment_amount = st.number_input(
+            "Investment amount (₹)", min_value=0.0, value=float(default_amount), step=1_000.0,
+            help="Enter any rupee amount. Whole-share quantity is calculated at the current/reference price.",
+            key="paper_trade_investment_amount",
+        )
+        ticket_preview = adapters["execution"].preview_paper_trade(match_cand or {}, investment_amount)
+        allocator_label = "System preferred · allocator selected" if ticket_preview.get("allocator_selected") else "Qualified · not allocator selected"
+        st.caption(f"{allocator_label}. Allocation is advisory and does not control paper-trade availability.")
+        t1, t2, t3, t4, t5, t6 = st.columns(6)
+        with t1:
+            render_metric_card("Symbol", display_value(ticket_preview.get("symbol")), allocator_label)
+        with t2:
+            render_metric_card("Reference price", format_price(ticket_preview.get("execution_price_inr")), "Whole-share execution basis")
+        with t3:
+            render_metric_card("Available cash", format_currency(ticket_preview.get("available_cash_inr")), "Before trade")
+        with t4:
+            render_metric_card("Estimated quantity", ticket_preview.get("estimated_quantity", 0), "Whole shares")
+        with t5:
+            render_metric_card("Actual deployed", format_currency(ticket_preview.get("executed_position_value_inr")), "Quantity × reference price")
+        with t6:
+            render_metric_card("Remaining cash", format_currency(ticket_preview.get("remaining_cash_inr")), "After trade")
+        for validation_error in ticket_preview.get("validation_errors", []):
+            st.warning(validation_error)
         with st.form("paper_trade_record_form", clear_on_submit=False):
-            sel_sym = st.selectbox("Allocated opportunity", [candidate["symbol"] for candidate in selected_candidates], key="paper_trade_symbol")
             confirm_paper_trade = st.checkbox("I confirm this is a manual paper-trade record", key="confirm_paper_trade")
-            exec_btn = st.form_submit_button("Record paper trade", type="primary", disabled=db_health.get("database_status") != "AVAILABLE")
-        if exec_btn and sel_sym:
-            match_cand = next((candidate for candidate in selected_candidates if candidate["symbol"] == sel_sym), None)
+            exec_btn = st.form_submit_button(
+                "Record paper trade", type="primary",
+                disabled=db_health.get("database_status") != "AVAILABLE" or not ticket_preview.get("valid"),
+            )
+        if exec_btn and selected_opportunity_label:
             if not confirm_paper_trade:
                 st.error("Confirm the manual paper-trade record before submitting.")
             elif match_cand:
-                submission_key = f"{match_cand['symbol']}:{match_cand.get('signal_date')}:{st.session_state['scan_state'].get('scan_completed_at')}"
-                submitted = st.session_state.setdefault("paper_submission_keys", set())
-                if submission_key in submitted:
-                    st.warning("This opportunity was already recorded for the current scan.")
+                res = adapters["execution"].execute_paper_trade(match_cand, investment_amount=investment_amount)
+                if res.get("success"):
+                    log_event(PROJECT_ROOT, "PAPER_TRADE_RECORDED", symbol=match_cand["symbol"], trade_id=res.get("trade_id"))
+                    hydrate_portfolio(force=True)
+                    st.success(res["message"])
+                    st.rerun()
                 else:
-                    res = adapters["execution"].execute_paper_trade(match_cand)
-                    if res.get("success"):
-                        submitted.add(submission_key)
-                        log_event(PROJECT_ROOT, "PAPER_TRADE_RECORDED", symbol=match_cand["symbol"], trade_id=res.get("trade_id"))
-                        hydrate_portfolio(force=True)
-                        st.success(res["message"])
-                        st.rerun()
-                    else:
-                        log_event(PROJECT_ROOT, "PAPER_TRADE_WRITE_FAILED", symbol=match_cand["symbol"])
-                        st.error(res.get("message", "Paper-trade write failed."))
+                    log_event(PROJECT_ROOT, "PAPER_TRADE_WRITE_FAILED", symbol=match_cand["symbol"])
+                    st.error(res.get("message", "Paper-trade write failed."))
 
     # --------------------------------------------------------------------------
     # 2. QUALIFIED — NOT CURRENTLY ALLOCATED SECTION
@@ -538,26 +578,37 @@ def render_portfolio_workspace():
                 f"{refresh_result.get('open_positions', 0)} · {display_value(st.session_state['last_price_refresh_at'])}"
             )
 
-    val_inr = perf_summary.get('total_portfolio_value_inr', 1000000.0)
-    cash_inr = perf_summary.get('current_cash_inr', perf_summary.get('cash_inr', 1000000.0))
+    configured_capital = perf_summary.get('configured_portfolio_capital_inr', portfolio_capital)
+    configured_limit = perf_summary.get('configured_max_open_positions', portfolio_position_limit)
+    configured_limit_label = "No limit" if configured_limit is None else str(configured_limit)
+    val_inr = perf_summary.get('total_portfolio_value_inr', configured_capital)
+    cash_inr = perf_summary.get('current_cash_inr', perf_summary.get('cash_inr', portfolio_capital))
     inv_inr = perf_summary.get('invested_capital_inr', perf_summary.get('open_capital_deployed_inr', 0.0))
     pos_cnt = perf_summary.get('open_positions_count', 0)
     net_pnl = perf_summary.get('total_net_pnl_inr', 0.0)
     net_ret = perf_summary.get('total_net_return_pct', 0.0)
 
     live_portfolio_risk = summarize_live_portfolio_risk(open_pos_list)
+    unrealized_pnl = perf_summary.get('unrealized_pnl_inr')
     p1, p2, p3, p4, p5, p6 = st.columns(6)
     with p1:
-        render_metric_card("Portfolio equity", format_currency(val_inr), "Paper portfolio")
+        render_metric_card("Configured capital", format_currency(configured_capital), "Paper portfolio")
     with p2:
-        render_metric_card("Cash", format_currency(cash_inr), "Available")
+        render_metric_card("NAV", format_currency(val_inr), "Existing accounting semantics")
     with p3:
-        render_metric_card("Deployed", format_currency(inv_inr), "Open capital")
+        render_metric_card("Available cash", format_currency(cash_inr), "No leverage")
     with p4:
-        render_metric_card("Open positions", f"{pos_cnt} / 10", "Maximum positions")
+        render_metric_card("Deployed", format_currency(inv_inr), "Open capital")
     with p5:
-        render_metric_card("Reference heat", live_portfolio_risk["reference_heat_pct"], f"Coverage {live_portfolio_risk['positions_with_reference']} / {pos_cnt} · Informational", "unavailable")
+        render_metric_card("Open positions", f"{pos_cnt} / {configured_limit_label}", "Configured position limit")
     with p6:
+        render_metric_card("Realized P&L", format_currency(net_pnl), f"Return {format_percent(net_ret)}")
+    r1, r2, r3 = st.columns(3)
+    with r1:
+        render_metric_card("Unrealized P&L", format_currency(unrealized_pnl), f"Price coverage {perf_summary.get('price_coverage_count', 0)} / {perf_summary.get('price_coverage_total', pos_cnt)}", "neutral" if unrealized_pnl is not None else "unavailable")
+    with r2:
+        render_metric_card("Reference heat", live_portfolio_risk["reference_heat_pct"], f"Coverage {live_portfolio_risk['positions_with_reference']} / {pos_cnt} · Informational", "unavailable")
+    with r3:
         render_metric_card("Executable stop heat", live_portfolio_risk["executable_stop_heat_pct"], f"Coverage {live_portfolio_risk['positions_with_executable_stop']} / {pos_cnt}", "unavailable")
     st.caption("Reference Heat is informational. Executable Stop Heat is supplementary. Neither is a maximum-loss estimate.")
 
@@ -758,17 +809,44 @@ with tab_performance:
 # TAB 6 — SETTINGS (CONFIGURABLE OPTIONS)
 # ==============================================================================
 with tab_settings:
-    render_section_header("Settings", f"Frozen policy summary; no controls are editable · {PRODUCT_VERSION}", "Frozen", "neutral")
+    render_section_header("Settings", f"Paper portfolio configuration and frozen methodology · {PRODUCT_VERSION}", "Paper", "neutral")
+    render_section_header("Portfolio controls", "Authoritative paper-capital and position-limit settings; existing trades are never reset")
+    with st.form("portfolio_capital_configuration_form", clear_on_submit=False):
+        configured_capital_input = st.number_input(
+            "Paper portfolio capital (₹)", min_value=1.0, value=float(portfolio_capital), step=100_000.0,
+            help="A lower value is rejected if it would make available cash negative against the existing ledger.",
+            key="configured_portfolio_capital_input",
+        )
+        no_position_limit = st.checkbox(
+            "No position-count limit", value=portfolio_position_limit is None,
+            help="Cash and duplicate-position constraints remain binding.", key="no_position_count_limit",
+        )
+        configured_position_limit_input = st.number_input(
+            "Maximum open positions", min_value=1, value=int(portfolio_position_limit or persistence.DEFAULT_MAX_OPEN_POSITIONS), step=1,
+            disabled=no_position_limit, key="configured_max_open_positions_input",
+        )
+        save_controls = st.form_submit_button("Save portfolio controls", type="primary", disabled=st.session_state["database_health"].get("database_status") != "AVAILABLE")
+    if save_controls:
+        controls_result = adapters["execution"].configure_portfolio(
+            configured_capital_input, None if no_position_limit else int(configured_position_limit_input)
+        )
+        if controls_result.get("success"):
+            hydrate_portfolio(force=True)
+            st.success(controls_result["message"])
+            st.rerun()
+        else:
+            st.error(controls_result.get("message", "Portfolio controls could not be saved."))
     policy_1, policy_2, policy_3 = st.columns(3)
     with policy_1:
         render_section_header("Trading policy")
-        render_context_card("Nominal ticket", "₹1L", "Fixed nominal paper-trade ticket", "neutral", "Binding")
-        render_context_card("Maximum positions", "10", "Existing cash and duplicate constraints remain binding", "neutral", "Binding")
+        render_context_card("Portfolio capital", format_currency(portfolio_capital), "Configurable and persisted", "neutral", "Binding")
+        render_context_card("Paper-trade amount", "User specified", "Whole-share quantity at the reference price", "neutral", "Binding")
+        render_context_card("Maximum positions", portfolio_position_limit_label, "Cash and duplicate constraints remain binding", "neutral", "Binding")
         render_context_card("Execution", "Paper trading only", "Manual recording only; no automatic order placement", "neutral")
     with policy_2:
         render_section_header("Risk policy")
         render_context_card("Validated stops", "Donchian / RS / VCP", "Static validated executable-stop coverage only", "neutral")
-        render_context_card("Risk-based sizing", "Inactive", "Nominal sizing remains frozen", "unavailable")
+        render_context_card("Risk-based sizing", "Inactive", "Allocator recommendation remains unchanged", "unavailable")
         render_context_card("Heat limit", "Inactive", "Heat is informational; no threshold is implied", "unavailable")
     with policy_3:
         render_section_header("Intelligence")

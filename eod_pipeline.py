@@ -123,6 +123,17 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         except Exception:
             pass  # Informational context is deliberately not a pipeline failure.
         decisions = assemble_live_decisions(candidates)
+        # Advisory-only HA snapshots are captured at signal time when the
+        # scanner supplied a complete causal state. Failure cannot affect the
+        # qualified set, allocator, persistence, or paper-trade eligibility.
+        try:
+            from historical_analogs_service import HistoricalAnalogService
+            analog_service = HistoricalAnalogService()
+            for decision in decisions:
+                if decision.get("ha_features") and decision.get("ha_stock_percentiles"):
+                    analog_service.evaluate(decision, persist=True)
+        except Exception:
+            pass
         succeeded = int(diagnostics.get("valid_data_count", 0)); requested = len(symbols); failed = max(0, requested - succeeded)
         status = SCAN_PARTIAL if succeeded and failed else SCAN_SUCCESS
         completed = dt.datetime.now(dt.timezone.utc)

@@ -28,6 +28,9 @@ def apply_theme():
           }
           .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] { background:var(--tc-bg) !important; color:var(--tc-text) !important; }
           [data-testid="stHeader"] { background:rgba(246,248,251,.94) !important; }
+          [data-testid="stSidebar"] { background:#F1F4F8 !important; border-right:1px solid var(--tc-line); }
+          [data-testid="stSidebar"] [role="radiogroup"] label { border-radius:10px; padding:.52rem .65rem; margin:.12rem 0; }
+          [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) { background:#FFFFFF; box-shadow:0 1px 3px rgba(15,23,42,.08); }
           .main .block-container { max-width:1480px; padding:1.35rem 1.6rem 2.5rem; }
           h1,h2,h3,p,label,span { color:var(--tc-text); }
           h1,h2,h3 { letter-spacing:-.02em; }
@@ -39,8 +42,8 @@ def apply_theme():
           .tc-section { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:1.6rem 0 .7rem; }
           .tc-section-title { font-size:1.04rem; color:var(--tc-text); font-weight:680; letter-spacing:-.012em; }
           .tc-section-copy { color:var(--tc-muted); font-size:.79rem; margin-top:3px; }
-          .tc-metric { background:var(--tc-surface); border:1px solid var(--tc-line); border-radius:var(--tc-radius);
-            padding:13px 14px 12px; min-height:83px; box-shadow:0 1px 2px rgba(15,23,42,.025); }
+          .tc-metric { background:var(--tc-surface); border:1px solid var(--tc-line); border-radius:14px;
+            padding:15px 16px 14px; min-height:91px; box-shadow:0 4px 14px rgba(15,23,42,.045); }
           .tc-metric-good { border-top:2px solid var(--tc-green); }
           .tc-metric-warn { border-top:2px solid var(--tc-amber); }
           .tc-metric-bad { border-top:2px solid var(--tc-red); }
@@ -56,8 +59,13 @@ def apply_theme():
           .tc-warn { color:var(--tc-amber); background:var(--tc-amber-soft); border-color:#F4DFB2; }
           .tc-bad { color:var(--tc-red); background:var(--tc-red-soft); border-color:#F1CACA; }
           .tc-unavailable { color:#64748B; background:#F1F5F9; border-color:#E2E8F0; }
-          .tc-card { background:var(--tc-surface); border:1px solid var(--tc-line); border-radius:var(--tc-radius);
-            padding:14px 15px; margin-bottom:10px; box-shadow:0 1px 2px rgba(15,23,42,.02); }
+          .tc-card { background:var(--tc-surface); border:1px solid var(--tc-line); border-radius:14px;
+            padding:16px 17px; margin-bottom:12px; box-shadow:0 4px 14px rgba(15,23,42,.035); }
+          .tc-page-head { margin:.2rem 0 1.25rem; }
+          .tc-page-title { color:var(--tc-text); font-size:1.45rem; font-weight:730; letter-spacing:-.03em; }
+          .tc-page-copy { color:var(--tc-muted); font-size:.84rem; margin-top:4px; }
+          .tc-money-pos { color:var(--tc-green) !important; }
+          .tc-money-neg { color:var(--tc-red) !important; }
           .tc-card-title { color:var(--tc-text); font-weight:650; font-size:.86rem; }
           .tc-card-copy { color:var(--tc-muted); font-size:.78rem; margin-top:5px; line-height:1.45; }
           .tc-value { color:var(--tc-text); font-size:1.05rem; font-weight:700; margin-top:5px; }
@@ -148,6 +156,18 @@ def render_metric_card(label, value, detail="", tone="neutral"):
     st.markdown(
         f'<div class="tc-metric {metric_tone}"><div class="tc-metric-label">{escape(label)}</div>'
         f'<div class="tc-metric-value">{escape(display_value(value))}</div>{detail_html}</div>', unsafe_allow_html=True)
+
+
+def render_page_header(title, subtitle=""):
+    copy = f'<div class="tc-page-copy">{escape(subtitle)}</div>' if subtitle else ""
+    st.markdown(f'<div class="tc-page-head"><div class="tc-page-title">{escape(title)}</div>{copy}</div>', unsafe_allow_html=True)
+
+
+def format_signed_currency(value):
+    if not _valid_number(value):
+        return "Not available"
+    sign = "+" if value > 0 else ""
+    return f"{sign}₹{value:,.2f}"
 
 
 def render_section_header(title, subtitle="", badge=None, badge_tone="neutral"):
