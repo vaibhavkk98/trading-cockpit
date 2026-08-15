@@ -45,7 +45,8 @@ from cockpit_cache import (
     invalidate_opportunity_reads,
     invalidate_portfolio_reads,
     load_latest_opportunities,
-    load_portfolio_state,
+    load_open_positions,
+    load_portfolio_summary,
 )
 from market_risk_live import get_market_risk_context_for_ui
 from live_decision_adapter import assemble_live_decisions, summarize_live_portfolio_risk
@@ -80,7 +81,7 @@ from ui_components import (
     render_section_header,
     status_badge,
 )
-from performance_timing import log_elapsed, timed
+from performance_timing import log_route, timed
 
 # ------------------------------------------------------------------------------
 # PAGE CONFIGURATION & PRESENTATION THEME
@@ -100,12 +101,14 @@ apply_theme()
 @st.cache_resource
 def get_database_resource():
     """One process-wide SQLAlchemy engine; pool_pre_ping handles stale sockets."""
-    persistence.init_db()
+    with timed("db.resource_acquisition"):
+        persistence.init_db()
     return persistence.engine
 
 
 @st.cache_resource
-def get_adapters(_database_resource):
+def get_adapters():
+    get_database_resource()
     return {
         "market_data": MarketDataProvider(),
         "universe": UniverseProvider(),
@@ -114,9 +117,9 @@ def get_adapters(_database_resource):
         "execution": ExecutionAdapter()
     }
 
-database_resource = get_database_resource()
-adapters = get_adapters(database_resource)
-log_elapsed("application.bootstrap", _APP_BOOT_STARTED)
+
+def get_execution_adapter():
+    return get_adapters()["execution"]
 
 
 @st.cache_data(show_spinner=False)
@@ -130,14 +133,22 @@ def load_historical_performance(project_root):
 
 
 def hydrate_portfolio(force=False, positions=None):
-    """Hydrate from the short TTL read model; writes explicitly invalidate it."""
+    """P1-compatible hydration used only by portfolio/trade interaction paths."""
     if force:
         invalidate_portfolio_reads()
-    state = load_portfolio_state(adapters["execution"])
-    st.session_state["portfolio_positions"] = positions if positions is not None else state["positions"]
-    st.session_state["portfolio_summary"] = state["summary"]
+    execution = get_execution_adapter()
+    st.session_state["portfolio_positions"] = positions if positions is not None else load_open_positions(execution)
+    st.session_state["portfolio_summary"] = load_portfolio_summary(execution)
     st.session_state["portfolio_loaded"] = True
     return st.session_state["portfolio_positions"], st.session_state["portfolio_summary"]
+
+
+def load_summary_for_page():
+    return load_portfolio_summary(get_execution_adapter())
+
+
+def load_positions_for_page():
+    return load_open_positions(get_execution_adapter())
 
 # Session State Config Defaults
 if "sizing_mode" not in st.session_state:
@@ -192,29 +203,28 @@ if st.session_state.get("candidate_contract_version") != COCKPIT_CANDIDATE_CONTR
     st.session_state["selected_opportunity_id"] = None
     st.session_state["candidate_contract_version"] = COCKPIT_CANDIDATE_CONTRACT_VERSION
 
-# Startup reads only durable state. It never starts a universe scan or price refresh.
-if not st.session_state.get("persisted_run_hydrated"):
-    persisted_run = load_latest_opportunities()
-    if persisted_run:
-        st.session_state["scan_state"] = {**initial_scan_state(), **{key: persisted_run.get(key) for key in initial_scan_state()}, "source": persisted_run.get("source"), "run_id": persisted_run.get("run_id")}
-        st.session_state["last_analysis_date"] = persisted_run.get("analysis_date")
-        st.session_state["qualified_candidates"] = persisted_run.get("decisions", [])
-        st.session_state["allocated_candidates"] = persisted_run.get("decisions", [])
-        st.session_state["live_decisions"] = persisted_run.get("decisions", [])
-        st.session_state["diag_info"] = persisted_run.get("provider_summary", {})
-        reconcile_selection(st.session_state, persisted_run.get("decisions", []), st.session_state["scan_state"])
-    st.session_state["persisted_run_hydrated"] = True
-
-open_positions, persisted_portfolio_summary = hydrate_portfolio()
-portfolio_capital = persisted_portfolio_summary.get(
-    "configured_portfolio_capital_inr", persistence.DEFAULT_PORTFOLIO_CAPITAL_INR
-)
-portfolio_position_limit = persisted_portfolio_summary.get(
-    "configured_max_open_positions", persistence.DEFAULT_MAX_OPEN_POSITIONS
-)
-portfolio_position_limit_label = "No limit" if portfolio_position_limit is None else str(portfolio_position_limit)
-if "database_health" not in st.session_state:
-    st.session_state["database_health"] = adapters["execution"].database_diagnostics()
+def load_decisions_for_page():
+    """Hydrate opportunities only for routes that explicitly consume them."""
+    if not st.session_state.get("persisted_run_hydrated"):
+        get_database_resource()
+        with timed("db.opportunities_query"):
+            persisted_run = load_latest_opportunities()
+        if persisted_run:
+            st.session_state["scan_state"] = {**initial_scan_state(), **{key: persisted_run.get(key) for key in initial_scan_state()}, "source": persisted_run.get("source"), "run_id": persisted_run.get("run_id")}
+            st.session_state["last_analysis_date"] = persisted_run.get("analysis_date")
+            st.session_state["qualified_candidates"] = persisted_run.get("decisions", [])
+            st.session_state["allocated_candidates"] = persisted_run.get("decisions", [])
+            st.session_state["live_decisions"] = persisted_run.get("decisions", [])
+            st.session_state["diag_info"] = persisted_run.get("provider_summary", {})
+            reconcile_selection(st.session_state, persisted_run.get("decisions", []), st.session_state["scan_state"])
+        st.session_state["persisted_run_hydrated"] = True
+    decisions = st.session_state.get("live_decisions") or []
+    if not decisions:
+        candidates = st.session_state.get("qualified_candidates") or st.session_state.get("allocated_candidates") or []
+        if candidates:
+            decisions = assemble_live_decisions(candidates)
+            st.session_state["live_decisions"] = decisions
+    return decisions
 
 # Compact application shell
 st.markdown(
@@ -240,12 +250,13 @@ with act_col2:
     run_analysis_btn = st.button("Run today's analysis", type="primary", use_container_width=True)
 
 with act_col3:
-    st.caption(f"Paper capital {format_currency(portfolio_capital)} · User-specified trade amount · Fixed 10-day lifecycle · {st.session_state['max_trend_slots']} trend / {st.session_state['max_vol_slots']} volatility slots")
+    st.caption(f"User-specified paper-trade amount · Fixed 10-day lifecycle · {st.session_state['max_trend_slots']} trend / {st.session_state['max_vol_slots']} volatility slots")
 
 # Handler for "Run Today's Analysis" (Does NOT execute paper trades automatically)
 # A full live-universe scan is intentional user work.  Do not begin it merely
 # because a fresh cockpit session has no saved candidates.
 if run_analysis_btn:
+    adapters = get_adapters()
     with st.spinner("Scanning the NIFTY 500 universe and applying frozen qualification and allocation rules…"):
         result = execute_eod_pipeline(analysis_date=analysis_date, source="MANUAL_REFRESH", dependencies={**adapters, "allocator": PortfolioAllocationEngine(max_positions=st.session_state["max_positions"], max_trend=st.session_state["max_trend_slots"], max_vol=st.session_state["max_vol_slots"])})
     if result.get("persisted"):
@@ -264,44 +275,27 @@ if run_analysis_btn:
         st.session_state["regime_info"] = result.get("regime_info")
         st.session_state["diag_info"] = result.get("diagnostics", {})
         reconcile_selection(st.session_state, result.get("decisions", []), st.session_state["scan_state"])
-        hydrate_portfolio(force=True)
+        invalidate_portfolio_reads()
     elif result.get("status") == "NO_COMPLETED_MARKET_BAR":
         st.info("No completed market bar is available yet. The latest persisted analysis remains unchanged.")
     else:
         st.error("Analysis could not complete. Existing persisted results were preserved.")
 
-# HA-P2 uses the sidebar/deep-link shell rendered below. Legacy tab renderers
-# remain after the rollout stop boundary for short-term source compatibility.
-
-regime_info = st.session_state.get("regime_info") or {"regime": "BULLISH", "status_text": "Bullish (Nifty +1.46% > 50 EMA)", "close": 24250.0, "ema50": 23900.0, "data_as_of": str(analysis_date)}
-all_candidates = st.session_state.get("qualified_candidates") or st.session_state.get("allocated_candidates") or []
-
-# Differentiate Candidate Statuses cleanly
-selected_candidates = [c for c in all_candidates if c.get('status') == 'ALLOCATED' or c.get('is_selected', False)]
-qualified_unallocated = [c for c in all_candidates if c.get('status') == 'QUALIFIED — CAPITAL CAP' or (c.get('is_qualified', False) and not c.get('is_selected', False))]
-rejected_candidates = [c for c in all_candidates if c.get('status', '').startswith('REJECTED')]
-
-open_positions, persisted_portfolio_summary = hydrate_portfolio()
-live_qualified_decisions = st.session_state.get("live_decisions") or []
-if not live_qualified_decisions and all_candidates:
-    # Backwards-compatible session recovery for an existing pre-V1.1 scan.
-    live_qualified_decisions = assemble_live_decisions(all_candidates)
-    st.session_state["live_decisions"] = live_qualified_decisions
-reconcile_selection(st.session_state, live_qualified_decisions, st.session_state["scan_state"])
-selected_candidates = [c for c in live_qualified_decisions if c.get("allocation_status") == "ALLOCATED"]
-qualified_unallocated = [c for c in live_qualified_decisions if c.get("allocation_status") != "ALLOCATED"]
-
 # HA-P2 product shell. The retained V1.1 renderers below remain source-compatible
 # during rollout, but are not executed by the focused production interface.
+bootstrap_ms = (time.perf_counter() - _APP_BOOT_STARTED) * 1000.0
+page_started = time.perf_counter()
 with timed("render.selected_page", page=active_route.get("page"), tab=active_route.get("tab")):
     render_cockpit(
-        decisions=live_qualified_decisions,
-        positions=open_positions,
-        portfolio_summary=persisted_portfolio_summary,
-        adapters=adapters,
-        hydrate_portfolio=hydrate_portfolio,
         route=active_route,
+        decisions_loader=load_decisions_for_page,
+        execution_factory=get_execution_adapter,
+        portfolio_summary_loader=load_summary_for_page,
+        positions_loader=load_positions_for_page,
+        hydrate_portfolio=hydrate_portfolio,
     )
+page_ms = (time.perf_counter() - page_started) * 1000.0
+log_route(active_route.get("page", "today"), bootstrap_ms, page_ms, (time.perf_counter() - _APP_BOOT_STARTED) * 1000.0)
 st.stop()
 
 def render_market_risk_context():

@@ -11,7 +11,8 @@ import streamlit as st
 import database
 from cockpit_cache import (
     load_closed_trade_rows, load_ha_snapshot, load_ha_summaries,
-    load_portfolio_pnl, load_portfolio_snapshots, load_portfolio_state,
+    load_open_positions, load_portfolio_pnl, load_portfolio_snapshots,
+    load_portfolio_summary,
 )
 from historical_analogs_service import METHODOLOGY_HASH
 from interaction_architecture import canonical_route_symbol, compact_allocation, navigation_query, ordered_decisions, short_strategy_name
@@ -80,11 +81,10 @@ def _render_ticket(candidate, execution, hydrate_portfolio: Callable, *, key_pre
     if not candidate:
         render_empty_state("No qualified opportunity", "Run analysis before opening a paper-trade ticket.")
         return
-    portfolio_state = load_portfolio_state(execution)
-    preview_cash = portfolio_state["summary"].get("current_cash_inr", 0.0)
+    preview_cash = load_portfolio_summary(execution).get("current_cash_inr", 0.0)
     default_amount = min(100_000.0, max(0.0, float(preview_cash or 0.0)))
     amount = st.number_input("Investment amount (₹)", min_value=0.0, value=default_amount, step=1_000.0, key=f"{key_prefix}_amount")
-    preview = execution.preview_paper_trade(candidate, amount, portfolio_state=portfolio_state)
+    preview = execution.preview_paper_trade(candidate, amount)
     c1, c2, c3, c4 = st.columns(4)
     with c1: render_metric_card("Whole shares", preview.get("estimated_quantity"), "Integer quantity")
     with c2: render_metric_card("Deployed", format_currency(preview.get("executed_position_value_inr")), "At reference price")
@@ -105,7 +105,7 @@ def _render_ticket(candidate, execution, hydrate_portfolio: Callable, *, key_pre
                 st.error(result.get("message", "Paper-trade write failed."))
 
 
-def _render_sidebar(portfolio_summary, execution, hydrate_portfolio):
+def _render_sidebar(route, execution_factory, portfolio_summary_loader, hydrate_portfolio):
     route_page = st.session_state.get("navigation_page", "today")
     label = "Opportunities" if route_page == "stock" else next((name for name, key in PAGE_KEYS.items() if key == route_page), "Dashboard")
     if st.session_state.get("sidebar_workspace") != label:
@@ -118,7 +118,10 @@ def _render_sidebar(portfolio_summary, execution, hydrate_portfolio):
     st.sidebar.markdown("### Trading Cockpit")
     selected = st.sidebar.radio("Workspace", PAGES, key="sidebar_workspace", on_change=change_page, label_visibility="collapsed")
     st.session_state["navigation_page"] = PAGE_KEYS[selected]
-    with st.sidebar.expander("Portfolio controls", expanded=False):
+    if selected in {"Dashboard", "Settings"}:
+        portfolio_summary = portfolio_summary_loader()
+        execution = execution_factory()
+        st.sidebar.markdown("#### Portfolio controls")
         capital = float(portfolio_summary.get("configured_portfolio_capital_inr", database.DEFAULT_PORTFOLIO_CAPITAL_INR))
         limit = portfolio_summary.get("configured_max_open_positions", database.DEFAULT_MAX_OPEN_POSITIONS)
         with st.form("portfolio_capital_configuration_form"):
@@ -134,21 +137,28 @@ def _render_sidebar(portfolio_summary, execution, hydrate_portfolio):
                 st.rerun()
             else:
                 st.error(result.get("message"))
+    else:
+        st.sidebar.caption("Portfolio controls · Settings")
     st.sidebar.caption("Paper trading only · Explicit execution")
     return selected
 
 
 @st.fragment
-def _render_dashboard_ticket(decisions, execution, hydrate_portfolio):
+def _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio):
     if decisions:
         labels = {f"{row.get('symbol')} · {short_strategy_name(row.get('strategy'))}": row for row in ordered_decisions(decisions)}
         chosen = st.selectbox("Qualified opportunity", list(labels), key="paper_trade_symbol")
-        _render_ticket(labels[chosen], execution, hydrate_portfolio, key_prefix="dashboard")
+        _render_ticket(labels[chosen], execution_factory(), hydrate_portfolio, key_prefix="dashboard")
     else:
         render_empty_state("No qualified opportunities", "Run today's analysis to populate the trading workspace.")
 
 
-def _render_dashboard(decisions, summary, execution, hydrate_portfolio):
+@st.fragment
+def _render_stock_ticket(candidate, execution_factory, hydrate_portfolio, symbol):
+    _render_ticket(candidate, execution_factory(), hydrate_portfolio, key_prefix=f"stock_{symbol}")
+
+
+def _render_dashboard(decisions, summary, execution_factory, hydrate_portfolio):
     render_page_header("Dashboard", "Qualified opportunities and paper-portfolio state at a glance")
     c1, c2, c3, c4 = st.columns(4)
     with c1: render_metric_card("Portfolio equity", format_currency(summary.get("total_portfolio_value_inr")), "Paper NAV")
@@ -156,7 +166,7 @@ def _render_dashboard(decisions, summary, execution, hydrate_portfolio):
     with c3: render_metric_card("Open positions", summary.get("open_positions_count", 0), "Paper positions")
     with c4: render_metric_card("Qualified", len(decisions), "Allocator remains advisory")
     render_section_header("Manual paper trade", "Any qualified opportunity; no automatic execution")
-    _render_dashboard_ticket(decisions, execution, hydrate_portfolio)
+    _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio)
 
 
 def _render_opportunities(decisions):
@@ -289,15 +299,33 @@ def _portfolio_risk(positions):
 
 
 @st.fragment
-def _render_portfolio(summary, positions, execution, hydrate_portfolio):
+def _render_portfolio(execution_factory, portfolio_summary_loader, positions_loader, hydrate_portfolio):
     render_page_header("Portfolio", "Paper-ledger accounting, contribution and risk")
     tabs = ["Overview", "P&L", "Open Positions", "Closed Trades", "Risk"]
     selected = st.segmented_control("Portfolio view", tabs, default="Overview", key="portfolio_view")
-    if selected == "Overview": _portfolio_overview(summary)
-    elif selected == "P&L": _portfolio_pnl()
-    elif selected == "Open Positions": _portfolio_positions(positions, execution, hydrate_portfolio)
-    elif selected == "Closed Trades": _portfolio_closed()
-    else: _portfolio_risk(positions)
+    with timed("portfolio.selected_view", view=selected):
+        if selected == "Overview": _portfolio_overview(portfolio_summary_loader())
+        elif selected == "P&L": _portfolio_pnl()
+        elif selected == "Open Positions": _portfolio_positions(positions_loader(), execution_factory(), hydrate_portfolio)
+        elif selected == "Closed Trades": _portfolio_closed()
+        else: _portfolio_risk(positions_loader())
+
+
+@st.fragment
+def _render_ha_cases(candidate):
+    render_section_header("Analog cases", "Frozen K40 mapping loads only when requested")
+    show_cases = st.toggle("Inspect the 40 closest analog cases", value=False, key=f"ha_cases_{candidate.get('opportunity_id')}")
+    if not show_cases:
+        st.caption("Case rows are deferred to keep the summary interaction fast.")
+        return
+    full_snapshot = _load_ha(candidate)
+    cases = []
+    for row in (full_snapshot or {}).get("analogs", []):
+        cases.append({"Rank": row["rank"], "Historical date": row["signal_date"], "Historical symbol": row["symbol"],
+                      "Distance": row["distance"], "Prior 10D move": row.get("ret_10d"),
+                      "Nifty 500 10D": row.get("nifty500_ret_10d"), "MFE 10D": row.get("mfe_10d"),
+                      "MAE 10D": row.get("mae_10d"), "+5/-3 result": row.get("target_5_before_stop_3_20d")})
+    st.dataframe(pd.DataFrame(cases), width="stretch", hide_index=True)
 
 
 def _render_ha(candidate, snapshot):
@@ -321,22 +349,10 @@ def _render_ha(candidate, snapshot):
     with d4: render_context_card("Maximum date share", format_percent((snapshot.get("maximum_date_share") or 0) * 100))
     if (snapshot.get("maximum_year_share") or 0) >= .40:
         st.info("Historical evidence is concentrated in a smaller number of market periods.")
-    render_section_header("Analog cases", "Frozen K40 mapping loads only when requested")
-    show_cases = st.toggle("Inspect the 40 closest analog cases", value=False, key=f"ha_cases_{candidate.get('opportunity_id')}")
-    if not show_cases:
-        st.caption("Case rows are deferred to keep the summary interaction fast.")
-        return
-    full_snapshot = _load_ha(candidate)
-    cases = []
-    for row in (full_snapshot or {}).get("analogs", []):
-        cases.append({"Rank": row["rank"], "Historical date": row["signal_date"], "Historical symbol": row["symbol"],
-                      "Distance": row["distance"], "Prior 10D move": row.get("ret_10d"),
-                      "Nifty 500 10D": row.get("nifty500_ret_10d"), "MFE 10D": row.get("mfe_10d"),
-                      "MAE 10D": row.get("mae_10d"), "+5/-3 result": row.get("target_5_before_stop_3_20d")})
-    st.dataframe(pd.DataFrame(cases), width="stretch", hide_index=True)
+    _render_ha_cases(candidate)
 
 
-def _render_stock_detail(candidate, route, execution, hydrate_portfolio):
+def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio):
     symbol = route.get("symbol")
     render_page_header(symbol or "Stock Detail", "Qualified-opportunity intelligence and explicit paper execution")
     if not candidate:
@@ -381,26 +397,30 @@ def _render_stock_detail(candidate, route, execution, hydrate_portfolio):
     else:
         snapshot = _load_ha_summary(candidate)
         st.caption(f"Qualified · {'allocator selected' if candidate.get('allocation_status') == 'ALLOCATED' else 'allocator not selected'} · Prior 10D rally {format_percent((candidate.get('ha_features') or {}).get('ret_10d'))} · HA evidence {snapshot.get('evidence_quality') if snapshot else 'INSUFFICIENT'}")
-        _render_ticket(candidate, execution, hydrate_portfolio, key_prefix=f"stock_{symbol}")
+        _render_stock_ticket(candidate, execution_factory, hydrate_portfolio, symbol)
 
 
-def render_cockpit(*, decisions, positions, portfolio_summary, adapters, hydrate_portfolio, route):
-    """Render the focused product shell; no provider call occurs during routing."""
-    selected = _render_sidebar(portfolio_summary, adapters["execution"], hydrate_portfolio)
+def render_cockpit(*, route, decisions_loader, execution_factory,
+                   portfolio_summary_loader, positions_loader, hydrate_portfolio):
+    """Route first, then invoke only the selected page's data dependencies."""
+    selected = _render_sidebar(route, execution_factory, portfolio_summary_loader, hydrate_portfolio)
     if route.get("page") == "stock":
+        decisions = decisions_loader()
         with timed("page.stock_detail", tab=route.get("tab")):
-            _render_stock_detail(_candidate_for_symbol(decisions, route.get("symbol")), route, adapters["execution"], hydrate_portfolio)
+            _render_stock_detail(_candidate_for_symbol(decisions, route.get("symbol")), route, execution_factory, hydrate_portfolio)
         return
     page = PAGE_KEYS[selected]
-    if page == "today": _render_dashboard(decisions, portfolio_summary, adapters["execution"], hydrate_portfolio)
+    if page == "today":
+        _render_dashboard(decisions_loader(), portfolio_summary_loader(), execution_factory, hydrate_portfolio)
     elif page == "signals":
+        decisions = decisions_loader()
         with timed("page.opportunities", rows=len(decisions)): _render_opportunities(decisions)
     elif page == "portfolio":
-        with timed("page.portfolio"): _render_portfolio(portfolio_summary, positions, adapters["execution"], hydrate_portfolio)
+        with timed("page.portfolio"): _render_portfolio(execution_factory, portfolio_summary_loader, positions_loader, hydrate_portfolio)
     elif page == "journal":
         render_page_header("Journal", "Paper-trade review workspace")
         render_empty_state("Journal coming next", "Existing paper trades remain available under Portfolio.")
     else:
         render_page_header("Settings", "Portfolio controls and deployment status")
-        health = adapters["execution"].database_diagnostics()
+        health = execution_factory().database_diagnostics()
         render_context_card("Database", f"{health.get('database_backend')} · {health.get('database_status')}", "Persistent paper ledger")

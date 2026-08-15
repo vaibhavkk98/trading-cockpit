@@ -11,12 +11,24 @@ from portfolio_analytics import get_portfolio_pnl
 
 
 @st.cache_data(ttl=20, show_spinner=False)
+def load_open_positions(_execution) -> list[dict[str, Any]]:
+    with timed("db.open_positions"):
+        return _execution.get_open_positions()
+
+
+@st.cache_data(ttl=20, show_spinner=False)
+def load_portfolio_summary(_execution) -> dict[str, Any]:
+    with timed("db.portfolio_summary"):
+        return _execution.get_portfolio_summary()
+
+
+@st.cache_data(ttl=20, show_spinner=False)
 def load_portfolio_state(_execution) -> dict[str, Any]:
-    with timed("db.portfolio_state"):
-        return {
-            "positions": _execution.get_open_positions(),
-            "summary": _execution.get_portfolio_summary(),
-        }
+    """Compatibility composition over the two frozen P1 read contracts."""
+    return {
+        "positions": load_open_positions(_execution),
+        "summary": load_portfolio_summary(_execution),
+    }
 
 
 @st.cache_data(ttl=45, show_spinner=False)
@@ -74,6 +86,8 @@ def load_ha_snapshot(opportunity_id: str, signal_date: str, methodology_hash: st
 
 def invalidate_portfolio_reads() -> None:
     """Invalidate only portfolio/trade/mark dependent read domains."""
+    load_open_positions.clear()
+    load_portfolio_summary.clear()
     load_portfolio_state.clear()
     load_portfolio_pnl.clear()
     load_portfolio_snapshots.clear()

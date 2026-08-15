@@ -1108,6 +1108,3 @@ def get_agent_analytics_summary() -> Dict[str, Any]:
     df = pd.DataFrame(records)
     return {"pnl_by_strategy": df.groupby("strategy").agg(Total_Trades=("id", "count"), Realized_PnL=("realized_pnl", "sum")).reset_index(),
             "conviction_vs_return": df, "post_mortem": {}}
-
-
-init_db()
