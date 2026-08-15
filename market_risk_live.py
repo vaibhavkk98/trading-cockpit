@@ -59,7 +59,8 @@ def build_payload(diagnostics, raw, events):
 def _load_market_risk_snapshot(project_root_text):
  root=Path(project_root_text) if project_root_text else Path(__file__).resolve().parent; research=root/'data'/'research'
  payload=json.loads((research/'c2_live_market_risk_payload.json').read_text())
- diagnostics=json.loads((research/'c2_source_check_diagnostics.json').read_text())
+ diagnostics_path=research/'c2_source_check_diagnostics.json'
+ diagnostics=json.loads(diagnostics_path.read_text()) if diagnostics_path.exists() else []
  return payload,diagnostics
 
 def get_market_risk_context_for_ui(project_root=None, max_age_hours=6):

@@ -369,6 +369,9 @@ def run_screener(
         "nr7_triggers": 0,
         "total_strategy_triggers": 0,
         "unique_signal_candidates": 0,
+        "ha_query_ready_count": 0,
+        "ha_query_failure_count": 0,
+        "ha_query_failure_reasons": {},
         "rejection_reasons_summary": {}
     }
 
@@ -459,8 +462,14 @@ def run_screener(
                     result_row.update(HistoricalAnalogService.build_causal_query_state(
                         df, ha_nifty500, ha_vix, result_row["Data_As_Of"]
                     ))
-                except Exception:
-                    pass
+                    diagnostics["ha_query_ready_count"] += 1
+                except Exception as exc:
+                    diagnostics["ha_query_failure_count"] += 1
+                    reason = type(exc).__name__
+                    diagnostics["ha_query_failure_reasons"][reason] = diagnostics["ha_query_failure_reasons"].get(reason, 0) + 1
+            else:
+                diagnostics["ha_query_failure_count"] += 1
+                diagnostics["ha_query_failure_reasons"]["MARKET_HISTORY_UNAVAILABLE"] = diagnostics["ha_query_failure_reasons"].get("MARKET_HISTORY_UNAVAILABLE", 0) + 1
             results.append(result_row)
         else:
             if not eval_res.get("Uptrend"):

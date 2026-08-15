@@ -117,14 +117,16 @@ def run():
     assert database.load_latest_analysis_run() == before_run and database.get_latest_position_marks() == before_marks
     passed += 1  # 8 fragment interaction does not scan/refresh
 
+    app.query_params.clear(); app.query_params["page"] = "portfolio"; app.run(timeout=30)
+    app.segmented_control[0].set_value("Positions & Risk").run(timeout=30)
     original_pnl = cockpit_ui.load_portfolio_pnl
-    cockpit_ui.load_portfolio_pnl = lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("inactive P&L loader ran"))
+    cockpit_ui.load_portfolio_pnl = lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("inactive Performance loader ran"))
     try:
-        app.query_params.clear(); app.query_params["page"] = "portfolio"; app.run(timeout=30)
+        app.run(timeout=30)
     finally:
         cockpit_ui.load_portfolio_pnl = original_pnl
     assert not app.exception
-    passed += 1  # 9 inactive Portfolio tab avoids P&L loader
+    passed += 1  # 9 inactive Performance section avoids P&L loader
 
     database.add_paper_trade("UNMARKED", 200.0, 1, "Donchian Channel Breakout")
     load_portfolio_pnl.clear()

@@ -69,9 +69,10 @@ def run():
     assert summary["positions_without_reference"] == 1
 
     app_code = (ROOT / "app.py").read_text()
-    assert "assemble_live_decisions(all_candidates)" in app_code
-    assert "render_market_risk_context()" in app_code
-    assert "Target: Not available" in app_code
+    active_ui = (ROOT / "cockpit_ui.py").read_text()
+    assert "decisions = assemble_live_decisions(candidates)" in app_code
+    assert "render_market_risk_card(get_market_risk_context_for_ui())" in active_ui
+    assert "_render_trade_economics(candidate)" in active_ui
     assert "Average R:R Ratio" not in app_code
     assert "Composite Conviction" not in app_code
     assert "st.session_state[\"sizing_mode\"] = \"EQUAL_WEIGHT\"" in app_code

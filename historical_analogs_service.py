@@ -125,6 +125,10 @@ class HistoricalAnalogService:
         }
         current = {name: float(fields[name].iloc[-1]) for name in fields}
         current.update({name: float(value) for name, value in market.items()})
+        # Rally cards consume these descriptive returns from the same causal
+        # completed-session history used by the HA query state.
+        current["ret_5d"] = float(close.pct_change(5, fill_method=None).iloc[-1] * 100.0)
+        current["ret_20d"] = float(stock_ret20.iloc[-1])
         current["stock_minus_nifty500_ret_10d"] = current["ret_10d"] - current["nifty500_ret_10d"]
         current["stock_minus_nifty500_ret_20d"] = float(stock_ret20.iloc[-1]) - current["nifty500_ret_20d"]
         percentiles = {}

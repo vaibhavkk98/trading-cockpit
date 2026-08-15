@@ -126,14 +126,25 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         # Advisory-only HA snapshots are captured at signal time when the
         # scanner supplied a complete causal state. Failure cannot affect the
         # qualified set, allocator, persistence, or paper-trade eligibility.
+        diagnostics["ha_snapshot_saved_count"] = 0
+        diagnostics["ha_snapshot_failure_count"] = 0
+        diagnostics["ha_snapshot_skipped_count"] = 0
         try:
             from historical_analogs_service import HistoricalAnalogService
             analog_service = HistoricalAnalogService()
             for decision in decisions:
                 if decision.get("ha_features") and decision.get("ha_stock_percentiles"):
-                    analog_service.evaluate(decision, persist=True)
+                    try:
+                        analog_service.evaluate(decision, persist=True)
+                        diagnostics["ha_snapshot_saved_count"] += 1
+                    except Exception:
+                        diagnostics["ha_snapshot_failure_count"] += 1
+                else:
+                    diagnostics["ha_snapshot_skipped_count"] += 1
         except Exception:
-            pass
+            diagnostics["ha_snapshot_failure_count"] += sum(
+                1 for decision in decisions if decision.get("ha_features") and decision.get("ha_stock_percentiles")
+            )
         succeeded = int(diagnostics.get("valid_data_count", 0)); requested = len(symbols); failed = max(0, requested - succeeded)
         status = SCAN_PARTIAL if succeeded and failed else SCAN_SUCCESS
         completed = dt.datetime.now(dt.timezone.utc)

@@ -38,31 +38,21 @@ def run():
     assert "portfolio_state=" not in (ROOT / "cockpit_ui.py").read_text()
     passed += 1  # 1 frozen P1 adapter contract restored
 
-    originals = {
-        "init_db": database.init_db,
-        "latest": cockpit_cache.load_latest_opportunities,
-        "summary": cockpit_cache.load_portfolio_summary,
-        "positions": cockpit_cache.load_open_positions,
-    }
+    import cockpit_ui
+    original_research = cockpit_ui._load_stock_research
     def forbidden(*args, **kwargs):
-        raise AssertionError("Journal invoked a non-Journal loader")
-    database.init_db = forbidden
-    cockpit_cache.load_latest_opportunities = forbidden
-    cockpit_cache.load_portfolio_summary = forbidden
-    cockpit_cache.load_open_positions = forbidden
+        raise AssertionError("Stock Research fetched provider data before Search")
+    cockpit_ui._load_stock_research = forbidden
     try:
-        journal = AppTest.from_file(str(ROOT / "app.py"))
-        journal.session_state["navigation_page"] = "journal"
-        journal.session_state["sidebar_workspace"] = "Journal"
-        journal.query_params["page"] = "journal"
-        journal.run(timeout=30)
-        assert not journal.exception and any("Journal coming next" in item.value for item in journal.markdown)
+        research = AppTest.from_file(str(ROOT / "app.py"))
+        research.session_state["navigation_page"] = "research"
+        research.session_state["sidebar_workspace"] = "Stock Research"
+        research.query_params["page"] = "research"
+        research.run(timeout=30)
+        assert not research.exception and any("Stock Research" in item.value for item in research.markdown)
     finally:
-        database.init_db = originals["init_db"]
-        cockpit_cache.load_latest_opportunities = originals["latest"]
-        cockpit_cache.load_portfolio_summary = originals["summary"]
-        cockpit_cache.load_open_positions = originals["positions"]
-    passed += 1  # 2 Journal is DB/portfolio/opportunity/HA-free
+        cockpit_ui._load_stock_research = original_research
+    passed += 1  # 2 Stock Research provider lookup is explicit
 
     flow_candidate = candidate()
     database.persist_analysis_run({
@@ -103,7 +93,6 @@ def run():
         ExecutionAdapter.get_open_positions = original_positions_method
     passed += 1  # 3 Opportunities uses only latest decisions + bulk HA summaries
 
-    import cockpit_ui
     original_summary_loader = cockpit_ui._load_ha_summary
     original_full_loader = cockpit_ui._load_ha
     cockpit_ui._load_ha_summary = forbidden

@@ -14,19 +14,20 @@ from cockpit_cache import (
     load_open_positions, load_portfolio_pnl, load_portfolio_snapshots,
     load_portfolio_summary,
 )
-from historical_analogs_service import METHODOLOGY_HASH
+from historical_analogs_service import HistoricalAnalogService, METHODOLOGY_HASH
 from interaction_architecture import canonical_route_symbol, compact_allocation, navigation_query, ordered_decisions, short_strategy_name
 from live_decision_adapter import summarize_live_portfolio_risk
+from market_risk_live import get_market_risk_context_for_ui
 from performance_timing import timed
 from ui_components import (
     display_value, format_currency, format_percent, format_price, format_signed_currency,
     render_context_card, render_empty_state, render_metric_card, render_page_header,
-    render_section_header, status_badge,
+    render_market_risk_card, render_section_header, status_badge,
 )
 
 
-PAGES = ["Dashboard", "Opportunities", "Portfolio", "Journal", "Settings"]
-PAGE_KEYS = {"Dashboard": "today", "Opportunities": "signals", "Portfolio": "portfolio", "Journal": "journal", "Settings": "settings"}
+PAGES = ["Dashboard", "Opportunities", "Portfolio", "Stock Research", "Settings"]
+PAGE_KEYS = {"Dashboard": "today", "Opportunities": "signals", "Portfolio": "portfolio", "Stock Research": "research", "Settings": "settings"}
 STOCK_TABS = ["overview", "rally", "historical_analogs", "events", "trade"]
 
 
@@ -66,7 +67,7 @@ def _ha_label(candidate, summaries=None):
     signal_date = str(candidate.get("signal_date") or candidate.get("analysis_date") or "")[:10] if candidate else ""
     snapshot = (summaries or {}).get(f"{opportunity_id}|{signal_date}")
     if not snapshot:
-        return "INSUFFICIENT"
+        return "PENDING ANALYSIS REFRESH"
     quality = snapshot.get("evidence_quality", "INSUFFICIENT")
     count = snapshot.get("analog_count", 0)
     return f"{count} analogs · {quality}" if count else "INSUFFICIENT"
@@ -107,7 +108,7 @@ def _render_ticket(candidate, execution, hydrate_portfolio: Callable, *, key_pre
 
 def _render_sidebar(route, execution_factory, portfolio_summary_loader, hydrate_portfolio):
     route_page = st.session_state.get("navigation_page", "today")
-    label = "Opportunities" if route_page == "stock" else next((name for name, key in PAGE_KEYS.items() if key == route_page), "Dashboard")
+    label = "Stock Research" if route_page == "stock" else next((name for name, key in PAGE_KEYS.items() if key == route_page), "Dashboard")
     if st.session_state.get("sidebar_workspace") != label:
         st.session_state["sidebar_workspace"] = label
 
@@ -118,25 +119,25 @@ def _render_sidebar(route, execution_factory, portfolio_summary_loader, hydrate_
     st.sidebar.markdown("### Trading Cockpit")
     selected = st.sidebar.radio("Workspace", PAGES, key="sidebar_workspace", on_change=change_page, label_visibility="collapsed")
     st.session_state["navigation_page"] = PAGE_KEYS[selected]
-    if selected in {"Dashboard", "Settings"}:
+    if selected in {"Dashboard", "Portfolio", "Settings"}:
         portfolio_summary = portfolio_summary_loader()
         execution = execution_factory()
-        st.sidebar.markdown("#### Portfolio controls")
-        capital = float(portfolio_summary.get("configured_portfolio_capital_inr", database.DEFAULT_PORTFOLIO_CAPITAL_INR))
-        limit = portfolio_summary.get("configured_max_open_positions", database.DEFAULT_MAX_OPEN_POSITIONS)
-        with st.form("portfolio_capital_configuration_form"):
-            capital_input = st.number_input("Paper portfolio capital (₹)", min_value=1.0, value=capital, step=100_000.0)
-            no_limit = st.checkbox("No position-count limit", value=limit is None)
-            limit_input = st.number_input("Maximum open positions", min_value=1, value=int(limit or 10), step=1, disabled=no_limit)
-            save = st.form_submit_button("Save portfolio controls")
-        if save:
-            result = execution.configure_portfolio(capital_input, None if no_limit else int(limit_input))
-            if result.get("success"):
-                hydrate_portfolio(force=True)
-                st.success(result["message"])
-                st.rerun()
-            else:
-                st.error(result.get("message"))
+        with st.sidebar.expander("Portfolio controls", expanded=False):
+            capital = float(portfolio_summary.get("configured_portfolio_capital_inr", database.DEFAULT_PORTFOLIO_CAPITAL_INR))
+            limit = portfolio_summary.get("configured_max_open_positions", database.DEFAULT_MAX_OPEN_POSITIONS)
+            with st.form("portfolio_capital_configuration_form"):
+                capital_input = st.number_input("Paper portfolio capital (₹)", min_value=1.0, value=capital, step=100_000.0)
+                no_limit = st.checkbox("No position-count limit", value=limit is None)
+                limit_input = st.number_input("Maximum open positions", min_value=1, value=int(limit or 10), step=1, disabled=no_limit)
+                save = st.form_submit_button("Save portfolio controls")
+            if save:
+                result = execution.configure_portfolio(capital_input, None if no_limit else int(limit_input))
+                if result.get("success"):
+                    hydrate_portfolio(force=True)
+                    st.success(result["message"])
+                    st.rerun()
+                else:
+                    st.error(result.get("message"))
     else:
         st.sidebar.caption("Portfolio controls · Settings")
     st.sidebar.caption("Paper trading only · Explicit execution")
@@ -165,6 +166,7 @@ def _render_dashboard(decisions, summary, execution_factory, hydrate_portfolio):
     with c2: render_metric_card("Cash", format_currency(summary.get("current_cash_inr")), "Available")
     with c3: render_metric_card("Open positions", summary.get("open_positions_count", 0), "Paper positions")
     with c4: render_metric_card("Qualified", len(decisions), "Allocator remains advisory")
+    render_market_risk_card(get_market_risk_context_for_ui())
     render_section_header("Manual paper trade", "Any qualified opportunity; no automatic execution")
     _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio)
 
@@ -277,6 +279,26 @@ def _portfolio_positions(positions, execution, hydrate_portfolio):
                      "Current value": current * row.get("quantity", 0) if current is not None else None,
                      "Executable stop": row.get("initial_executable_stop") if row.get("executable_stop_enabled") else None})
     st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True, column_config={"Stock": st.column_config.LinkColumn("Stock", display_text="Open")})
+    with st.expander("Close a paper position", expanded=False):
+        choices = {f"{row.get('symbol')} · trade #{row.get('id')}": row for row in positions}
+        label = st.selectbox("Position", list(choices), key="manual_close_position")
+        position = choices[label]
+        reference = max(0.01, float(position.get("current_price") or position.get("entry_price") or 0.01))
+        with st.form("manual_paper_close_form"):
+            exit_price = st.number_input("Manual exit price (₹)", min_value=0.01, value=reference, step=0.05)
+            confirmed = st.checkbox("I confirm this manual paper-position close")
+            close = st.form_submit_button("Close paper position")
+        if close:
+            if not confirmed:
+                st.error("Confirm the manual paper-position close before submitting.")
+            else:
+                result = execution.close_paper_trade(int(position["id"]), float(exit_price))
+                if result.get("success"):
+                    hydrate_portfolio(force=True)
+                    st.success(result["message"])
+                    st.rerun()
+                else:
+                    st.error(result.get("message"))
 
 
 def _portfolio_closed():
@@ -301,14 +323,23 @@ def _portfolio_risk(positions):
 @st.fragment
 def _render_portfolio(execution_factory, portfolio_summary_loader, positions_loader, hydrate_portfolio):
     render_page_header("Portfolio", "Paper-ledger accounting, contribution and risk")
-    tabs = ["Overview", "P&L", "Open Positions", "Closed Trades", "Risk"]
-    selected = st.segmented_control("Portfolio view", tabs, default="Overview", key="portfolio_view")
+    tabs = ["Performance", "Positions & Risk"]
+    if st.session_state.get("portfolio_view") not in {None, *tabs}:
+        st.session_state["portfolio_view"] = "Performance"
+    selected = st.segmented_control("Portfolio view", tabs, default="Performance", key="portfolio_view")
     with timed("portfolio.selected_view", view=selected):
-        if selected == "Overview": _portfolio_overview(portfolio_summary_loader())
-        elif selected == "P&L": _portfolio_pnl()
-        elif selected == "Open Positions": _portfolio_positions(positions_loader(), execution_factory(), hydrate_portfolio)
-        elif selected == "Closed Trades": _portfolio_closed()
-        else: _portfolio_risk(positions_loader())
+        if selected == "Performance":
+            _portfolio_overview(portfolio_summary_loader())
+            render_section_header("Performance history", "Period P&L and contribution")
+            _portfolio_pnl()
+        else:
+            positions = positions_loader()
+            render_section_header("Open positions", "Current paper positions and marks")
+            _portfolio_positions(positions, execution_factory(), hydrate_portfolio)
+            render_section_header("Closed positions", "Completed paper trades")
+            _portfolio_closed()
+            render_section_header("Portfolio risk", "Measured stop-risk coverage")
+            _portfolio_risk(positions)
 
 
 @st.fragment
@@ -330,7 +361,7 @@ def _render_ha_cases(candidate):
 
 def _render_ha(candidate, snapshot):
     if not snapshot:
-        render_empty_state("Historical Analog evidence unavailable", "No immutable production snapshot exists for this opportunity yet.")
+        render_empty_state("Historical Analog snapshot pending", "This persisted opportunity predates live HA enrichment. Run analysis once to create its immutable snapshot.")
         return
     quality = snapshot.get("evidence_quality", "INSUFFICIENT")
     st.markdown(f"{status_badge(quality, 'good' if quality == 'HIGH' else 'warn' if quality in {'MEDIUM','LOW'} else 'unavailable')}", unsafe_allow_html=True)
@@ -350,6 +381,95 @@ def _render_ha(candidate, snapshot):
     if (snapshot.get("maximum_year_share") or 0) >= .40:
         st.info("Historical evidence is concentrated in a smaller number of market periods.")
     _render_ha_cases(candidate)
+
+
+def _render_trade_economics(candidate):
+    economics = candidate.get("trade_economics") or {}
+    render_section_header("Trade economics", "Historical strategy context only")
+    if not economics or economics.get("display_sample_source") == "INSUFFICIENT":
+        render_context_card("Historical sample", "Insufficient", "No forecast or target is inferred.")
+        return
+    historical = economics.get("historical_return_context") or {}
+    columns = st.columns(3)
+    with columns[0]: render_context_card("Historical sample", f"{display_value(economics.get('display_sample_source'))} · N={display_value(economics.get('sample_count'))}", display_value(economics.get("sample_quality")))
+    with columns[1]: render_context_card("Median return", format_percent(historical.get("median_return")), f"Win rate {format_percent(historical.get('win_rate'))}")
+    with columns[2]: render_context_card("Profit factor", display_value(historical.get("profit_factor")), f"P10 {format_percent(historical.get('p10_return'))}")
+
+
+def _render_events(candidate):
+    context = candidate.get("event_context", "NOT_AVAILABLE")
+    render_context_card("Event context", display_value(context).replace("_", " "), display_value(candidate.get("event_summary")))
+    event = candidate.get("top_event")
+    if event:
+        st.markdown(f"**{display_value(event.get('headline'))}**")
+        st.caption(" · ".join(filter(None, [display_value(event.get("source")), display_value(event.get("materiality")), display_value(event.get("expected_horizon"))])))
+        if event.get("source_url_or_id") not in {None, "NOT_AVAILABLE"}:
+            st.markdown(f"[Authoritative/source evidence]({event['source_url_or_id']})")
+    else:
+        st.caption("No persisted material company event was available at the analysis cutoff.")
+    st.caption("Informational only; this does not alter qualification, allocation, sizing, or stops.")
+
+
+@st.cache_data(ttl=900, show_spinner=False)
+def _load_stock_research(symbol: str):
+    """Explicit, cached lookup for a non-opportunity stock; no portfolio writes."""
+    from screener import fetch_ha_market_histories, fetch_stock_data
+    stock = fetch_stock_data(symbol, period="2y")
+    if stock is None or stock.empty:
+        return None
+    signal_date = stock.index[-1].strftime("%Y-%m-%d")
+    nifty500, vix = fetch_ha_market_histories(period="2y", as_of_date=signal_date)
+    features = {}
+    if nifty500 is not None and vix is not None:
+        try:
+            features = HistoricalAnalogService.build_causal_query_state(stock, nifty500, vix, signal_date)["ha_features"]
+        except Exception:
+            features = {}
+    close = pd.to_numeric(stock["Close"], errors="coerce")
+    chart = pd.DataFrame({"Close": close, "EMA 20": close.ewm(span=20, adjust=False).mean(), "EMA 50": close.ewm(span=50, adjust=False).mean()}).tail(120)
+    return {"symbol": canonical_route_symbol(symbol), "signal_date": signal_date, "entry_price": float(close.iloc[-1]), "ha_features": features,
+            "chart": {name: {str(index): float(value) for index, value in series.dropna().items()} for name, series in chart.items()}}
+
+
+def _render_stock_research(decisions):
+    render_page_header("Stock Research", "Search any NSE stock; qualified opportunities retain the full decision workflow")
+    active = sorted({canonical_route_symbol(row.get("symbol")) for row in decisions if canonical_route_symbol(row.get("symbol"))})
+    with st.form("stock_research_form"):
+        symbol = st.text_input("NSE symbol", value=st.session_state.get("research_symbol", ""), placeholder="e.g. RELIANCE")
+        submitted = st.form_submit_button("Search stock", type="primary")
+    if submitted:
+        canonical = canonical_route_symbol(symbol)
+        if canonical:
+            st.session_state["research_symbol"] = canonical
+        else:
+            st.error("Enter a valid NSE symbol.")
+    chosen = st.session_state.get("research_symbol")
+    if not chosen:
+        st.caption("Current qualified symbols: " + (", ".join(active) if active else "none"))
+        return
+    qualified = _candidate_for_symbol(decisions, chosen)
+    if qualified:
+        st.success("This stock is a current qualified opportunity.")
+        st.link_button("Open full opportunity intelligence", stock_url(chosen))
+        research = {"symbol": chosen, "signal_date": qualified.get("signal_date"), "entry_price": qualified.get("entry_price"), "ha_features": qualified.get("ha_features") or {}, "chart": {}}
+    else:
+        with st.spinner(f"Loading completed-session data for {chosen}…"):
+            research = _load_stock_research(chosen)
+    if not research:
+        render_empty_state("Stock data unavailable", "No adequate completed-session NSE history was returned for this symbol.")
+        return
+    c1, c2 = st.columns(2)
+    with c1: render_context_card("Latest close", format_price(research.get("entry_price")), f"As of {research.get('signal_date')}")
+    with c2: render_context_card("Decision eligibility", "Qualified" if qualified else "Research only", "Paper execution remains restricted to qualified opportunities")
+    features = research.get("ha_features") or {}
+    fields = [("5D return", "ret_5d"), ("10D return", "ret_10d"), ("20D return", "ret_20d"), ("EMA20 extension", "distance_from_ema20_pct"), ("ATR extension", "distance_from_ema20_atr")]
+    columns = st.columns(3)
+    for index, (label, key) in enumerate(fields):
+        with columns[index % 3]: render_context_card(label, format_percent(features.get(key)), "Completed-session OHLCV")
+    chart_payload = research.get("chart") or {}
+    if chart_payload:
+        chart = pd.DataFrame({name: pd.Series(values, dtype=float) for name, values in chart_payload.items()})
+        st.line_chart(chart, width="stretch")
 
 
 def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio):
@@ -384,6 +504,21 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio)
         with c2: render_context_card("Volume ratio", display_value(candidate.get("volume_ratio_20")), "Qualification context")
         with c3: render_context_card("Allocator", "Selected" if candidate.get("allocation_status") == "ALLOCATED" else "Not selected", "Advisory only")
         st.caption(display_value(candidate.get("allocation_reason_text"), "Qualified under the frozen technical contract."))
+        _render_trade_economics(candidate)
+        with st.expander("Price trend", expanded=False):
+            chart_key = f"stock_chart_{symbol}"
+            if st.button("Load completed-session chart", key=f"load_{chart_key}"):
+                st.session_state[chart_key] = True
+            if st.session_state.get(chart_key):
+                research = _load_stock_research(symbol)
+                chart_payload = (research or {}).get("chart") or {}
+                if chart_payload:
+                    chart = pd.DataFrame({name: pd.Series(values, dtype=float) for name, values in chart_payload.items()})
+                    st.line_chart(chart, width="stretch")
+                else:
+                    render_empty_state("Price chart unavailable", "Completed-session OHLCV is unavailable for this symbol.")
+            else:
+                st.caption("Loaded only when requested.")
     elif selected == "rally":
         fields = [("5D return", "ret_5d"), ("10D return", "ret_10d"), ("20D return", "ret_20d"),
                   ("EMA20 extension", "distance_from_ema20_pct"), ("ATR extension", "distance_from_ema20_atr"),
@@ -393,7 +528,7 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio)
             value = candidate.get(key) or (candidate.get("ha_features") or {}).get(key)
             with columns[index % 3]: render_context_card(label, format_percent(value) if key != "positive_sessions_10" else display_value(value), "Descriptive only")
     elif selected == "historical_analogs": _render_ha(candidate, _load_ha_summary(candidate))
-    elif selected == "events": render_empty_state("Events", "Event Intelligence is not yet available.")
+    elif selected == "events": _render_events(candidate)
     else:
         snapshot = _load_ha_summary(candidate)
         st.caption(f"Qualified · {'allocator selected' if candidate.get('allocation_status') == 'ALLOCATED' else 'allocator not selected'} · Prior 10D rally {format_percent((candidate.get('ha_features') or {}).get('ret_10d'))} · HA evidence {snapshot.get('evidence_quality') if snapshot else 'INSUFFICIENT'}")
@@ -417,9 +552,8 @@ def render_cockpit(*, route, decisions_loader, execution_factory,
         with timed("page.opportunities", rows=len(decisions)): _render_opportunities(decisions)
     elif page == "portfolio":
         with timed("page.portfolio"): _render_portfolio(execution_factory, portfolio_summary_loader, positions_loader, hydrate_portfolio)
-    elif page == "journal":
-        render_page_header("Journal", "Paper-trade review workspace")
-        render_empty_state("Journal coming next", "Existing paper trades remain available under Portfolio.")
+    elif page == "research":
+        _render_stock_research(decisions_loader())
     else:
         render_page_header("Settings", "Portfolio controls and deployment status")
         health = execution_factory().database_diagnostics()
