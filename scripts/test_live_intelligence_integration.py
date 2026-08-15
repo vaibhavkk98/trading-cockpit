@@ -39,7 +39,12 @@ def run():
     assert 'with st.sidebar.expander("Portfolio controls", expanded=False)' in source
     assert "_render_events(candidate)" in source and "_render_trade_economics(candidate)" in source
     assert "if submitted:" in source and "_load_stock_research(chosen)" in source
-    print("Live intelligence integration tests: PASS (6/6 scenarios)")
+    pipeline = (ROOT / "eod_pipeline.py").read_text()
+    identity_at = pipeline.index('decision.setdefault(\n                "opportunity_id"')
+    evaluate_at = pipeline.index("analog_service.evaluate(decision, persist=True)")
+    persist_at = pipeline.index("persisted = persist_analysis_run(run, decisions)")
+    assert identity_at < evaluate_at < persist_at
+    print("Live intelligence integration tests: PASS (7/7 scenarios)")
 
 
 if __name__ == "__main__":

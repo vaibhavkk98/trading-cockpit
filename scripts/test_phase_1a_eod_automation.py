@@ -93,6 +93,7 @@ def run():
 
     first = execute_eod_pipeline(date, dependencies=deps("2026-08-12"))
     assert first["status"] == "PARTIAL_SUCCESS" and first["persisted"]
+    assert all(item.get("opportunity_id") for item in first["decisions"])
     latest = load_latest_analysis_run()
     assert latest and latest["analysis_date"] == "2026-08-12" and len(latest["decisions"]) == 2
     second = execute_eod_pipeline(date, dependencies=deps("2026-08-12"))
@@ -144,11 +145,12 @@ def run():
     assert not save_portfolio_snapshot(snapshot, "AUTOMATED_EOD")["saved"]
 
     app_source = open("app.py").read()
+    cockpit_source = open("cockpit_ui.py").read()
     screener_source = open("screener.py").read()
     database_source = open("database.py").read()
     assert "persistence.load_latest_analysis_run" not in app_source and "persisted_run_hydrated" in app_source
-    assert "getattr(persistence, \"load_latest_analysis_run\", None)" in app_source
-    assert "Load price chart" in app_source
+    assert "load_latest_opportunities()" in app_source
+    assert "Load completed-session chart" in cockpit_source
     assert "execute_eod_pipeline" in app_source
     assert "refresh_portfolio_positions()" not in app_source.split("def render_portfolio_workspace", 1)[0]
     assert "yahoo_nse_symbol" in screener_source and "auto_adjust=True" in screener_source

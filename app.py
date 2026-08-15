@@ -240,17 +240,14 @@ st.markdown(
 # ------------------------------------------------------------------------------
 # TOP ACTION BAR (RUN TODAY'S ANALYSIS)
 # ------------------------------------------------------------------------------
-act_col1, act_col2, act_col3 = st.columns([2, 2, 4])
-
-with act_col1:
-    analysis_date = st.date_input("Analysis date", expected_indian_market_date())
-
-with act_col2:
-    st.write("")
-    run_analysis_btn = st.button("Run today's analysis", type="primary", use_container_width=True)
-
-with act_col3:
-    st.caption(f"User-specified paper-trade amount · Fixed 10-day lifecycle · {st.session_state['max_trend_slots']} trend / {st.session_state['max_vol_slots']} volatility slots")
+with st.container(border=True):
+    act_col1, act_col2, act_col3 = st.columns([1.35, 1.35, 3.3], vertical_alignment="bottom")
+    with act_col1:
+        analysis_date = st.date_input("Analysis date", expected_indian_market_date())
+    with act_col2:
+        run_analysis_btn = st.button("Run analysis", type="primary", use_container_width=True)
+    with act_col3:
+        st.caption(f"Manual refresh · Fixed 10-day lifecycle · {st.session_state['max_trend_slots']} trend / {st.session_state['max_vol_slots']} volatility slots")
 
 # Handler for "Run Today's Analysis" (Does NOT execute paper trades automatically)
 # A full live-universe scan is intentional user work.  Do not begin it merely

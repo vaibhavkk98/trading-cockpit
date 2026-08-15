@@ -123,6 +123,13 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         except Exception:
             pass  # Informational context is deliberately not a pipeline failure.
         decisions = assemble_live_decisions(candidates)
+        # Freeze the canonical identity before any downstream evidence is
+        # computed. Persistence uses this same identity for the opportunity row.
+        for decision in decisions:
+            decision.setdefault(
+                "opportunity_id",
+                f"{analysis_date.isoformat()}:{decision.get('symbol')}:{decision.get('strategy')}",
+            )
         # Advisory-only HA snapshots are captured at signal time when the
         # scanner supplied a complete causal state. Failure cannot affect the
         # qualified set, allocator, persistence, or paper-trade eligibility.

@@ -17,12 +17,11 @@ from cockpit_cache import (
 from historical_analogs_service import HistoricalAnalogService, METHODOLOGY_HASH
 from interaction_architecture import canonical_route_symbol, compact_allocation, navigation_query, ordered_decisions, short_strategy_name
 from live_decision_adapter import summarize_live_portfolio_risk
-from market_risk_live import get_market_risk_context_for_ui
 from performance_timing import timed
 from ui_components import (
     display_value, format_currency, format_percent, format_price, format_signed_currency,
     render_context_card, render_empty_state, render_metric_card, render_page_header,
-    render_market_risk_card, render_section_header, status_badge,
+    render_section_header, status_badge,
 )
 
 
@@ -160,18 +159,34 @@ def _render_stock_ticket(candidate, execution_factory, hydrate_portfolio, symbol
 
 
 def _render_dashboard(decisions, summary, execution_factory, hydrate_portfolio):
-    render_page_header("Dashboard", "Qualified opportunities and paper-portfolio state at a glance")
+    render_page_header("Dashboard", "Today’s qualified set and paper-portfolio state")
     c1, c2, c3, c4 = st.columns(4)
     with c1: render_metric_card("Portfolio equity", format_currency(summary.get("total_portfolio_value_inr")), "Paper NAV")
     with c2: render_metric_card("Cash", format_currency(summary.get("current_cash_inr")), "Available")
     with c3: render_metric_card("Open positions", summary.get("open_positions_count", 0), "Paper positions")
     with c4: render_metric_card("Qualified", len(decisions), "Allocator remains advisory")
-    market_context = get_market_risk_context_for_ui()
-    render_market_risk_card(market_context)
-    if market_context.get("snapshot_stale"):
-        st.warning("Market-risk snapshot is stale; its displayed level is historical context, not a current assessment.")
-    render_section_header("Manual paper trade", "Any qualified opportunity; no automatic execution")
-    _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio)
+    render_section_header("Decision workspace", "A compact view of the current opportunity set")
+    left, right = st.columns([1.55, 1])
+    with left:
+        pulse = [{"Symbol": canonical_route_symbol(row.get("symbol")), "Strategy": short_strategy_name(row.get("strategy")),
+                  "Allocation": compact_allocation(row), "Volume": row.get("volume_ratio_20")}
+                 for row in ordered_decisions(decisions)[:6]]
+        if pulse:
+            st.dataframe(pd.DataFrame(pulse), width="stretch", hide_index=True,
+                         column_config={"Volume": st.column_config.NumberColumn(format="%.2fx")})
+        else:
+            render_empty_state("No qualified opportunities", "Run analysis to populate the decision workspace.")
+    with right:
+        render_context_card("Execution", "Manual only", "Scanning and navigation never create trades", "neutral", "Controlled")
+        render_context_card("Allocator", "Advisory", "All qualified names remain tradeable within portfolio constraints")
+    with st.expander("Market risk · Experimental", expanded=False):
+        render_empty_state(
+            "India-impact source policy pending",
+            "The broad global feed is intentionally withheld. An India-source-only, impact-materiality methodology requires separate research before production use.",
+        )
+    with st.expander("Manual paper trade", expanded=False):
+        st.caption("Any qualified opportunity · explicit confirmation · no automatic execution")
+        _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio)
 
 
 def _render_opportunities(decisions):

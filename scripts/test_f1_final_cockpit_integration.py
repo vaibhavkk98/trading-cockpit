@@ -71,7 +71,8 @@ def run():
     app_code = (ROOT / "app.py").read_text()
     active_ui = (ROOT / "cockpit_ui.py").read_text()
     assert "decisions = assemble_live_decisions(candidates)" in app_code
-    assert "render_market_risk_card(market_context)" in active_ui
+    assert 'with st.expander("Market risk · Experimental", expanded=False)' in active_ui
+    assert "The broad global feed is intentionally withheld" in active_ui
     assert "_render_trade_economics(candidate)" in active_ui
     assert "Average R:R Ratio" not in app_code
     assert "Composite Conviction" not in app_code
