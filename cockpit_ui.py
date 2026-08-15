@@ -166,7 +166,10 @@ def _render_dashboard(decisions, summary, execution_factory, hydrate_portfolio):
     with c2: render_metric_card("Cash", format_currency(summary.get("current_cash_inr")), "Available")
     with c3: render_metric_card("Open positions", summary.get("open_positions_count", 0), "Paper positions")
     with c4: render_metric_card("Qualified", len(decisions), "Allocator remains advisory")
-    render_market_risk_card(get_market_risk_context_for_ui())
+    market_context = get_market_risk_context_for_ui()
+    render_market_risk_card(market_context)
+    if market_context.get("snapshot_stale"):
+        st.warning("Market-risk snapshot is stale; its displayed level is historical context, not a current assessment.")
     render_section_header("Manual paper trade", "Any qualified opportunity; no automatic execution")
     _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio)
 
