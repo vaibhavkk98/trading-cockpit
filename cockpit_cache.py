@@ -13,7 +13,10 @@ from portfolio_analytics import get_portfolio_pnl
 @st.cache_data(ttl=20, show_spinner=False)
 def load_portfolio_state(_execution) -> dict[str, Any]:
     with timed("db.portfolio_state"):
-        return _execution.get_portfolio_state()
+        return {
+            "positions": _execution.get_open_positions(),
+            "summary": _execution.get_portfolio_summary(),
+        }
 
 
 @st.cache_data(ttl=45, show_spinner=False)

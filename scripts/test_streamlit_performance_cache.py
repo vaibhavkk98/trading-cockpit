@@ -51,12 +51,17 @@ def run():
     passed += 1  # 1 resource reused
 
     class CountedExecution:
-        calls = 0
-        def get_portfolio_state(self):
-            self.calls += 1
-            return {"positions": [], "summary": {"current_cash_inr": 1_000_000.0}}
+        position_calls = 0
+        summary_calls = 0
+        def get_open_positions(self):
+            self.position_calls += 1
+            return []
+        def get_portfolio_summary(self):
+            self.summary_calls += 1
+            return {"current_cash_inr": 1_000_000.0}
     fake = CountedExecution(); load_portfolio_state.clear()
-    assert load_portfolio_state(fake) == load_portfolio_state(fake) and fake.calls == 1
+    assert load_portfolio_state(fake) == load_portfolio_state(fake)
+    assert fake.position_calls == 1 and fake.summary_calls == 1
     passed += 1  # 2 consistent read cache
 
     invalidate_portfolio_reads(); before = load_portfolio_state(execution)
