@@ -20,6 +20,8 @@ import os
 import sys
 import datetime
 import json
+import time
+_APP_BOOT_STARTED = time.perf_counter()
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -38,6 +40,13 @@ from adapters import (
 )
 from event_intelligence import EventIntelligenceService
 from cockpit_ui import render_cockpit
+from cockpit_cache import (
+    invalidate_ha_snapshot,
+    invalidate_opportunity_reads,
+    invalidate_portfolio_reads,
+    load_latest_opportunities,
+    load_portfolio_state,
+)
 from market_risk_live import get_market_risk_context_for_ui
 from live_decision_adapter import assemble_live_decisions, summarize_live_portfolio_risk
 from operational_runtime import PRODUCT_VERSION, SCAN_FAILED, SCAN_NOT_RUN, SCAN_PARTIAL, SCAN_RUNNING, SCAN_SUCCESS, initial_scan_state, log_event, scan_freshness, utc_now
@@ -71,6 +80,7 @@ from ui_components import (
     render_section_header,
     status_badge,
 )
+from performance_timing import log_elapsed, timed
 
 # ------------------------------------------------------------------------------
 # PAGE CONFIGURATION & PRESENTATION THEME
@@ -88,7 +98,14 @@ apply_theme()
 # INITIALIZE ADAPTERS & SESSION STATE
 # ------------------------------------------------------------------------------
 @st.cache_resource
-def get_adapters():
+def get_database_resource():
+    """One process-wide SQLAlchemy engine; pool_pre_ping handles stale sockets."""
+    persistence.init_db()
+    return persistence.engine
+
+
+@st.cache_resource
+def get_adapters(_database_resource):
     return {
         "market_data": MarketDataProvider(),
         "universe": UniverseProvider(),
@@ -97,7 +114,9 @@ def get_adapters():
         "execution": ExecutionAdapter()
     }
 
-adapters = get_adapters()
+database_resource = get_database_resource()
+adapters = get_adapters(database_resource)
+log_elapsed("application.bootstrap", _APP_BOOT_STARTED)
 
 
 @st.cache_data(show_spinner=False)
@@ -111,12 +130,13 @@ def load_historical_performance(project_root):
 
 
 def hydrate_portfolio(force=False, positions=None):
-    """Session workspace avoids database/provider reads on ordinary UI reruns."""
-    if force or not st.session_state.get("portfolio_loaded"):
-        st.session_state["portfolio_positions"] = positions if positions is not None else adapters["execution"].get_open_positions()
-        st.session_state["portfolio_summary"] = adapters["execution"].get_portfolio_summary()
-        st.session_state["portfolio_snapshots"] = adapters["execution"].get_portfolio_snapshots()
-        st.session_state["portfolio_loaded"] = True
+    """Hydrate from the short TTL read model; writes explicitly invalidate it."""
+    if force:
+        invalidate_portfolio_reads()
+    state = load_portfolio_state(adapters["execution"])
+    st.session_state["portfolio_positions"] = positions if positions is not None else state["positions"]
+    st.session_state["portfolio_summary"] = state["summary"]
+    st.session_state["portfolio_loaded"] = True
     return st.session_state["portfolio_positions"], st.session_state["portfolio_summary"]
 
 # Session State Config Defaults
@@ -154,7 +174,8 @@ if "scan_state" not in st.session_state:
 for workspace_key, workspace_value in initial_workspace_state().items():
     if workspace_key not in st.session_state:
         st.session_state[workspace_key] = workspace_value
-active_route = hydrate_navigation_state(st.session_state, st.query_params)
+with timed("application.routing"):
+    active_route = hydrate_navigation_state(st.session_state, st.query_params)
 
 # Candidate dictionaries are session-persisted by Streamlit.  Invalidate any
 # payload produced by the pre-Step-11.1 contract, which lacked canonical
@@ -173,8 +194,7 @@ if st.session_state.get("candidate_contract_version") != COCKPIT_CANDIDATE_CONTR
 
 # Startup reads only durable state. It never starts a universe scan or price refresh.
 if not st.session_state.get("persisted_run_hydrated"):
-    latest_run_loader = getattr(persistence, "load_latest_analysis_run", None)
-    persisted_run = latest_run_loader() if callable(latest_run_loader) else None
+    persisted_run = load_latest_opportunities()
     if persisted_run:
         st.session_state["scan_state"] = {**initial_scan_state(), **{key: persisted_run.get(key) for key in initial_scan_state()}, "source": persisted_run.get("source"), "run_id": persisted_run.get("run_id")}
         st.session_state["last_analysis_date"] = persisted_run.get("analysis_date")
@@ -229,6 +249,13 @@ if run_analysis_btn:
     with st.spinner("Scanning the NIFTY 500 universe and applying frozen qualification and allocation rules…"):
         result = execute_eod_pipeline(analysis_date=analysis_date, source="MANUAL_REFRESH", dependencies={**adapters, "allocator": PortfolioAllocationEngine(max_positions=st.session_state["max_positions"], max_trend=st.session_state["max_trend_slots"], max_vol=st.session_state["max_vol_slots"])})
     if result.get("persisted"):
+        invalidate_opportunity_reads()
+        for decision in result.get("decisions", []):
+            opportunity_id = decision.get("opportunity_id")
+            signal_date = str(decision.get("signal_date") or decision.get("analysis_date") or "")[:10]
+            if opportunity_id and signal_date:
+                from historical_analogs_service import METHODOLOGY_HASH
+                invalidate_ha_snapshot(str(opportunity_id), signal_date, METHODOLOGY_HASH)
         st.session_state["scan_state"] = {key: result.get(key) for key in initial_scan_state()} | {"scan_started_at": result.get("started_at"), "scan_completed_at": result.get("completed_at"), "analysis_date": result.get("analysis_date")}
         st.session_state["last_analysis_date"] = result.get("analysis_date")
         st.session_state["qualified_candidates"] = result.get("decisions", [])
@@ -266,14 +293,15 @@ qualified_unallocated = [c for c in live_qualified_decisions if c.get("allocatio
 
 # HA-P2 product shell. The retained V1.1 renderers below remain source-compatible
 # during rollout, but are not executed by the focused production interface.
-render_cockpit(
-    decisions=live_qualified_decisions,
-    positions=open_positions,
-    portfolio_summary=persisted_portfolio_summary,
-    adapters=adapters,
-    hydrate_portfolio=hydrate_portfolio,
-    route=active_route,
-)
+with timed("render.selected_page", page=active_route.get("page"), tab=active_route.get("tab")):
+    render_cockpit(
+        decisions=live_qualified_decisions,
+        positions=open_positions,
+        portfolio_summary=persisted_portfolio_summary,
+        adapters=adapters,
+        hydrate_portfolio=hydrate_portfolio,
+        route=active_route,
+    )
 st.stop()
 
 def render_market_risk_context():

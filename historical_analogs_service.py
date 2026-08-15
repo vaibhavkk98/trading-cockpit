@@ -316,4 +316,9 @@ class HistoricalAnalogService:
                 from database import persist_historical_analog_snapshot
                 writer = persist_historical_analog_snapshot
             result["persistence"] = writer(result)
+            try:
+                from cockpit_cache import invalidate_ha_snapshot
+                invalidate_ha_snapshot(opportunity_id, query_date.date().isoformat(), METHODOLOGY_HASH)
+            except Exception:
+                pass
         return result

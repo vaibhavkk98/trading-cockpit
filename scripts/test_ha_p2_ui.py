@@ -65,7 +65,7 @@ def run():
 
     period.set_value("YTD").run(timeout=30)
     assert next(widget for widget in app.selectbox if widget.label == "P&L period").value == "YTD"
-    assert "get_portfolio_pnl(period, custom_start=custom_start, custom_end=custom_end)" in (ROOT / "cockpit_ui.py").read_text()
+    assert "load_portfolio_pnl(period, custom_start=custom_start, custom_end=custom_end)" in (ROOT / "cockpit_ui.py").read_text()
     passed += 1  # 4 filter reaches backend
 
     trade = database.add_paper_trade("AAA", 100.0, 10, "Donchian Channel Breakout")
@@ -101,6 +101,8 @@ def run():
     assert "Historical evidence, not a forecast" in captions
     passed += 1  # 10 frozen snapshot cards
 
+    case_toggle = next(widget for widget in app.toggle if widget.label == "Inspect the 40 closest analog cases")
+    case_toggle.set_value(True).run(timeout=30)
     assert app.dataframe and len(app.dataframe[-1].value) == 40
     assert {"Rank", "Historical date", "Historical symbol", "MFE 10D", "MAE 10D"}.issubset(app.dataframe[-1].value.columns)
     passed += 1  # 11 analog cases

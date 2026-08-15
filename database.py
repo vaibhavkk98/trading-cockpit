@@ -9,6 +9,7 @@ import datetime as dt
 import json
 import math
 import os
+import threading
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -61,6 +62,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, expi
 Base = declarative_base()
 _database_available: Optional[bool] = None
 _database_error: Optional[str] = None
+_database_init_lock = threading.Lock()
 
 
 class DatabaseUnavailableError(RuntimeError):
@@ -278,27 +280,32 @@ _PORTFOLIO_CONFIGURATION_ADDITIONS = {"max_open_positions": "INTEGER DEFAULT 10"
 def init_db() -> bool:
     """Idempotently create tables and additive columns without destroying data."""
     global _database_available, _database_error
-    try:
-        Base.metadata.create_all(bind=engine)
-        existing = {column["name"] for column in inspect(engine).get_columns("trades")}
-        with engine.begin() as connection:
-            for name, sql_type in _TRADE_ADDITIONS.items():
-                if name not in existing:
-                    # Names and types are module-owned constants, never user values.
-                    connection.exec_driver_sql(f"ALTER TABLE trades ADD COLUMN {name} {sql_type}")
-            existing_snapshots = {column["name"] for column in inspect(engine).get_columns("portfolio_snapshots")}
-            for name, sql_type in _SNAPSHOT_ADDITIONS.items():
-                if name not in existing_snapshots:
-                    connection.exec_driver_sql(f"ALTER TABLE portfolio_snapshots ADD COLUMN {name} {sql_type}")
-            existing_configuration = {column["name"] for column in inspect(engine).get_columns("portfolio_configuration")}
-            for name, sql_type in _PORTFOLIO_CONFIGURATION_ADDITIONS.items():
-                if name not in existing_configuration:
-                    connection.exec_driver_sql(f"ALTER TABLE portfolio_configuration ADD COLUMN {name} {sql_type}")
-        _database_available, _database_error = True, None
+    if _database_available is True:
         return True
-    except SQLAlchemyError as exc:
-        _database_available, _database_error = False, type(exc).__name__
-        return False
+    with _database_init_lock:
+        if _database_available is True:
+            return True
+        try:
+            Base.metadata.create_all(bind=engine)
+            existing = {column["name"] for column in inspect(engine).get_columns("trades")}
+            with engine.begin() as connection:
+                for name, sql_type in _TRADE_ADDITIONS.items():
+                    if name not in existing:
+                        # Names and types are module-owned constants, never user values.
+                        connection.exec_driver_sql(f"ALTER TABLE trades ADD COLUMN {name} {sql_type}")
+                existing_snapshots = {column["name"] for column in inspect(engine).get_columns("portfolio_snapshots")}
+                for name, sql_type in _SNAPSHOT_ADDITIONS.items():
+                    if name not in existing_snapshots:
+                        connection.exec_driver_sql(f"ALTER TABLE portfolio_snapshots ADD COLUMN {name} {sql_type}")
+                existing_configuration = {column["name"] for column in inspect(engine).get_columns("portfolio_configuration")}
+                for name, sql_type in _PORTFOLIO_CONFIGURATION_ADDITIONS.items():
+                    if name not in existing_configuration:
+                        connection.exec_driver_sql(f"ALTER TABLE portfolio_configuration ADD COLUMN {name} {sql_type}")
+            _database_available, _database_error = True, None
+            return True
+        except SQLAlchemyError as exc:
+            _database_available, _database_error = False, type(exc).__name__
+            return False
 
 
 def get_database_diagnostics(check_connection: bool = True) -> Dict[str, str]:
@@ -317,12 +324,16 @@ def _require_database() -> None:
 
 
 def _safe_read(query):
+    global _database_available, _database_error
     if not init_db():
         return []
     session = SessionLocal()
     try:
         return query(session)
-    except SQLAlchemyError:
+    except SQLAlchemyError as exc:
+        # pool_pre_ping repairs stale pooled connections; a failed read makes
+        # the next request re-run the one-time availability/schema check.
+        _database_available, _database_error = False, type(exc).__name__
         return []
     finally:
         session.close()
@@ -705,6 +716,40 @@ def load_historical_analog_snapshot(opportunity_id: str, signal_date: Any, metho
         session.close()
 
 
+def load_historical_analog_summaries(identities: List[tuple[str, Any]], methodology_hash: str) -> Dict[str, Dict[str, Any]]:
+    """Bulk-load summary-only HA evidence for an opportunity table.
+
+    Ranked K40 mappings are intentionally excluded; the selected stock's HA
+    view loads those lazily through ``load_historical_analog_snapshot``.
+    """
+    normalized = []
+    for opportunity_id, signal_date in identities:
+        if not opportunity_id or not signal_date:
+            continue
+        parsed_date = signal_date if isinstance(signal_date, dt.date) else dt.date.fromisoformat(str(signal_date)[:10])
+        normalized.append((str(opportunity_id), parsed_date))
+    if not normalized or not init_db():
+        return {}
+    opportunity_ids = sorted({item[0] for item in normalized})
+    valid_identities = set(normalized)
+    session = SessionLocal()
+    try:
+        rows = session.query(HistoricalAnalogSnapshot).filter(
+            HistoricalAnalogSnapshot.methodology_hash == str(methodology_hash),
+            HistoricalAnalogSnapshot.opportunity_id.in_(opportunity_ids),
+        ).all()
+        result = {}
+        for row in rows:
+            if (row.opportunity_id, row.signal_date) not in valid_identities:
+                continue
+            summary = json.loads(row.summary_payload)
+            summary["snapshot_id"] = row.id
+            result[f"{row.opportunity_id}|{row.signal_date.isoformat()}"] = summary
+        return result
+    finally:
+        session.close()
+
+
 def _json_safe(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(key): _json_safe(item) for key, item in value.items()}
@@ -825,6 +870,100 @@ def get_latest_position_marks() -> Dict[int, Dict[str, Any]]:
         if row.trade_id not in latest:
             latest[row.trade_id] = {"mark_price": row.mark_price, "mark_date": row.mark_date.isoformat(), "marked_at": row.marked_at.isoformat(), "provider": row.provider, "mark_status": row.mark_status, "source_run_id": row.source_run_id}
     return latest
+
+
+def _persisted_position_row(trade: PaperTrade, mark: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """Serialize one durable open position without any provider access."""
+    attr = trade.attribution
+    current = mark.get("mark_price") if mark else None
+    return {
+        "id": trade.id, "symbol": trade.symbol, "sector": trade.sector,
+        "entry_date": trade.entry_date.strftime("%Y-%m-%d %H:%M") if trade.entry_date else "",
+        "entry_price": trade.entry_price, "quantity": trade.quantity,
+        "position_value": trade.position_value or trade.entry_price * trade.quantity,
+        "stop_loss": trade.stop_loss, "target": trade.target, "current_price": current,
+        "price_status": "AVAILABLE" if current is not None else "PRICE_NOT_AVAILABLE",
+        "unrealized_pnl_inr": round((current - trade.entry_price) * trade.quantity, 2) if current is not None else None,
+        "unrealized_pnl_pct": round((current - trade.entry_price) / trade.entry_price * 100, 2) if current is not None and trade.entry_price else None,
+        "mark_date": mark.get("mark_date") if mark else None, "marked_at": mark.get("marked_at") if mark else None,
+        "mark_provider": mark.get("provider") if mark else None,
+        "mark_status": mark.get("mark_status") if mark else "PRICE_NOT_AVAILABLE",
+        "strategy_used": trade.strategy_used, "tech_score": attr.tech_score if attr else .85,
+        "fund_score": attr.fund_score if attr else 7., "sent_score": attr.sent_score if attr else 0.,
+        "reasoning": attr.agent_reasoning if attr else "", "risk_contract_version": trade.risk_contract_version,
+        "allocation_status": trade.allocation_status, "opportunity_reference": trade.opportunity_reference,
+        "risk_reference_type": trade.risk_reference_type, "risk_reference_value": trade.risk_reference_value,
+        "risk_reference_available": bool(trade.risk_reference_available) if trade.risk_contract_version else False,
+        "reference_risk_per_share": trade.reference_risk_per_share, "reference_risk_rupees": trade.reference_risk_rupees,
+        "executable_stop_enabled": bool(trade.executable_stop_enabled) if trade.risk_contract_version else False,
+        "initial_executable_stop": trade.initial_executable_stop, "executable_risk_per_share": trade.executable_risk_per_share,
+        "executable_risk_rupees": trade.executable_risk_rupees,
+        "gap_risk_possible": bool(trade.gap_risk_possible) if trade.risk_contract_version else False,
+        "target_status": trade.target_status or "NOT_AVAILABLE",
+        "risk_metadata_status": "AVAILABLE" if trade.risk_contract_version else "RISK_METADATA_NOT_AVAILABLE",
+    }
+
+
+def get_portfolio_read_model() -> Dict[str, Any]:
+    """Bulk portfolio read model for page rendering (three bounded SQL reads).
+
+    Trade/configuration writes remain transactional and authoritative. This
+    function only eliminates overlapping UI reads and never contacts a price
+    provider.
+    """
+    if not init_db():
+        return {
+            "positions": [],
+            "configuration": {"initial_capital": DEFAULT_PORTFOLIO_CAPITAL_INR,
+                              "max_open_positions": DEFAULT_MAX_OPEN_POSITIONS},
+            "performance": {"open_trades_count": 0, "closed_trades_count": 0,
+                            "winning_trades_count": 0, "win_rate_pct": 0.0,
+                            "total_realized_pnl": 0.0, "open_capital_deployed": 0.0},
+        }
+    session = SessionLocal()
+    try:
+        trades = session.query(PaperTrade).options(joinedload(PaperTrade.attribution)).order_by(PaperTrade.id.asc()).all()
+        open_trades = [trade for trade in trades if trade.status == "OPEN"]
+        closed_trades = [trade for trade in trades if trade.status != "OPEN"]
+        open_ids = [trade.id for trade in open_trades]
+        mark_rows = (
+            session.query(PositionMark)
+            .filter(PositionMark.trade_id.in_(open_ids))
+            .order_by(PositionMark.trade_id.asc(), PositionMark.mark_date.desc(), PositionMark.marked_at.desc())
+            .all()
+            if open_ids else []
+        )
+        latest: Dict[int, Dict[str, Any]] = {}
+        for mark in mark_rows:
+            if mark.trade_id not in latest:
+                latest[mark.trade_id] = {
+                    "mark_price": mark.mark_price, "mark_date": mark.mark_date.isoformat(),
+                    "marked_at": mark.marked_at.isoformat(), "provider": mark.provider,
+                    "mark_status": mark.mark_status, "source_run_id": mark.source_run_id,
+                }
+        config = session.query(PortfolioConfiguration).filter_by(id=1).first()
+        configuration = {
+            "initial_capital": float(config.initial_capital) if config else DEFAULT_PORTFOLIO_CAPITAL_INR,
+            "max_open_positions": config.max_open_positions if config else DEFAULT_MAX_OPEN_POSITIONS,
+        }
+        realized = sum(float(trade.realized_pnl or 0.0) for trade in closed_trades)
+        winners = sum(float(trade.realized_pnl or 0.0) > 0 for trade in closed_trades)
+        deployed = sum(float(trade.entry_price) * int(trade.quantity) for trade in open_trades)
+        return {
+            "positions": [_persisted_position_row(trade, latest.get(trade.id)) for trade in open_trades],
+            "configuration": configuration,
+            "performance": {
+                "open_trades_count": len(open_trades), "closed_trades_count": len(closed_trades),
+                "winning_trades_count": winners,
+                "win_rate_pct": round(winners / len(closed_trades) * 100, 1) if closed_trades else 0.0,
+                "total_realized_pnl": round(realized, 2), "open_capital_deployed": round(deployed, 2),
+            },
+        }
+    except SQLAlchemyError:
+        return {"positions": [], "configuration": {"initial_capital": DEFAULT_PORTFOLIO_CAPITAL_INR,
+                "max_open_positions": DEFAULT_MAX_OPEN_POSITIONS}, "performance": {}}
+    finally:
+        session.close()
 
 
 def sync_paper_trades() -> Dict[str, Any]:

@@ -39,11 +39,21 @@ from database import (
     save_portfolio_snapshot,
     sync_paper_trades,
     update_trade_status,
-    get_portfolio_performance_summary
+    get_portfolio_performance_summary,
+    get_portfolio_read_model,
 )
 
 TREND_STRATEGIES = {'Donchian Channel Breakout', 'EMA Pullback / Bounce', 'RS Momentum Breakout', 'VCP Volatility Contraction Breakout'}
 VOLATILITY_STRATEGIES = {'True NR7 Volatility Expansion Breakout', 'True Connors RSI Mean Reversion'}
+
+
+def _invalidate_portfolio_read_caches() -> None:
+    """Keep UI caches coherent without making persistence depend on Streamlit."""
+    try:
+        from cockpit_cache import invalidate_portfolio_reads
+        invalidate_portfolio_reads()
+    except Exception:
+        pass
 
 # ------------------------------------------------------------------------------
 # 1. MARKET DATA PROVIDER
@@ -482,7 +492,8 @@ class ExecutionAdapter:
             "mode": "RESEARCH / PAPER TRADING"
         }
 
-    def preview_paper_trade(self, candidate: Dict[str, Any], investment_amount: Optional[float] = None) -> Dict[str, Any]:
+    def preview_paper_trade(self, candidate: Dict[str, Any], investment_amount: Optional[float] = None,
+                            portfolio_state: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Read-only preview using the same qualification and portfolio semantics as execution."""
         qualification_status = str(candidate.get("qualification_status") or "").upper()
         qualification_flag = candidate.get("is_qualified")
@@ -513,9 +524,13 @@ class ExecutionAdapter:
             errors.append("Investment amount is too small to purchase one whole share.")
         executed_value = round(entry * quantity, 2) if quantity > 0 else 0.0
 
-        summary = self.get_portfolio_summary()
+        # UI previews may use a short-lived read cache for responsiveness. The
+        # confirmed execution deliberately omits it and revalidates against the
+        # transactional database constraint immediately before writing.
+        portfolio_state = portfolio_state or self.get_portfolio_state()
+        summary = portfolio_state["summary"]
         available_cash = float(summary.get("current_cash_inr") or 0.0)
-        open_positions = self.get_open_positions()
+        open_positions = portfolio_state["positions"]
         symbol = candidate.get("symbol")
         canonical = canonical_position_symbol(symbol)
         if canonical and any(canonical_position_symbol(position.get("symbol")) == canonical for position in open_positions):
@@ -584,7 +599,8 @@ class ExecutionAdapter:
                 risk_metadata=metadata,
             )
             self.save_portfolio_snapshot("PAPER_TRADE_RECORDED")
-            remaining_cash = round(self.get_portfolio_summary()["current_cash_inr"], 2)
+            _invalidate_portfolio_read_caches()
+            remaining_cash = round(self.get_portfolio_state()["summary"]["current_cash_inr"], 2)
             return {
                 "success": True,
                 "trade_id": trade.id,
@@ -606,6 +622,7 @@ class ExecutionAdapter:
         try:
             configuration = set_portfolio_configuration(initial_capital, max_open_positions)
             self.save_portfolio_snapshot("PORTFOLIO_CONFIGURATION_UPDATED")
+            _invalidate_portfolio_read_caches()
             limit = configuration["max_open_positions"]
             limit_text = "No position-count limit" if limit is None else f"{limit} maximum open positions"
             return {
@@ -624,6 +641,7 @@ class ExecutionAdapter:
         try:
             capital = set_portfolio_capital(initial_capital)
             self.save_portfolio_snapshot("PORTFOLIO_CAPITAL_UPDATED")
+            _invalidate_portfolio_read_caches()
             return {"success": True, "portfolio_capital_inr": capital, "message": f"Portfolio capital set to ₹{capital:,.2f}."}
         except PaperTradeConstraintError as exc:
             return {"success": False, "message": str(exc)}
@@ -650,6 +668,7 @@ class ExecutionAdapter:
         """Narrow OPEN-position mark refresh; no scan, allocation, or lifecycle work."""
         result = refresh_open_trade_marks(source_run_id=source_run_id or "MANUAL_PRICE_REFRESH")
         self.save_portfolio_snapshot("PORTFOLIO_REFRESH")
+        _invalidate_portfolio_read_caches()
         return result
 
     def close_paper_trade(self, trade_id: int, exit_price: float) -> Dict[str, Any]:
@@ -661,6 +680,7 @@ class ExecutionAdapter:
             if not trade:
                 return {"success": False, "message": "Paper trade was not found or could not be closed."}
             self.save_portfolio_snapshot("PAPER_TRADE_CLOSED")
+            _invalidate_portfolio_read_caches()
             return {"success": True, "trade_id": trade.id, "message": f"Paper trade #{trade.id} closed manually."}
         except Exception:
             return {"success": False, "message": "Paper-trade storage is unavailable. No close was recorded."}
@@ -672,8 +692,9 @@ class ExecutionAdapter:
         """Persist existing portfolio semantics only after a meaningful action."""
         try:
             from live_decision_adapter import summarize_live_portfolio_risk
-            summary = self.get_portfolio_summary()
-            positions = self.get_open_positions()
+            portfolio_state = self.get_portfolio_state()
+            summary = portfolio_state["summary"]
+            positions = portfolio_state["positions"]
             risk = summarize_live_portfolio_risk(positions)
             unrealized = sum(p.get("unrealized_pnl_inr") or 0.0 for p in positions)
             return save_portfolio_snapshot({
@@ -696,6 +717,34 @@ class ExecutionAdapter:
 
     def get_portfolio_snapshots(self) -> List[Any]:
         return load_portfolio_snapshots()
+
+    def get_portfolio_state(self) -> Dict[str, Any]:
+        """Return the complete read-only UI portfolio state from one bulk model."""
+        model = get_portfolio_read_model()
+        raw = model["performance"]
+        configuration = model["configuration"]
+        positions = model["positions"]
+        initial_cap = float(configuration["initial_capital"])
+        open_capital = float(raw.get("open_capital_deployed", 0.0))
+        realized_pnl = float(raw.get("total_realized_pnl", 0.0))
+        valid_marks = [position for position in positions if isinstance(position.get("current_price"), (int, float))]
+        unrealized_pnl = round(sum(position.get("unrealized_pnl_inr") or 0.0 for position in valid_marks), 2)
+        cash = round(initial_cap - open_capital + realized_pnl, 2)
+        total_val = round(cash + open_capital + unrealized_pnl, 2)
+        net_ret = round((total_val - initial_cap) / initial_cap * 100.0, 2)
+        summary = {
+            "configured_portfolio_capital_inr": initial_cap,
+            "configured_max_open_positions": configuration["max_open_positions"],
+            "total_portfolio_value_inr": total_val, "current_cash_inr": cash, "cash_inr": cash,
+            "invested_capital_inr": open_capital, "open_capital_deployed_inr": open_capital,
+            "open_positions_count": raw.get("open_trades_count", 0),
+            "closed_positions_count": raw.get("closed_trades_count", 0),
+            "total_net_pnl_inr": round(realized_pnl, 2), "total_realized_pnl_inr": round(realized_pnl, 2),
+            "total_net_return_pct": net_ret, "unrealized_pnl_inr": unrealized_pnl if valid_marks else None,
+            "price_coverage_count": len(valid_marks), "price_coverage_total": len(positions),
+            "win_rate_pct": raw.get("win_rate_pct", 0.0), "raw_summary": raw,
+        }
+        return {"positions": positions, "summary": summary}
 
     def get_portfolio_summary(self) -> Dict[str, Any]:
         raw = get_portfolio_performance_summary()
