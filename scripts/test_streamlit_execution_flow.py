@@ -54,6 +54,45 @@ def run():
         cockpit_ui._load_stock_research = original_research
     passed += 1  # 2 Stock Research provider lookup is explicit
 
+    original_catalog = cockpit_ui._stock_catalog
+    original_generic_ha = cockpit_ui._load_generic_ha
+    cockpit_ui._stock_catalog = lambda: (("FLOW", "Flow Limited"), ("OTHER", "Other Industries Ltd."))
+    cockpit_ui._load_stock_research = lambda symbol, as_of_date=None: {
+        "symbol": symbol, "signal_date": "2026-08-14", "entry_price": 120.0,
+        "ha_features": {"ret_5d": 2.0, "ret_10d": 4.0, "ret_20d": 6.0,
+                        "distance_from_ema20_pct": 1.5, "distance_from_ema20_atr": .8,
+                        "largest_positive_daily_return_10d": 2.2, "positive_sessions_10": 6,
+                        "volume_ratio_20": 1.4},
+        "ha_stock_percentiles": {"ready": 1.0}, "chart": {},
+    }
+    cockpit_ui._load_generic_ha = lambda *args, **kwargs: {
+        "query_scope": "GENERIC_RESEARCH_STATE", "evidence_quality": "HIGH", "analog_count": 40,
+        "unique_security_count": 32, "earliest_analog_date": "2017-01-01", "latest_analog_date": "2022-12-01",
+        "maximum_year_share": .3, "maximum_date_share": .05,
+        "outcome_attractiveness": {}, "downside_evidence": {}, "analogs": [],
+    }
+    try:
+        generic = AppTest.from_file(str(ROOT / "app.py"))
+        generic.session_state["navigation_page"] = "research"
+        generic.session_state["sidebar_workspace"] = "Stock Research"
+        generic.query_params["page"] = "research"
+        generic.run(timeout=30)
+        selector = next(widget for widget in generic.selectbox if widget.label == "Company or NSE symbol")
+        assert "Other Industries Ltd. · OTHER" in selector.options
+        selector.set_value("Other Industries Ltd. · OTHER").run(timeout=30)
+        detail_tabs = next(widget for widget in generic.segmented_control if widget.label == "Stock detail view")
+        assert detail_tabs.options == ["Overview", "Rally", "Historical Analogs", "Events", "Trade"]
+        detail_tabs.set_value("Historical Analogs").run(timeout=30)
+        assert any("Generic completed-session state" in item.value for item in generic.caption)
+        detail_tabs = next(widget for widget in generic.segmented_control if widget.label == "Stock detail view")
+        detail_tabs.set_value("Trade").run(timeout=30)
+        assert any("Paper execution is available only" in item.value for item in generic.markdown)
+    finally:
+        cockpit_ui._stock_catalog = original_catalog
+        cockpit_ui._load_stock_research = original_research
+        cockpit_ui._load_generic_ha = original_generic_ha
+    passed += 1  # 3 searchable selector and generic five-tab research never enable execution
+
     flow_candidate = candidate()
     database.persist_analysis_run({
         "run_id": "FLOW-RUN", "analysis_date": dt.date(2026, 8, 14), "status": "SUCCESS",
@@ -91,7 +130,7 @@ def run():
         database.load_historical_analog_summaries = original_ha_db
         ExecutionAdapter.get_portfolio_summary = original_summary_method
         ExecutionAdapter.get_open_positions = original_positions_method
-    passed += 1  # 3 Opportunities uses only latest decisions + bulk HA summaries
+    passed += 1  # 4 Opportunities uses only latest decisions + bulk HA summaries
 
     original_summary_loader = cockpit_ui._load_ha_summary
     original_full_loader = cockpit_ui._load_ha
@@ -111,16 +150,16 @@ def run():
     finally:
         cockpit_ui._load_ha_summary = original_summary_loader
         cockpit_ui._load_ha = original_full_loader
-    passed += 1  # 4 Stock Overview does not invoke HA loaders
+    passed += 1  # 5 Stock Overview does not invoke HA loaders
 
     source = (ROOT / "cockpit_ui.py").read_text()
     cases_body = source.split("def _render_ha_cases", 1)[1].split("def _render_ha", 1)[0]
-    assert "if not show_cases" in cases_body and "full_snapshot = _load_ha(candidate)" in cases_body
+    assert "if not show_cases" in cases_body and "provided_snapshot or _load_ha(candidate)" in cases_body
     assert "@st.fragment\ndef _render_ha_cases" in source
-    passed += 1  # 5 HA mappings remain lazy and locally interactive
+    passed += 1  # 6 HA mappings remain lazy and locally interactive
 
-    assert passed == 5
-    print(f"Streamlit execution-flow tests: PASS ({passed}/5 scenarios)")
+    assert passed == 6
+    print(f"Streamlit execution-flow tests: PASS ({passed}/6 scenarios)")
 
 
 if __name__ == "__main__":

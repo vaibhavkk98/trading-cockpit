@@ -244,8 +244,10 @@ class HistoricalAnalogService:
             return "MEDIUM"
         return "HIGH"
 
-    def evaluate(self, opportunity: Mapping[str, Any], *, persist: bool = True) -> dict[str, Any]:
-        if not self._qualified(opportunity):
+    def _evaluate(self, opportunity: Mapping[str, Any], *, persist: bool,
+                  require_qualified: bool) -> dict[str, Any]:
+        qualified = self._qualified(opportunity)
+        if require_qualified and not qualified:
             raise HistoricalAnalogContractError("Historical analogs are available only for qualified opportunities.")
         query_date = pd.Timestamp(opportunity.get("signal_date") or opportunity.get("analysis_date")).normalize()
         if pd.isna(query_date):
@@ -282,6 +284,7 @@ class HistoricalAnalogService:
         success = pd.to_numeric(analogs["target_5_before_stop_3_20d"], errors="coerce")
         result: dict[str, Any] = {
             "opportunity_id": opportunity_id, "signal_date": query_date.date().isoformat(), "symbol": symbol,
+            "query_scope": "QUALIFIED_OPPORTUNITY" if qualified else "GENERIC_RESEARCH_STATE",
             "methodology_id": METHODOLOGY_ID, "methodology_version": str(self.contract["version"]),
             "methodology_hash": METHODOLOGY_HASH,
             "analog_count": int(len(analogs)), "unique_security_count": unique,
@@ -326,3 +329,16 @@ class HistoricalAnalogService:
             except Exception:
                 pass
         return result
+
+    def evaluate(self, opportunity: Mapping[str, Any], *, persist: bool = True) -> dict[str, Any]:
+        """Evaluate a qualified opportunity under the frozen production contract."""
+        return self._evaluate(opportunity, persist=persist, require_qualified=True)
+
+    def evaluate_generic_state(self, state: Mapping[str, Any]) -> dict[str, Any]:
+        """Evaluate a completed-session stock state without granting trade eligibility.
+
+        Generic research is deliberately read-only and never persists an opportunity
+        snapshot. Retrieval features, history pool, distance and evidence rules remain
+        identical to the qualified-opportunity methodology.
+        """
+        return self._evaluate(state, persist=False, require_qualified=False)

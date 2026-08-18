@@ -38,7 +38,9 @@ def run():
     assert 'tabs = ["Performance", "Positions & Risk"]' in source
     assert 'with st.sidebar.expander("Portfolio controls", expanded=False)' in source
     assert "_render_events(candidate)" in source and "_render_trade_economics(candidate)" in source
-    assert "if submitted:" in source and "_load_stock_research(chosen)" in source
+    assert 'st.selectbox(\n        "Company or NSE symbol"' in source
+    assert "if not chosen:" in source and "_load_stock_research(chosen)" in source
+    assert "Open full opportunity intelligence" not in source and "sync_query=False" in source
     pipeline = (ROOT / "eod_pipeline.py").read_text()
     identity_at = pipeline.index('decision.setdefault(\n                "opportunity_id"')
     evaluate_at = pipeline.index("analog_service.evaluate(decision, persist=True)")

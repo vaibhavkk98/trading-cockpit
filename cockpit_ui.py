@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import quote
 
@@ -38,6 +39,14 @@ def stock_url(symbol: Any, tab: str = "overview") -> str:
 def _candidate_for_symbol(decisions, symbol):
     canonical = canonical_route_symbol(symbol)
     return next((row for row in decisions if canonical_route_symbol(row.get("symbol")) == canonical), None)
+
+
+def _is_qualified(candidate):
+    if not candidate:
+        return False
+    explicit = candidate.get("is_qualified")
+    status = str(candidate.get("qualification_status") or "").upper()
+    return explicit is True or (explicit is not False and status in {"QUALIFIED", "ALLOCATED", "PASS"})
 
 
 def _load_ha(candidate):
@@ -361,13 +370,13 @@ def _render_portfolio(execution_factory, portfolio_summary_loader, positions_loa
 
 
 @st.fragment
-def _render_ha_cases(candidate):
+def _render_ha_cases(candidate, provided_snapshot=None):
     render_section_header("Analog cases", "Frozen K40 mapping loads only when requested")
     show_cases = st.toggle("Inspect the 40 closest analog cases", value=False, key=f"ha_cases_{candidate.get('opportunity_id')}")
     if not show_cases:
         st.caption("Case rows are deferred to keep the summary interaction fast.")
         return
-    full_snapshot = _load_ha(candidate)
+    full_snapshot = provided_snapshot or _load_ha(candidate)
     cases = []
     for row in (full_snapshot or {}).get("analogs", []):
         cases.append({"Rank": row["rank"], "Historical date": row["signal_date"], "Historical symbol": row["symbol"],
@@ -377,12 +386,17 @@ def _render_ha_cases(candidate):
     st.dataframe(pd.DataFrame(cases), width="stretch", hide_index=True)
 
 
-def _render_ha(candidate, snapshot):
+def _render_ha(candidate, snapshot, *, generic_state=False):
     if not snapshot:
-        render_empty_state("Historical Analog snapshot pending", "This persisted opportunity predates live HA enrichment. Run analysis once to create its immutable snapshot.")
+        if generic_state:
+            render_empty_state("Generic-state analogs unavailable", "Adequate completed-session stock, Nifty 500 and India VIX history is required.")
+        else:
+            render_empty_state("Historical Analog snapshot pending", "This persisted opportunity predates live HA enrichment. Run analysis once to create its immutable snapshot.")
         return
     quality = snapshot.get("evidence_quality", "INSUFFICIENT")
     st.markdown(f"{status_badge(quality, 'good' if quality == 'HIGH' else 'warn' if quality in {'MEDIUM','LOW'} else 'unavailable')}", unsafe_allow_html=True)
+    if generic_state:
+        st.caption("Generic completed-session state · research only · does not confer qualification or trade eligibility")
     st.caption(f"{snapshot.get('analog_count', 0)} analogs across {snapshot.get('unique_security_count', 0)} securities · {snapshot.get('earliest_analog_date')}–{snapshot.get('latest_analog_date')} · Historical evidence, not a forecast")
     attractive, downside = snapshot.get("outcome_attractiveness", {}), snapshot.get("downside_evidence", {})
     c1, c2, c3, c4 = st.columns(4)
@@ -398,7 +412,7 @@ def _render_ha(candidate, snapshot):
     with d4: render_context_card("Maximum date share", format_percent((snapshot.get("maximum_date_share") or 0) * 100))
     if (snapshot.get("maximum_year_share") or 0) >= .40:
         st.info("Historical evidence is concentrated in a smaller number of market periods.")
-    _render_ha_cases(candidate)
+    _render_ha_cases(candidate, snapshot if generic_state else None)
 
 
 def _render_trade_economics(candidate):
@@ -428,80 +442,129 @@ def _render_events(candidate):
     st.caption("Informational only; this does not alter qualification, allocation, sizing, or stops.")
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def _stock_catalog():
+    """Current Nifty 500 company/symbol options for Streamlit's searchable selector."""
+    path = Path(__file__).resolve().parent / "data/universe/nifty500_constituents.csv"
+    frame = pd.read_csv(path, usecols=["symbol", "company_name"])
+    frame["symbol"] = frame["symbol"].map(canonical_route_symbol)
+    frame = frame.dropna(subset=["symbol"]).drop_duplicates("symbol").sort_values(["company_name", "symbol"])
+    return tuple((str(row.symbol), str(row.company_name)) for row in frame.itertuples(index=False))
+
+
 @st.cache_data(ttl=900, show_spinner=False)
-def _load_stock_research(symbol: str):
+def _load_stock_research(symbol: str, as_of_date: str | None = None):
     """Explicit, cached lookup for a non-opportunity stock; no portfolio writes."""
     from screener import fetch_ha_market_histories, fetch_stock_data
-    stock = fetch_stock_data(symbol, period="2y")
+    stock = fetch_stock_data(symbol, period="2y", as_of_date=as_of_date)
     if stock is None or stock.empty:
         return None
     signal_date = stock.index[-1].strftime("%Y-%m-%d")
     nifty500, vix = fetch_ha_market_histories(period="2y", as_of_date=signal_date)
-    features = {}
+    features, percentiles = {}, {}
     if nifty500 is not None and vix is not None:
         try:
-            features = HistoricalAnalogService.build_causal_query_state(stock, nifty500, vix, signal_date)["ha_features"]
+            state = HistoricalAnalogService.build_causal_query_state(stock, nifty500, vix, signal_date)
+            features, percentiles = state["ha_features"], state["ha_stock_percentiles"]
         except Exception:
-            features = {}
+            features, percentiles = {}, {}
     close = pd.to_numeric(stock["Close"], errors="coerce")
     chart = pd.DataFrame({"Close": close, "EMA 20": close.ewm(span=20, adjust=False).mean(), "EMA 50": close.ewm(span=50, adjust=False).mean()}).tail(120)
-    return {"symbol": canonical_route_symbol(symbol), "signal_date": signal_date, "entry_price": float(close.iloc[-1]), "ha_features": features,
+    return {"symbol": canonical_route_symbol(symbol), "signal_date": signal_date, "entry_price": float(close.iloc[-1]),
+            "ha_features": features, "ha_stock_percentiles": percentiles,
             "chart": {name: {str(index): float(value) for index, value in series.dropna().items()} for name, series in chart.items()}}
 
 
-def _render_stock_research(decisions):
-    render_page_header("Stock Research", "Search any NSE stock; qualified opportunities retain the full decision workflow")
-    active = sorted({canonical_route_symbol(row.get("symbol")) for row in decisions if canonical_route_symbol(row.get("symbol"))})
-    with st.form("stock_research_form"):
-        symbol = st.text_input("NSE symbol", value=st.session_state.get("research_symbol", ""), placeholder="e.g. RELIANCE")
-        submitted = st.form_submit_button("Search stock", type="primary")
-    if submitted:
-        canonical = canonical_route_symbol(symbol)
-        if canonical:
-            st.session_state["research_symbol"] = canonical
-        else:
-            st.error("Enter a valid NSE symbol.")
+@st.cache_data(ttl=900, show_spinner=False)
+def _load_generic_ha(symbol: str, signal_date: str, features: dict, percentiles: dict):
+    if not features or not percentiles:
+        return None
+    state = {
+        "opportunity_id": f"GENERIC:{symbol}:{signal_date}", "symbol": symbol,
+        "signal_date": signal_date, "qualification_status": "RESEARCH_ONLY", "is_qualified": False,
+        "ha_features": features, "ha_stock_percentiles": percentiles,
+    }
+    try:
+        return HistoricalAnalogService().evaluate_generic_state(state)
+    except Exception:
+        return None
+
+
+def _generic_candidate(research):
+    if not research:
+        return None
+    return {
+        **research,
+        "opportunity_id": f"GENERIC:{research['symbol']}:{research['signal_date']}",
+        "qualification_status": "RESEARCH_ONLY", "is_qualified": False,
+        "strategy": None, "allocation_status": "RESEARCH_ONLY",
+        "allocation_reason_text": "Research context only; this stock is not a current qualified opportunity.",
+        "event_context": "NOT_AVAILABLE",
+    }
+
+
+def _render_stock_research(decisions, execution_factory, hydrate_portfolio):
+    render_page_header("Stock Research", "Search the Nifty 500 by company or symbol; research access does not change trade eligibility")
+    catalog = list(_stock_catalog())
+    known = {symbol for symbol, _ in catalog}
+    for row in decisions:
+        symbol = canonical_route_symbol(row.get("symbol"))
+        if symbol and symbol not in known:
+            catalog.append((symbol, symbol))
+            known.add(symbol)
+    labels = {f"{company} · {symbol}": symbol for symbol, company in catalog}
+    current = st.session_state.get("research_symbol")
+    current_label = next((label for label, symbol in labels.items() if symbol == current), None)
+    selected_label = st.selectbox(
+        "Company or NSE symbol", options=list(labels), index=list(labels).index(current_label) if current_label else None,
+        placeholder="Type a company name or ticker", key="research_stock_selector",
+    )
+    if selected_label:
+        st.session_state["research_symbol"] = labels[selected_label]
     chosen = st.session_state.get("research_symbol")
     if not chosen:
-        st.caption("Current qualified symbols: " + (", ".join(active) if active else "none"))
+        st.caption("Start typing a company name or NSE ticker to search the current Nifty 500 universe.")
         return
     qualified = _candidate_for_symbol(decisions, chosen)
     if qualified:
         st.success("This stock is a current qualified opportunity.")
-        st.link_button("Open full opportunity intelligence", stock_url(chosen))
-        research = {"symbol": chosen, "signal_date": qualified.get("signal_date"), "entry_price": qualified.get("entry_price"), "ha_features": qualified.get("ha_features") or {}, "chart": {}}
+        candidate = qualified
     else:
         with st.spinner(f"Loading completed-session data for {chosen}…"):
             research = _load_stock_research(chosen)
-    if not research:
+        candidate = _generic_candidate(research)
+    if not candidate:
         render_empty_state("Stock data unavailable", "No adequate completed-session NSE history was returned for this symbol.")
         return
-    c1, c2 = st.columns(2)
-    with c1: render_context_card("Latest close", format_price(research.get("entry_price")), f"As of {research.get('signal_date')}")
-    with c2: render_context_card("Decision eligibility", "Qualified" if qualified else "Research only", "Paper execution remains restricted to qualified opportunities")
-    features = research.get("ha_features") or {}
-    fields = [("5D return", "ret_5d"), ("10D return", "ret_10d"), ("20D return", "ret_20d"), ("EMA20 extension", "distance_from_ema20_pct"), ("ATR extension", "distance_from_ema20_atr")]
-    columns = st.columns(3)
-    for index, (label, key) in enumerate(fields):
-        with columns[index % 3]: render_context_card(label, format_percent(features.get(key)), "Completed-session OHLCV")
-    chart_payload = research.get("chart") or {}
-    if chart_payload:
-        chart = pd.DataFrame({name: pd.Series(values, dtype=float) for name, values in chart_payload.items()})
-        st.line_chart(chart, width="stretch")
+    _render_stock_detail(
+        candidate, {"page": "stock", "symbol": chosen, "tab": "overview"},
+        execution_factory, hydrate_portfolio, show_header=False, sync_query=False,
+    )
 
 
-def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio):
+def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio, *, show_header=True, sync_query=True):
     symbol = route.get("symbol")
-    render_page_header(symbol or "Stock Detail", "Qualified-opportunity intelligence and explicit paper execution")
+    qualified = _is_qualified(candidate)
+    if show_header:
+        render_page_header(
+            symbol or "Stock Detail",
+            "Qualified-opportunity intelligence and explicit paper execution" if qualified else "Completed-session stock research · execution disabled",
+        )
     if not candidate:
         render_empty_state("Stock detail unavailable", "This symbol is not in the current qualified opportunity set.")
         return
-    st.markdown(f"{status_badge(candidate.get('qualification_status', 'QUALIFIED'), 'good')} &nbsp; {status_badge(short_strategy_name(candidate.get('strategy')), 'neutral')} &nbsp; {status_badge(compact_allocation(candidate), 'neutral')}", unsafe_allow_html=True)
+    badges = [status_badge("QUALIFIED", "good")] if qualified else [status_badge("RESEARCH ONLY", "neutral")]
+    if qualified:
+        badges.extend([status_badge(short_strategy_name(candidate.get("strategy")), "neutral"), status_badge(compact_allocation(candidate), "neutral")])
+    st.markdown(" &nbsp; ".join(badges), unsafe_allow_html=True)
     labels = {"overview": "Overview", "rally": "Rally", "historical_analogs": "Historical Analogs", "events": "Events", "trade": "Trade"}
     query_tab = st.query_params.get("tab")
-    current = query_tab if query_tab in STOCK_TABS else route.get("tab") if route.get("tab") in STOCK_TABS else "overview"
     tab_key = f"stock_tab_{symbol}"
     route_key = f"{tab_key}_route"
+    if sync_query:
+        current = query_tab if query_tab in STOCK_TABS else route.get("tab") if route.get("tab") in STOCK_TABS else "overview"
+    else:
+        current = st.session_state.get(route_key, "overview")
     if st.session_state.get(route_key) != current:
         st.session_state[tab_key] = labels[current]
         st.session_state[route_key] = current
@@ -509,7 +572,8 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio)
     def change_stock_tab():
         selected_key = next(key for key, value in labels.items() if value == st.session_state[tab_key])
         st.session_state[route_key] = selected_key
-        st.query_params.from_dict(navigation_query("stock", symbol, selected_key))
+        if sync_query:
+            st.query_params.from_dict(navigation_query("stock", symbol, selected_key))
 
     selected_label = st.segmented_control(
         "Stock detail view", list(labels.values()), default=None, key=tab_key,
@@ -518,9 +582,10 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio)
     selected = next(key for key, value in labels.items() if value == selected_label)
     if selected == "overview":
         c1, c2, c3 = st.columns(3)
-        with c1: render_context_card("Reference price", format_price(candidate.get("entry_price")), f"Signal date {display_value(candidate.get('signal_date'))}")
-        with c2: render_context_card("Volume ratio", display_value(candidate.get("volume_ratio_20")), "Qualification context")
-        with c3: render_context_card("Allocator", "Selected" if candidate.get("allocation_status") == "ALLOCATED" else "Not selected", "Advisory only")
+        features = candidate.get("ha_features") or {}
+        with c1: render_context_card("Reference price" if qualified else "Latest close", format_price(candidate.get("entry_price")), f"{'Signal date' if qualified else 'As of'} {display_value(candidate.get('signal_date'))}")
+        with c2: render_context_card("Volume ratio", display_value(candidate.get("volume_ratio_20") or features.get("volume_ratio_20")), "Qualification context" if qualified else "Completed-session OHLCV")
+        with c3: render_context_card("Allocator" if qualified else "Decision eligibility", "Selected" if candidate.get("allocation_status") == "ALLOCATED" else "Not selected" if qualified else "Research only", "Advisory only" if qualified else "Paper execution requires a qualified opportunity")
         st.caption(display_value(candidate.get("allocation_reason_text"), "Qualified under the frozen technical contract."))
         _render_trade_economics(candidate)
         with st.expander("Price trend", expanded=False):
@@ -545,9 +610,21 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio)
         for index, (label, key) in enumerate(fields):
             value = candidate.get(key) or (candidate.get("ha_features") or {}).get(key)
             with columns[index % 3]: render_context_card(label, format_percent(value) if key != "positive_sessions_10" else display_value(value), "Descriptive only")
-    elif selected == "historical_analogs": _render_ha(candidate, _load_ha_summary(candidate))
+    elif selected == "historical_analogs":
+        if qualified:
+            _render_ha(candidate, _load_ha_summary(candidate))
+        else:
+            with st.spinner("Retrieving generic-state historical analogs…"):
+                generic_snapshot = _load_generic_ha(
+                    symbol, candidate.get("signal_date"), candidate.get("ha_features") or {},
+                    candidate.get("ha_stock_percentiles") or {},
+                )
+            _render_ha(candidate, generic_snapshot, generic_state=True)
     elif selected == "events": _render_events(candidate)
     else:
+        if not qualified:
+            render_empty_state("Research only", "Paper execution is available only when this stock becomes a current qualified opportunity.")
+            return
         snapshot = _load_ha_summary(candidate)
         st.caption(f"Qualified · {'allocator selected' if candidate.get('allocation_status') == 'ALLOCATED' else 'allocator not selected'} · Prior 10D rally {format_percent((candidate.get('ha_features') or {}).get('ret_10d'))} · HA evidence {snapshot.get('evidence_quality') if snapshot else 'INSUFFICIENT'}")
         _render_stock_ticket(candidate, execution_factory, hydrate_portfolio, symbol)
@@ -559,8 +636,11 @@ def render_cockpit(*, route, decisions_loader, execution_factory,
     selected = _render_sidebar(route, execution_factory, portfolio_summary_loader, hydrate_portfolio)
     if route.get("page") == "stock":
         decisions = decisions_loader()
+        candidate = _candidate_for_symbol(decisions, route.get("symbol"))
+        if not candidate:
+            candidate = _generic_candidate(_load_stock_research(route.get("symbol")))
         with timed("page.stock_detail", tab=route.get("tab")):
-            _render_stock_detail(_candidate_for_symbol(decisions, route.get("symbol")), route, execution_factory, hydrate_portfolio)
+            _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio)
         return
     page = PAGE_KEYS[selected]
     if page == "today":
@@ -571,7 +651,7 @@ def render_cockpit(*, route, decisions_loader, execution_factory,
     elif page == "portfolio":
         with timed("page.portfolio"): _render_portfolio(execution_factory, portfolio_summary_loader, positions_loader, hydrate_portfolio)
     elif page == "research":
-        _render_stock_research(decisions_loader())
+        _render_stock_research(decisions_loader(), execution_factory, hydrate_portfolio)
     else:
         render_page_header("Settings", "Portfolio controls and deployment status")
         health = execution_factory().database_diagnostics()

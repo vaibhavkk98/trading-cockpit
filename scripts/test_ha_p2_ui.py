@@ -16,7 +16,7 @@ os.environ["TRADING_COCKPIT_DB_PATH"] = str(Path(temporary.name) / "ha_p2.sqlite
 import database  # noqa: E402
 from adapters import ExecutionAdapter  # noqa: E402
 from cockpit_ui import PAGES, stock_url  # noqa: E402
-from historical_analogs_service import HistoricalAnalogService, METHODOLOGY_HASH, METHODOLOGY_ID  # noqa: E402
+from historical_analogs_service import HistoricalAnalogContractError, HistoricalAnalogService, METHODOLOGY_HASH, METHODOLOGY_ID  # noqa: E402
 from portfolio_analytics import get_portfolio_pnl  # noqa: E402
 from streamlit.testing.v1 import AppTest  # noqa: E402
 
@@ -123,8 +123,29 @@ def run():
 
     assert not app.exception
     passed += 1  # 15 Streamlit headless render
-    assert passed == 15
-    print(f"HA-P2 focused UI tests: PASS ({passed}/15 scenarios)")
+
+    history, _ = production_service._load_train_pool()
+    row = history.iloc[-1]
+    generic_state = {
+        "opportunity_id": "GENERIC:AAA:2026-08-14", "symbol": "AAA", "signal_date": "2026-08-14",
+        "qualification_status": "RESEARCH_ONLY", "is_qualified": False,
+        "ha_features": {name: float(row[name]) for name in production_service.features},
+        "ha_stock_percentiles": {output: float(row[output]) for output in production_service.blends.values()},
+    }
+    generic_snapshot = production_service.evaluate_generic_state(generic_state)
+    assert generic_snapshot["query_scope"] == "GENERIC_RESEARCH_STATE" and generic_snapshot["analog_count"] == 40
+    assert database.load_historical_analog_snapshot(
+        generic_state["opportunity_id"], generic_state["signal_date"], METHODOLOGY_HASH
+    ) is None
+    try:
+        production_service.evaluate(generic_state, persist=False)
+        raise AssertionError("qualified-only HA entrypoint accepted a research-only state")
+    except HistoricalAnalogContractError:
+        pass
+    passed += 1  # 16 generic-state HA is read-only and cannot bypass the qualified contract
+
+    assert passed == 16
+    print(f"HA-P2 focused UI tests: PASS ({passed}/16 scenarios)")
 
 
 if __name__ == "__main__":
