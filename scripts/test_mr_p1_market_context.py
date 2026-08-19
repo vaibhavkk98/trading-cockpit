@@ -138,6 +138,12 @@ class MarketContextProductionTests(unittest.TestCase):
         self.assertIn("database.load_latest_market_context_bundle", cache_source)
         self.assertNotIn("fetch_", ui_source)
 
+    def test_raw_context_expander_reads_from_loaded_bundle(self):
+        import cockpit_ui
+        ui_source = inspect.getsource(cockpit_ui._render_market_context)
+        self.assertIn('payload = bundle.get(key)', ui_source)
+        self.assertNotIn('("Structural EOD", structural)', ui_source)
+
     def test_missing_cards_do_not_render_fake_zeroes(self):
         import cockpit_ui
         models = cockpit_ui._pillar_models({"structural": None, "investor_participation": None, "cross_asset": None, "event_risk": None})

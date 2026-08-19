@@ -277,7 +277,8 @@ def _render_market_context():
         if not any(bundle.values()):
             render_empty_state("Market Context not yet refreshed", "The next EOD and pre-open refreshes will persist available modules. Missing inputs remain NOT_AVAILABLE.")
             return
-        for label, payload in (("Structural EOD", structural), ("Investor Participation", investor), ("Cross-Asset", cross), ("External / Event Risk", event)):
+        for label, key in (("Structural EOD", "structural"), ("Investor Participation", "investor_participation"), ("Cross-Asset", "cross_asset"), ("External / Event Risk", "event_risk")):
+            payload = bundle.get(key)
             st.markdown(f"**{label}**")
             if payload:
                 st.json(payload, expanded=False)
