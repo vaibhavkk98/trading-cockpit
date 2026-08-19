@@ -138,6 +138,48 @@ class MarketContextProductionTests(unittest.TestCase):
         self.assertIn("database.load_latest_market_context_bundle", cache_source)
         self.assertNotIn("fetch_", ui_source)
 
+    def test_missing_cards_do_not_render_fake_zeroes(self):
+        import cockpit_ui
+        models = cockpit_ui._pillar_models({"structural": None, "investor_participation": None, "cross_asset": None, "event_risk": None})
+        self.assertTrue(all(model["state"] == "NOT AVAILABLE" for model in models))
+        self.assertTrue(all("Awaiting first" in model["subtitle"] for model in models))
+        self.assertFalse(any("0 stocks" in model["subtitle"] or "0 indices" in model["subtitle"] for model in models))
+
+    def test_measured_zero_remains_distinct_from_missing(self):
+        import cockpit_ui
+        bundle = {"structural": {"as_of_timestamp": "2026-08-18T16:07:00+05:30", "breadth": {"state": "NEUTRAL", "coverage": 0, "above_ema20_pct": 0.0, "advance_participation_pct": 0.0}}, "investor_participation": None, "cross_asset": None, "event_risk": None}
+        breadth = next(model for model in cockpit_ui._pillar_models(bundle) if model["title"] == "Breadth")
+        self.assertEqual(breadth["state"], "NEUTRAL")
+        self.assertEqual(breadth["coverage"], "0 stocks measured")
+        self.assertIn("0.00%", breadth["why"])
+
+    def test_dynamic_why_uses_persisted_cross_asset_drivers(self):
+        import cockpit_ui
+        cross = {"state": "ELEVATED", "as_of_timestamp": "2026-08-19T03:00:00+00:00", "required_core_inputs": 3, "series": {"usdinr": {"status": "AVAILABLE", "label": "USD/INR", "stress_percentile": 88.0}, "brent": {"status": "AVAILABLE", "label": "Brent crude", "stress_percentile": 72.0}, "dxy": {"status": mc.NOT_AVAILABLE, "label": "DXY", "stress_percentile": None}}}
+        model = next(item for item in cockpit_ui._pillar_models({"structural": None, "investor_participation": None, "cross_asset": cross, "event_risk": None}) if item["title"] == "Cross-Asset")
+        self.assertIn("USD/INR", model["why"])
+        self.assertIn("88", model["why"])
+        self.assertEqual(model["subtitle"], "External market pressure")
+        self.assertNotIn("5 / 3 inputs", model["subtitle"] + model["coverage"])
+
+    def test_pillar_explainers_cover_all_seven_modules(self):
+        import cockpit_ui
+        self.assertEqual(set(cockpit_ui.PILLAR_HELP), {"Trend", "Breadth", "Volatility", "Sector Participation", "Investor Participation", "Cross-Asset", "External Risk"})
+        self.assertTrue(all(item["measure"] and item["states"] for item in cockpit_ui.PILLAR_HELP.values()))
+
+    def test_eod_activation_fetch_preserves_requested_cutoff(self):
+        stock = histories(5); n500 = histories(1)["S0"]; vix = pd.DataFrame({"Close": np.linspace(12, 18, 90)}, index=n500.index)
+        cutoff = n500.index[-2].date().isoformat()
+        payload = mc.fetch_structural_context(cutoff, stock.keys(), stock_fetcher=lambda *a, **k: stock, market_fetcher=lambda *a, **k: (n500, vix), sector_fetcher=lambda *a, **k: histories(4))
+        self.assertEqual(payload["as_of_date"], cutoff)
+        self.assertTrue(all(payload[key]["state"] != mc.NOT_AVAILABLE for key in ("trend", "breadth", "volatility", "sector_participation")))
+
+    def test_refresh_runner_has_production_database_guard_and_readback(self):
+        source = (Path(__file__).resolve().parent / "run_market_context_refresh.py").read_text()
+        self.assertIn("--require-production-db", source)
+        self.assertIn("database_target_fingerprint", inspect.getsource(database.get_database_diagnostics))
+        self.assertIn("load_latest_market_context_bundle", source)
+
     def test_navigation_has_no_scan_or_trade_side_effect(self):
         import cockpit_ui
         source = inspect.getsource(cockpit_ui._render_market_context)

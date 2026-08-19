@@ -111,6 +111,26 @@ def fetch_sector_histories(period: str = "2y") -> dict[str, pd.DataFrame]:
     return result
 
 
+def fetch_structural_context(
+    as_of_date: dt.date | str,
+    symbols: Iterable[str],
+    stock_fetcher: Callable[..., dict[str, pd.DataFrame]] | None = None,
+    market_fetcher: Callable[..., tuple[pd.DataFrame | None, pd.DataFrame | None]] | None = None,
+    sector_fetcher: Callable[..., dict[str, pd.DataFrame]] | None = None,
+) -> dict[str, Any]:
+    """Explicit EOD activation path; never invoked by Streamlit rendering."""
+    if stock_fetcher is None or market_fetcher is None:
+        from screener import fetch_bulk_stock_data, fetch_ha_market_histories
+        stock_fetcher = stock_fetcher or fetch_bulk_stock_data
+        market_fetcher = market_fetcher or fetch_ha_market_histories
+    sector_fetcher = sector_fetcher or fetch_sector_histories
+    symbol_list = list(symbols)
+    stocks = stock_fetcher(symbol_list, period="2y")
+    nifty500, india_vix = market_fetcher(period="2y", as_of_date=str(as_of_date)[:10])
+    sectors = sector_fetcher(period="2y")
+    return build_structural_context(stocks, nifty500, india_vix, sectors, as_of_date)
+
+
 def build_structural_context(
     stock_histories: dict[str, pd.DataFrame],
     nifty500: pd.DataFrame | None,

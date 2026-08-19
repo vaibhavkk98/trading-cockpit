@@ -6,11 +6,13 @@ that configured backend is unavailable.
 """
 
 import datetime as dt
+import hashlib
 import json
 import math
 import os
 import threading
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 import pandas as pd
 import yfinance as yf
@@ -391,7 +393,17 @@ def get_database_diagnostics(check_connection: bool = True) -> Dict[str, str]:
         "deployment_mode": DEPLOYMENT_MODE,
         "database_backend": DATABASE_BACKEND,
         "database_status": "AVAILABLE" if _database_available else "NOT_AVAILABLE",
+        "database_target_fingerprint": get_database_target_fingerprint(),
     }
+
+
+def get_database_target_fingerprint() -> str:
+    """Non-secret identifier used to confirm refresh/runtime target alignment."""
+    if not _configured_database_url:
+        return "LOCAL_SQLITE"
+    parsed = urlparse(_normalise_postgres_url(_configured_database_url))
+    target = f"{parsed.hostname or ''}:{parsed.port or 5432}{parsed.path or ''}"
+    return hashlib.sha256(target.encode()).hexdigest()[:16]
 
 
 def _require_database() -> None:

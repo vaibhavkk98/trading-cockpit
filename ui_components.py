@@ -187,9 +187,10 @@ def render_empty_state(title, body):
 
 def render_context_card(title, value, detail="", tone="neutral", badge=None):
     badge_html = status_badge(badge, tone) if badge else ""
+    title_html = f'<div class="tc-card-title">{escape(title)}</div>' if title else ""
     st.markdown(
         f'<div class="tc-card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">'
-        f'<div class="tc-card-title">{escape(title)}</div>{badge_html}</div><div class="tc-value">{escape(display_value(value))}</div>'
+        f'{title_html}{badge_html}</div><div class="tc-value">{escape(display_value(value))}</div>'
         f'<div class="tc-card-copy">{escape(str(detail))}</div></div>', unsafe_allow_html=True)
 
 

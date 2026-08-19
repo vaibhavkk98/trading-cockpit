@@ -12,8 +12,13 @@ on:
         default: "PREOPEN"
         type: choice
         options:
+          - EOD
           - PREOPEN
           - INTRADAY
+      as_of_date:
+        description: "Completed NSE session (required for EOD)"
+        required: false
+        type: string
 
 concurrency:
   group: market-context-refresh
@@ -22,7 +27,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
@@ -42,4 +47,8 @@ jobs:
           else
             PHASE="INTRADAY"
           fi
-          PYTHONPATH=. python scripts/run_market_context_refresh.py --phase "$PHASE"
+          EXTRA_ARGS=()
+          if [ "$PHASE" = "EOD" ]; then
+            EXTRA_ARGS+=(--as-of-date "${{ inputs.as_of_date }}")
+          fi
+          PYTHONPATH=. python scripts/run_market_context_refresh.py --phase "$PHASE" --require-production-db "${EXTRA_ARGS[@]}"

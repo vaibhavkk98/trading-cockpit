@@ -32,6 +32,37 @@ PAGES = ["Dashboard", "Opportunities", "Portfolio", "Stock Research", "Settings"
 PAGE_KEYS = {"Dashboard": "today", "Opportunities": "signals", "Portfolio": "portfolio", "Stock Research": "research", "Settings": "settings"}
 STOCK_TABS = ["overview", "rally", "historical_analogs", "events", "trade"]
 
+PILLAR_HELP = {
+    "Trend": {
+        "measure": "Measures broad-market medium-term direction and drawdown using NIFTY 500 trend features.",
+        "states": "SUPPORTIVE indicates positive broad-market trend; NEUTRAL is balanced; WEAKENING or DEFENSIVE indicates deteriorating direction or drawdown.",
+    },
+    "Breadth": {
+        "measure": "Measures how broadly individual stocks participate in the market move. Broad participation is generally healthier than index strength driven by only a few stocks.",
+        "states": "SUPPORTIVE means broad participation; NEUTRAL or MIXED means uneven participation; WEAK means relatively few stocks are participating positively.",
+    },
+    "Volatility": {
+        "measure": "Measures market turbulence using India VIX and realized NIFTY 500 volatility. Higher volatility means greater price uncertainty, not necessarily falling prices.",
+        "states": "LOW and NORMAL indicate contained variability; ELEVATED and HIGH indicate progressively greater price uncertainty without predicting direction.",
+    },
+    "Sector Participation": {
+        "measure": "Measures whether strength or weakness is broad across sectors or concentrated in a small number of sectors.",
+        "states": "BROAD indicates widespread participation; MIXED indicates concentration; WEAK indicates limited sector support.",
+    },
+    "Investor Participation": {
+        "measure": "Measures FII/FPI and DII cash-market activity and institutional buying/selling pressure. It is descriptive, not a prediction.",
+        "states": "SUPPORTIVE indicates net institutional buying; MIXED indicates offsetting flows; DEFENSIVE or HIGH SELLING PRESSURE indicates net selling pressure.",
+    },
+    "Cross-Asset": {
+        "measure": "Measures external financial-market pressure using the available USDINR, Brent, US 10Y, DXY and S&P 500 inputs.",
+        "states": "CALM and NORMAL indicate contained external pressure; ELEVATED and HIGH STRESS indicate progressively unusual external conditions.",
+    },
+    "External Risk": {
+        "measure": "Highlights detected scheduled or unscheduled events that could materially affect Indian equities. LOW means no currently detected material event, not zero real-world risk.",
+        "states": "LOW means no material event was detected by available sources; ELEVATED, HIGH and SEVERE reflect increasing detected materiality.",
+    },
+}
+
 
 def stock_url(symbol: Any, tab: str = "overview") -> str:
     route = navigation_query("stock", symbol, tab)
@@ -164,27 +195,83 @@ def _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio):
         render_empty_state("No qualified opportunities", "Run today's analysis to populate the trading workspace.")
 
 
-def _render_market_context():
-    bundle = load_market_context_bundle()
+def _pillar_models(bundle):
     structural = bundle.get("structural") or {}
     investor = bundle.get("investor_participation") or {}
     cross = bundle.get("cross_asset") or {}
     event = bundle.get("event_risk") or {}
-    pillars = [
-        ("Trend", (structural.get("trend") or {}).get("state", NOT_AVAILABLE), structural.get("as_of_date")),
-        ("Breadth", (structural.get("breadth") or {}).get("state", NOT_AVAILABLE), f"{(structural.get('breadth') or {}).get('coverage', 0)} stocks"),
-        ("Volatility", (structural.get("volatility") or {}).get("state", NOT_AVAILABLE), structural.get("as_of_date")),
-        ("Sectors", (structural.get("sector_participation") or {}).get("state", NOT_AVAILABLE), f"{(structural.get('sector_participation') or {}).get('coverage', 0)} indices"),
-        ("Investor Participation", investor.get("state", NOT_AVAILABLE), investor.get("observation_date")),
-        ("Cross-Asset", cross.get("state", NOT_AVAILABLE), f"{cross.get('available_core_inputs', 0)} / {cross.get('required_core_inputs', 3)} inputs"),
-        ("External Risk", event.get("state", NOT_AVAILABLE), f"{event.get('active_material_events', 0)} material · {event.get('scheduled_events', 0)} scheduled"),
-    ]
+    values = {
+        "Trend": structural.get("trend") or {}, "Breadth": structural.get("breadth") or {},
+        "Volatility": structural.get("volatility") or {}, "Sector Participation": structural.get("sector_participation") or {},
+        "Investor Participation": investor, "Cross-Asset": cross, "External Risk": event,
+    }
+    subtitles = {"Trend": "Broad market direction", "Breadth": "Stock participation", "Volatility": "Market turbulence", "Sector Participation": "Sector participation", "Investor Participation": "Institutional flows", "Cross-Asset": "External market pressure", "External Risk": "Material event context"}
+    timestamps = {"Trend": structural.get("as_of_timestamp"), "Breadth": structural.get("as_of_timestamp"), "Volatility": structural.get("as_of_timestamp"), "Sector Participation": structural.get("as_of_timestamp"), "Investor Participation": investor.get("as_of_timestamp"), "Cross-Asset": cross.get("as_of_timestamp"), "External Risk": event.get("as_of_timestamp")}
+    provenance = {"Trend": structural.get("provenance"), "Breadth": structural.get("provenance"), "Volatility": structural.get("provenance"), "Sector Participation": structural.get("provenance"), "Investor Participation": investor.get("provenance"), "Cross-Asset": cross.get("provenance"), "External Risk": [d.get("source") for d in event.get("source_diagnostics", []) if d.get("status") == "SUCCESS"]}
+    models = []
+    for title, payload in values.items():
+        state = payload.get("state") or NOT_AVAILABLE
+        unavailable = state == NOT_AVAILABLE
+        model = {"title": title, "state": "NOT AVAILABLE" if unavailable else str(state).replace("_", " "), "subtitle": "Awaiting first EOD refresh" if unavailable and title in {"Trend", "Breadth", "Volatility", "Sector Participation", "Investor Participation"} else "Awaiting first pre-open refresh" if unavailable else subtitles[title], "measure": PILLAR_HELP[title]["measure"], "states": PILLAR_HELP[title]["states"], "timestamp": timestamps[title], "provenance": provenance[title] or [], "why": "No persisted snapshot is available yet.", "coverage": None}
+        if not unavailable:
+            if title == "Trend":
+                model["why"] = f"NIFTY 500 returned {format_percent(payload.get('nifty500_ret_20d_pct'))} over 20 sessions, sits {format_percent(payload.get('ema50_extension_pct'))} from EMA50, and is {format_percent(payload.get('drawdown_60d_pct'))} below its 60-session high."
+            elif title == "Breadth":
+                model["why"] = f"{format_percent(payload.get('above_ema20_pct'))} of measured stocks are above EMA20 and {format_percent(payload.get('advance_participation_pct'))} advanced in the latest session."
+                model["coverage"] = f"{payload.get('coverage')} stocks measured" if payload.get("coverage") is not None else None
+            elif title == "Volatility":
+                model["why"] = f"India VIX is {display_value(payload.get('india_vix_level'))} ({display_value(payload.get('india_vix_percentile'))}th percentile) and realized volatility is {format_percent(payload.get('nifty500_realized_vol_20d_ann_pct'))}. Higher variability does not indicate market direction."
+            elif title == "Sector Participation":
+                model["why"] = f"{format_percent(payload.get('above_ema20_pct'))} of measured sector indices are above EMA20 and {format_percent(payload.get('positive_10d_pct'))} have positive 10-day returns."
+                model["coverage"] = f"{payload.get('coverage')} sector indices measured" if payload.get("coverage") is not None else None
+            elif title == "Investor Participation":
+                model["why"] = f"FII/FPI net flow is {format_signed_currency(payload.get('fii_net_today_cr'))} crore and DII net flow is {format_signed_currency(payload.get('dii_net_today_cr'))} crore for the latest observation."
+                model["coverage"] = str(payload.get("coverage") or "") or None
+            elif title == "Cross-Asset":
+                available = [row for row in (payload.get("series") or {}).values() if row.get("status") == "AVAILABLE"]
+                strongest = sorted(available, key=lambda row: row.get("stress_percentile") if isinstance(row.get("stress_percentile"), (int, float)) else -1, reverse=True)[:3]
+                drivers = ", ".join(f"{row.get('label')} ({display_value(row.get('stress_percentile'))}th stress percentile)" for row in strongest)
+                model["why"] = f"External conditions are classified {str(state).lower()} from the available recent distributions. Leading contributors: {drivers}. This indicates pressure, not an equity-return forecast."
+                model["coverage"] = f"{len(available)} / {len((payload.get('series') or {})) or 5} feeds available · minimum required for state calculation: {payload.get('required_core_inputs', 3)}"
+            else:
+                active = [row for row in event.get("events", []) if not row.get("scheduled") and row.get("status") == "ACTIVE"]
+                model["why"] = f"Detected material event: {active[0].get('headline')}" if active else "No currently detected event crossed the configured materiality threshold. LOW does not mean zero real-world risk."
+                model["coverage"] = f"{event.get('active_material_events', 0)} material events · {event.get('scheduled_events', 0)} scheduled events"
+        models.append(model)
+    return models
+
+
+def _render_pillar(model):
+    title_column, info_column = st.columns([0.84, 0.16], vertical_alignment="center")
+    with title_column:
+        st.markdown(f"**{model['title']}**")
+    with info_column:
+        with st.popover("ⓘ", key=f"market_context_info_{model['title']}", help=f"About {model['title']}"):
+            st.markdown("**What it measures**")
+            st.write(model["measure"])
+            st.markdown("**How to interpret it**")
+            st.write(model["states"])
+            st.markdown("**Why today?**")
+            st.write(model["why"])
+            if model.get("coverage"):
+                st.caption(model["coverage"])
+            if model.get("timestamp"):
+                st.caption(f"Latest data: {model['timestamp']}")
+            if model.get("provenance"):
+                sources = [item.get("source") or item.get("url") if isinstance(item, dict) else str(item) for item in model["provenance"]]
+                st.caption(f"Source: {', '.join(filter(None, sources))}")
+    render_context_card(None, model["state"], model["subtitle"], "unavailable" if model["state"] == "NOT AVAILABLE" else "neutral", "Advisory")
+
+
+def _render_market_context():
+    bundle = load_market_context_bundle()
+    pillars = _pillar_models(bundle)
     first = st.columns(4)
-    for column, item in zip(first, pillars[:4]):
-        with column: render_context_card(item[0], item[1], item[2], "neutral", "Advisory")
+    for column, model in zip(first, pillars[:4]):
+        with column: _render_pillar(model)
     second = st.columns(3)
-    for column, item in zip(second, pillars[4:]):
-        with column: render_context_card(item[0], item[1], item[2], "neutral", "Advisory")
+    for column, model in zip(second, pillars[4:]):
+        with column: _render_pillar(model)
     st.caption(summarize_context(bundle))
     with st.expander("Raw values, timestamps & provenance", expanded=False):
         if not any(bundle.values()):
