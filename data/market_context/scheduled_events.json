@@ -1,0 +1,44 @@
+[
+  {
+    "event_id": "FOMC_2026_09_16",
+    "event_timestamp": "2026-09-16T18:00:00Z",
+    "headline": "Federal Open Market Committee policy decision",
+    "event_type": "MONETARY_POLICY",
+    "event_category": "FED_POLICY",
+    "india_relevance": "MEDIUM",
+    "magnitude": "HIGH",
+    "direction": "UNCLEAR",
+    "affected_scope": "MARKET",
+    "affected_sectors": [],
+    "source_confidence": "HIGH",
+    "provenance": [{"source": "Federal Reserve", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"}]
+  },
+  {
+    "event_id": "FOMC_2026_10_28",
+    "event_timestamp": "2026-10-28T18:00:00Z",
+    "headline": "Federal Open Market Committee policy decision",
+    "event_type": "MONETARY_POLICY",
+    "event_category": "FED_POLICY",
+    "india_relevance": "MEDIUM",
+    "magnitude": "HIGH",
+    "direction": "UNCLEAR",
+    "affected_scope": "MARKET",
+    "affected_sectors": [],
+    "source_confidence": "HIGH",
+    "provenance": [{"source": "Federal Reserve", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"}]
+  },
+  {
+    "event_id": "FOMC_2026_12_09",
+    "event_timestamp": "2026-12-09T19:00:00Z",
+    "headline": "Federal Open Market Committee policy decision",
+    "event_type": "MONETARY_POLICY",
+    "event_category": "FED_POLICY",
+    "india_relevance": "MEDIUM",
+    "magnitude": "HIGH",
+    "direction": "UNCLEAR",
+    "affected_scope": "MARKET",
+    "affected_sectors": [],
+    "source_confidence": "HIGH",
+    "provenance": [{"source": "Federal Reserve", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"}]
+  }
+]

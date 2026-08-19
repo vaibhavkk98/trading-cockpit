@@ -12,10 +12,12 @@ import streamlit as st
 import database
 from cockpit_cache import (
     load_closed_trade_rows, load_ha_snapshot, load_ha_summaries,
+    load_market_context_bundle,
     load_open_positions, load_portfolio_pnl, load_portfolio_snapshots,
     load_portfolio_summary,
 )
 from historical_analogs_service import HistoricalAnalogService, METHODOLOGY_HASH
+from market_context import NOT_AVAILABLE, summarize_context
 from interaction_architecture import canonical_route_symbol, compact_allocation, navigation_query, ordered_decisions, short_strategy_name
 from live_decision_adapter import summarize_live_portfolio_risk
 from performance_timing import timed
@@ -162,6 +164,40 @@ def _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio):
         render_empty_state("No qualified opportunities", "Run today's analysis to populate the trading workspace.")
 
 
+def _render_market_context():
+    bundle = load_market_context_bundle()
+    structural = bundle.get("structural") or {}
+    investor = bundle.get("investor_participation") or {}
+    cross = bundle.get("cross_asset") or {}
+    event = bundle.get("event_risk") or {}
+    pillars = [
+        ("Trend", (structural.get("trend") or {}).get("state", NOT_AVAILABLE), structural.get("as_of_date")),
+        ("Breadth", (structural.get("breadth") or {}).get("state", NOT_AVAILABLE), f"{(structural.get('breadth') or {}).get('coverage', 0)} stocks"),
+        ("Volatility", (structural.get("volatility") or {}).get("state", NOT_AVAILABLE), structural.get("as_of_date")),
+        ("Sectors", (structural.get("sector_participation") or {}).get("state", NOT_AVAILABLE), f"{(structural.get('sector_participation') or {}).get('coverage', 0)} indices"),
+        ("Investor Participation", investor.get("state", NOT_AVAILABLE), investor.get("observation_date")),
+        ("Cross-Asset", cross.get("state", NOT_AVAILABLE), f"{cross.get('available_core_inputs', 0)} / {cross.get('required_core_inputs', 3)} inputs"),
+        ("External Risk", event.get("state", NOT_AVAILABLE), f"{event.get('active_material_events', 0)} material · {event.get('scheduled_events', 0)} scheduled"),
+    ]
+    first = st.columns(4)
+    for column, item in zip(first, pillars[:4]):
+        with column: render_context_card(item[0], item[1], item[2], "neutral", "Advisory")
+    second = st.columns(3)
+    for column, item in zip(second, pillars[4:]):
+        with column: render_context_card(item[0], item[1], item[2], "neutral", "Advisory")
+    st.caption(summarize_context(bundle))
+    with st.expander("Raw values, timestamps & provenance", expanded=False):
+        if not any(bundle.values()):
+            render_empty_state("Market Context not yet refreshed", "The next EOD and pre-open refreshes will persist available modules. Missing inputs remain NOT_AVAILABLE.")
+            return
+        for label, payload in (("Structural EOD", structural), ("Investor Participation", investor), ("Cross-Asset", cross), ("External / Event Risk", event)):
+            st.markdown(f"**{label}**")
+            if payload:
+                st.json(payload, expanded=False)
+            else:
+                st.caption(NOT_AVAILABLE)
+
+
 @st.fragment
 def _render_stock_ticket(candidate, execution_factory, hydrate_portfolio, symbol):
     _render_ticket(candidate, execution_factory(), hydrate_portfolio, key_prefix=f"stock_{symbol}")
@@ -188,11 +224,9 @@ def _render_dashboard(decisions, summary, execution_factory, hydrate_portfolio):
     with right:
         render_context_card("Execution", "Manual only", "Scanning and navigation never create trades", "neutral", "Controlled")
         render_context_card("Allocator", "Advisory", "All qualified names remain tradeable within portfolio constraints")
-    with st.expander("Market risk · Experimental", expanded=False):
-        render_empty_state(
-            "India-impact source policy pending",
-            "The broad global feed is intentionally withheld. An India-source-only, impact-materiality methodology requires separate research before production use.",
-        )
+    with st.expander("Market Context · Advisory", expanded=False):
+        st.caption("Descriptive context only · no composite score · never changes qualification, allocation, sizing, or execution")
+        _render_market_context()
     with st.expander("Manual paper trade", expanded=False):
         st.caption("Any qualified opportunity · explicit confirmation · no automatic execution")
         _render_dashboard_ticket(decisions, execution_factory, hydrate_portfolio)

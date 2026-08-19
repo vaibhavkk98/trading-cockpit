@@ -37,6 +37,13 @@ def load_latest_opportunities() -> dict[str, Any] | None:
         return database.load_latest_analysis_run()
 
 
+@st.cache_data(ttl=300, show_spinner=False)
+def load_market_context_bundle() -> dict[str, Any]:
+    """Persisted snapshots only; this read path has no provider access."""
+    with timed("db.market_context_bundle"):
+        return database.load_latest_market_context_bundle()
+
+
 @st.cache_data(ttl=20, show_spinner=False)
 def load_portfolio_pnl(period: str, custom_start: Any = None, custom_end: Any = None) -> dict[str, Any]:
     with timed("db.portfolio_pnl", period=period):

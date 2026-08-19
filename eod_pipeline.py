@@ -160,11 +160,22 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
                "qualified_count": len(decisions), "allocated_count": sum(item.get("allocation_status") == "ALLOCATED" for item in decisions),
                "provider_summary": diagnostics, "decision_contract_version": DECISION_CONTRACT_VERSION, "source": source}
         persisted = persist_analysis_run(run, decisions)
+        market_context_refresh = {"status": "NOT_AVAILABLE"}
+        if diagnostics.get("market_context_structural"):
+            try:
+                from market_context import refresh_market_context
+                refresher = deps.get("market_context_refresher") or refresh_market_context
+                market_context_refresh = refresher(
+                    phase="EOD", structural=diagnostics.get("market_context_structural")
+                )
+            except Exception as exc:
+                market_context_refresh = {"status": "NOT_AVAILABLE", "failure_reason": type(exc).__name__}
         mark_result = execution.refresh_portfolio_positions(source_run_id=run_id)
         snapshot_reason = "AUTOMATED_EOD" if source == "AUTOMATED_EOD" else "ANALYSIS_COMPLETED"
         execution.save_portfolio_snapshot(snapshot_reason)
         return {**run, "persisted": True, "decisions": decisions, "regime_info": regime, "diagnostics": diagnostics,
                 "market_date_diagnostics": market_date_diagnostics,
+                "market_context_refresh": market_context_refresh,
                 "mark_count": mark_result.get("successful_marks", 0), "mark_refresh": {key: mark_result.get(key) for key in (
                     "open_positions", "unique_symbols", "provider_calls", "successful_marks", "failed_marks", "elapsed_seconds")},
                 "snapshot_reason": snapshot_reason}

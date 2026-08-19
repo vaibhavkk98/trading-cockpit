@@ -262,6 +262,82 @@ class HistoricalAnalogMapping(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class MarketContextSnapshot(Base):
+    __tablename__ = "market_context_snapshots"
+    __table_args__ = (UniqueConstraint("as_of_date", "methodology_version", name="uq_market_context_daily_version"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    as_of_date = Column(Date, nullable=False, index=True)
+    as_of_timestamp = Column(DateTime(timezone=True), nullable=False)
+    methodology_version = Column(String(80), nullable=False)
+    payload = Column(Text, nullable=False)
+    coverage = Column(Text, nullable=False)
+    missingness = Column(Text, nullable=False)
+    provenance = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class InvestorParticipationSnapshot(Base):
+    __tablename__ = "investor_participation_snapshots"
+    __table_args__ = (UniqueConstraint("observation_date", "methodology_version", name="uq_investor_daily_version"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    observation_date = Column(Date, nullable=False, index=True)
+    as_of_timestamp = Column(DateTime(timezone=True), nullable=False)
+    methodology_version = Column(String(80), nullable=False)
+    state = Column(String(40), nullable=False)
+    payload = Column(Text, nullable=False)
+    coverage = Column(String(80), nullable=False)
+    missingness = Column(Text, nullable=False)
+    provenance = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class CrossAssetSnapshot(Base):
+    __tablename__ = "cross_asset_snapshots"
+    __table_args__ = (UniqueConstraint("snapshot_key", "methodology_version", name="uq_cross_asset_key_version"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    snapshot_key = Column(String(80), nullable=False, index=True)
+    as_of_timestamp = Column(DateTime(timezone=True), nullable=False)
+    refresh_phase = Column(String(20), nullable=False)
+    methodology_version = Column(String(80), nullable=False)
+    state = Column(String(40), nullable=False)
+    payload = Column(Text, nullable=False)
+    coverage = Column(Text, nullable=False)
+    missingness = Column(Text, nullable=False)
+    provenance = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class EventRiskEvent(Base):
+    __tablename__ = "event_risk_events"
+    event_id = Column(String(80), primary_key=True)
+    event_timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
+    scheduled = Column(Boolean, nullable=False)
+    event_type = Column(String(80), nullable=False)
+    india_relevance = Column(String(20), nullable=False)
+    magnitude = Column(String(20), nullable=False)
+    direction = Column(String(20), nullable=False)
+    status = Column(String(20), nullable=False)
+    payload = Column(Text, nullable=False)
+    methodology_version = Column(String(80), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class EventRiskSnapshot(Base):
+    __tablename__ = "event_risk_snapshots"
+    __table_args__ = (UniqueConstraint("snapshot_key", "methodology_version", name="uq_event_snapshot_key_version"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    snapshot_key = Column(String(80), nullable=False, index=True)
+    as_of_timestamp = Column(DateTime(timezone=True), nullable=False)
+    refresh_phase = Column(String(20), nullable=False)
+    methodology_version = Column(String(80), nullable=False)
+    state = Column(String(40), nullable=False)
+    payload = Column(Text, nullable=False)
+    coverage = Column(String(80), nullable=False)
+    missingness = Column(Text, nullable=False)
+    provenance = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 _TRADE_ADDITIONS = {
     "entry_timestamp": "TIMESTAMP", "position_value": "FLOAT", "exit_timestamp": "TIMESTAMP",
     "realized_return_pct": "FLOAT", "created_at": "TIMESTAMP", "updated_at": "TIMESTAMP",
@@ -831,6 +907,144 @@ def load_latest_analysis_run() -> Optional[Dict[str, Any]]:
         }
     except (SQLAlchemyError, ValueError, TypeError):
         return None
+    finally:
+        session.close()
+
+
+def _context_timestamp(value: Any) -> dt.datetime:
+    if isinstance(value, dt.datetime):
+        return value if value.tzinfo else value.replace(tzinfo=dt.timezone.utc)
+    if isinstance(value, str):
+        parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=dt.timezone.utc)
+    return dt.datetime.now(dt.timezone.utc)
+
+
+def persist_market_context_snapshot(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Persist one immutable structural snapshot per market date/version."""
+    _require_database(); session = SessionLocal()
+    try:
+        as_of_date = dt.date.fromisoformat(str(payload["as_of_date"])[:10])
+        version = str(payload["methodology_version"])
+        existing = session.query(MarketContextSnapshot).filter_by(as_of_date=as_of_date, methodology_version=version).first()
+        if existing:
+            return {"saved": False, "snapshot_id": existing.id}
+        row = MarketContextSnapshot(
+            as_of_date=as_of_date, as_of_timestamp=_context_timestamp(payload.get("as_of_timestamp")), methodology_version=version,
+            payload=json.dumps(_json_safe(payload), sort_keys=True), coverage=json.dumps(_json_safe(payload.get("coverage") or {}), sort_keys=True),
+            missingness=json.dumps(_json_safe(payload.get("missingness") or [])), provenance=json.dumps(_json_safe(payload.get("provenance") or [])),
+        )
+        session.add(row); session.commit(); session.refresh(row)
+        return {"saved": True, "snapshot_id": row.id}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def persist_investor_participation_snapshot(payload: Dict[str, Any]) -> Dict[str, Any]:
+    _require_database(); session = SessionLocal()
+    try:
+        observation_date = dt.date.fromisoformat(str(payload.get("observation_date") or dt.datetime.now(dt.timezone.utc).date())[:10])
+        version = str(payload["methodology_version"])
+        existing = session.query(InvestorParticipationSnapshot).filter_by(observation_date=observation_date, methodology_version=version).first()
+        if existing:
+            return {"saved": False, "snapshot_id": existing.id}
+        row = InvestorParticipationSnapshot(
+            observation_date=observation_date, as_of_timestamp=_context_timestamp(payload.get("as_of_timestamp")), methodology_version=version,
+            state=str(payload.get("state") or "NOT_AVAILABLE"), payload=json.dumps(_json_safe(payload), sort_keys=True),
+            coverage=str(payload.get("coverage") or "NOT_AVAILABLE"), missingness=json.dumps(_json_safe(payload.get("missingness") or [])),
+            provenance=json.dumps(_json_safe(payload.get("provenance") or [])),
+        )
+        session.add(row); session.commit(); session.refresh(row)
+        return {"saved": True, "snapshot_id": row.id}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def load_investor_participation_snapshots(limit: int = 20) -> List[Dict[str, Any]]:
+    rows = _safe_read(lambda s: s.query(InvestorParticipationSnapshot).order_by(InvestorParticipationSnapshot.observation_date.desc()).limit(limit).all())
+    return [json.loads(row.payload) for row in rows]
+
+
+def _phase_snapshot_key(timestamp: dt.datetime, phase: str) -> str:
+    phase = str(phase).upper()
+    return f"{timestamp.date().isoformat()}:{phase}" if phase == "PREOPEN" else f"{timestamp.date().isoformat()}:{phase}:{timestamp.hour:02d}"
+
+
+def persist_cross_asset_snapshot(payload: Dict[str, Any], phase: str) -> Dict[str, Any]:
+    _require_database(); session = SessionLocal()
+    try:
+        timestamp = _context_timestamp(payload.get("as_of_timestamp")); version = str(payload["methodology_version"]); key = _phase_snapshot_key(timestamp, phase)
+        existing = session.query(CrossAssetSnapshot).filter_by(snapshot_key=key, methodology_version=version).first()
+        if existing:
+            return {"saved": False, "snapshot_id": existing.id}
+        row = CrossAssetSnapshot(
+            snapshot_key=key, as_of_timestamp=timestamp, refresh_phase=str(phase).upper(), methodology_version=version,
+            state=str(payload.get("state") or "NOT_AVAILABLE"), payload=json.dumps(_json_safe(payload), sort_keys=True),
+            coverage=json.dumps({"available_core_inputs": payload.get("available_core_inputs"), "required_core_inputs": payload.get("required_core_inputs")}, sort_keys=True),
+            missingness=json.dumps(_json_safe(payload.get("missingness") or [])), provenance=json.dumps(_json_safe(payload.get("provenance") or [])),
+        )
+        session.add(row); session.commit(); session.refresh(row)
+        return {"saved": True, "snapshot_id": row.id}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def persist_event_risk_snapshot(payload: Dict[str, Any], phase: str) -> Dict[str, Any]:
+    _require_database(); session = SessionLocal()
+    try:
+        timestamp = _context_timestamp(payload.get("as_of_timestamp")); version = str(payload["methodology_version"]); key = _phase_snapshot_key(timestamp, phase)
+        for event in payload.get("events") or []:
+            event_id = str(event.get("event_id") or "")
+            if not event_id or session.query(EventRiskEvent).filter_by(event_id=event_id).first():
+                continue
+            session.add(EventRiskEvent(
+                event_id=event_id, event_timestamp=_context_timestamp(event.get("event_timestamp")), scheduled=bool(event.get("scheduled")),
+                event_type=str(event.get("event_type") or "NOT_AVAILABLE"), india_relevance=str(event.get("india_relevance") or "NOT_AVAILABLE"),
+                magnitude=str(event.get("magnitude") or "NOT_AVAILABLE"), direction=str(event.get("direction") or "UNCLEAR"),
+                status=str(event.get("status") or "ACTIVE"), payload=json.dumps(_json_safe(event), sort_keys=True), methodology_version=version,
+            ))
+        existing = session.query(EventRiskSnapshot).filter_by(snapshot_key=key, methodology_version=version).first()
+        if existing:
+            session.rollback()
+            return {"saved": False, "snapshot_id": existing.id}
+        row = EventRiskSnapshot(
+            snapshot_key=key, as_of_timestamp=timestamp, refresh_phase=str(phase).upper(), methodology_version=version,
+            state=str(payload.get("state") or "NOT_AVAILABLE"), payload=json.dumps(_json_safe(payload), sort_keys=True),
+            coverage=str(payload.get("coverage") or "NOT_AVAILABLE"), missingness=json.dumps(_json_safe(payload.get("missingness") or [])),
+            provenance=json.dumps(_json_safe([item for diagnostic in payload.get("source_diagnostics") or [] for item in [diagnostic.get("source")]])),
+        )
+        session.add(row); session.commit(); session.refresh(row)
+        return {"saved": True, "snapshot_id": row.id}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def load_latest_market_context_bundle() -> Dict[str, Any]:
+    """Read-only latest snapshots; never invokes market or news providers."""
+    if not init_db():
+        return {"structural": None, "investor_participation": None, "cross_asset": None, "event_risk": None}
+    session = SessionLocal()
+    try:
+        structural = session.query(MarketContextSnapshot).order_by(MarketContextSnapshot.as_of_date.desc(), MarketContextSnapshot.created_at.desc()).first()
+        investor = session.query(InvestorParticipationSnapshot).order_by(InvestorParticipationSnapshot.observation_date.desc(), InvestorParticipationSnapshot.created_at.desc()).first()
+        cross = session.query(CrossAssetSnapshot).order_by(CrossAssetSnapshot.as_of_timestamp.desc(), CrossAssetSnapshot.created_at.desc()).first()
+        event = session.query(EventRiskSnapshot).order_by(EventRiskSnapshot.as_of_timestamp.desc(), EventRiskSnapshot.created_at.desc()).first()
+        return {
+            "structural": json.loads(structural.payload) if structural else None,
+            "investor_participation": json.loads(investor.payload) if investor else None,
+            "cross_asset": json.loads(cross.payload) if cross else None,
+            "event_risk": json.loads(event.payload) if event else None,
+        }
+    except (SQLAlchemyError, ValueError, TypeError):
+        return {"structural": None, "investor_participation": None, "cross_asset": None, "event_risk": None}
     finally:
         session.close()
 

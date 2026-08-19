@@ -1,0 +1,45 @@
+name: Market Context Refresh
+
+on:
+  schedule:
+    - cron: "0 3 * * 1-5"
+    - cron: "0 5,7,9 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Refresh phase"
+        required: true
+        default: "PREOPEN"
+        type: choice
+        options:
+          - PREOPEN
+          - INTRADAY
+
+concurrency:
+  group: market-context-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Refresh persisted Market Context overlays
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PHASE="${{ inputs.phase }}"
+          elif [ "$(date -u +%H)" = "03" ]; then
+            PHASE="PREOPEN"
+          else
+            PHASE="INTRADAY"
+          fi
+          PYTHONPATH=. python scripts/run_market_context_refresh.py --phase "$PHASE"

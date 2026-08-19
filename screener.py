@@ -484,6 +484,24 @@ def run_screener(
 
     results_df = pd.DataFrame(results)
     if return_diagnostics:
+        # Descriptive market context reuses the histories already fetched for
+        # this explicit scan.  It never participates in qualification.
+        try:
+            from market_context import build_structural_context, fetch_sector_histories
+            context_date = as_of_date or (
+                ha_nifty500.index[-1].strftime("%Y-%m-%d") if ha_nifty500 is not None and not ha_nifty500.empty else datetime.date.today().isoformat()
+            )
+            diagnostics["market_context_structural"] = build_structural_context(
+                stock_data_map, ha_nifty500, ha_vix, fetch_sector_histories(), context_date
+            )
+        except Exception as exc:
+            diagnostics["market_context_structural"] = {
+                "as_of_date": as_of_date, "methodology_version": "MARKET_CONTEXT_STRUCTURAL_V1",
+                "trend": {"state": "NOT_AVAILABLE"}, "breadth": {"state": "NOT_AVAILABLE"},
+                "volatility": {"state": "NOT_AVAILABLE"}, "sector_participation": {"state": "NOT_AVAILABLE"},
+                "coverage": {}, "missingness": ["trend", "breadth", "volatility", "sector_participation"],
+                "provenance": [], "failure_reason": type(exc).__name__, "advisory_only": True,
+            }
         return results_df, diagnostics
     return results_df
 
