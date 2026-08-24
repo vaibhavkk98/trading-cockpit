@@ -6,6 +6,7 @@ import datetime
 from typing import List, Dict, Any, Optional, Tuple
 
 import universe_engine
+from latent_state_vector import build_causal_vector
 from provider_symbols import yahoo_nse_symbol
 
 # Dynamic Nifty 500 Symbol List from Universe Engine
@@ -456,6 +457,11 @@ def run_screener(
                 "Technical_Pass": eval_res["Technical_Pass"],
                 "Passed": eval_res["Passed"]
             }
+            # Descriptive LSV features reuse the already-causal scanner bars.
+            # They never participate in qualification or strategy evaluation.
+            result_row["lsv_v1"] = build_causal_vector(
+                df, ha_nifty500, result_row["Data_As_Of"]
+            )
             if ha_nifty500 is not None and ha_vix is not None:
                 try:
                     from historical_analogs_service import HistoricalAnalogService

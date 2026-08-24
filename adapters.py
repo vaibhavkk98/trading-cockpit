@@ -455,6 +455,7 @@ class PortfolioAllocationEngine:
                 "volume_price_confirmed": vol_price_confirmed,
                 "ha_features": row.get("ha_features"),
                 "ha_stock_percentiles": row.get("ha_stock_percentiles"),
+                "lsv_v1": row.get("lsv_v1"),
                 "atr_20": round(atr_val, 2),
                 "atr_20_available": atr_available,
                 "risk_per_share": risk_per_share,

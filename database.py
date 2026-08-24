@@ -75,6 +75,10 @@ class PaperTradeConstraintError(ValueError):
     """Raised when a requested paper trade would violate the portfolio contract."""
 
 
+class RecommendationLedgerConflictError(ValueError):
+    """Raised when an immutable recommendation identity is reused with new facts."""
+
+
 DEFAULT_PORTFOLIO_CAPITAL_INR = 1_000_000.0
 DEFAULT_MAX_OPEN_POSITIONS = 10
 
@@ -197,6 +201,34 @@ class DailyOpportunity(Base):
     allocation_status = Column(String(120), nullable=True)
     allocation_reason = Column(String(120), nullable=True)
     decision_payload = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class RecommendationLedger(Base):
+    """Immutable causal state captured when a qualified opportunity is recommended."""
+    __tablename__ = "recommendation_ledger"
+    __table_args__ = (
+        UniqueConstraint("opportunity_id", "lsv_methodology_hash", name="uq_recommendation_lsv_identity"),
+    )
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    signal_timestamp = Column(DateTime(timezone=True), nullable=False)
+    symbol = Column(String(32), nullable=False, index=True)
+    strategy = Column(String(120), nullable=False)
+    reference_price = Column(Float, nullable=True)
+    allocator_status = Column(String(120), nullable=True)
+    opportunity_rank = Column(Integer, nullable=True)
+    lsv_contract_version = Column(String(40), nullable=False)
+    lsv_methodology_hash = Column(String(64), nullable=False, index=True)
+    vector_payload = Column(Text, nullable=False)
+    historical_analog_payload = Column(Text, nullable=False)
+    market_context_payload = Column(Text, nullable=False)
+    methodology_payload = Column(Text, nullable=False)
+    source_timestamps = Column(Text, nullable=False)
+    missingness = Column(Text, nullable=False)
+    provenance = Column(Text, nullable=False)
+    snapshot_hash = Column(String(64), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
@@ -923,6 +955,106 @@ def load_latest_analysis_run() -> Optional[Dict[str, Any]]:
         session.close()
 
 
+def load_canonical_opportunity_history() -> List[Dict[str, Any]]:
+    """Return frozen qualified payloads for conservative ledger backfill."""
+    rows = _safe_read(lambda s: s.query(DailyOpportunity).order_by(
+        DailyOpportunity.analysis_date.asc(), DailyOpportunity.id.asc()
+    ).all())
+    result = []
+    for row in rows:
+        try:
+            payload = json.loads(row.decision_payload)
+        except (TypeError, ValueError):
+            continue
+        payload.setdefault("opportunity_id", row.opportunity_id)
+        payload.setdefault("signal_date", row.analysis_date.isoformat())
+        payload["canonical_created_at"] = row.created_at.isoformat() if row.created_at else None
+        result.append(payload)
+    return result
+
+
+def persist_recommendation_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]:
+    """Insert one immutable ledger row; identical retries are idempotent."""
+    _require_database(); session = SessionLocal()
+    try:
+        signal_date = snapshot.get("signal_date")
+        if isinstance(signal_date, str):
+            signal_date = dt.date.fromisoformat(signal_date[:10])
+        signal_timestamp = _context_timestamp(snapshot.get("signal_timestamp"))
+        vector = _json_safe(snapshot.get("lsv_v1") or {})
+        opportunity_id = str(snapshot.get("opportunity_id") or "").strip()
+        methodology_hash = str(vector.get("methodology_hash") or "").strip()
+        if not opportunity_id or not methodology_hash or not isinstance(signal_date, dt.date):
+            raise ValueError("opportunity_id, signal_date and LSV methodology hash are required")
+        content = {
+            "opportunity_id": opportunity_id, "signal_date": signal_date.isoformat(),
+            "signal_timestamp": signal_timestamp.isoformat(), "symbol": str(snapshot.get("symbol") or ""),
+            "strategy": str(snapshot.get("strategy") or "NOT_AVAILABLE"),
+            "reference_price": snapshot.get("reference_price"),
+            "allocator_status": snapshot.get("allocator_status"), "opportunity_rank": snapshot.get("opportunity_rank"),
+            "lsv_v1": vector, "historical_analog": _json_safe(snapshot.get("historical_analog") or {}),
+            "market_context": _json_safe(snapshot.get("market_context") or {}),
+            "methodologies": _json_safe(snapshot.get("methodologies") or {}),
+            "source_timestamps": _json_safe(snapshot.get("source_timestamps") or {}),
+            "missingness": _json_safe(snapshot.get("missingness") or []),
+            "provenance": _json_safe(snapshot.get("provenance") or []),
+        }
+        # Retry time is not recommendation state.  Preserve the first timestamp
+        # while treating an otherwise identical retry as idempotent.
+        hash_content = dict(content); hash_content.pop("signal_timestamp", None)
+        snapshot_hash = hashlib.sha256(json.dumps(hash_content, sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
+        existing = session.query(RecommendationLedger).filter_by(
+            opportunity_id=opportunity_id, lsv_methodology_hash=methodology_hash
+        ).first()
+        if existing:
+            if existing.snapshot_hash != snapshot_hash:
+                raise RecommendationLedgerConflictError(
+                    f"Immutable recommendation snapshot conflict for {opportunity_id}"
+                )
+            return {"saved": False, "snapshot_id": existing.id, "snapshot_hash": snapshot_hash}
+        row = RecommendationLedger(
+            opportunity_id=opportunity_id, signal_date=signal_date, signal_timestamp=signal_timestamp,
+            symbol=content["symbol"], strategy=content["strategy"], reference_price=content["reference_price"],
+            allocator_status=content["allocator_status"], opportunity_rank=content["opportunity_rank"],
+            lsv_contract_version=str(vector.get("contract_version") or "LSV_V1"),
+            lsv_methodology_hash=methodology_hash,
+            vector_payload=json.dumps(vector, sort_keys=True, default=str),
+            historical_analog_payload=json.dumps(content["historical_analog"], sort_keys=True, default=str),
+            market_context_payload=json.dumps(content["market_context"], sort_keys=True, default=str),
+            methodology_payload=json.dumps(content["methodologies"], sort_keys=True, default=str),
+            source_timestamps=json.dumps(content["source_timestamps"], sort_keys=True, default=str),
+            missingness=json.dumps(content["missingness"], sort_keys=True, default=str),
+            provenance=json.dumps(content["provenance"], sort_keys=True, default=str),
+            snapshot_hash=snapshot_hash,
+        )
+        session.add(row); session.commit(); session.refresh(row)
+        return {"saved": True, "snapshot_id": row.id, "snapshot_hash": snapshot_hash}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def load_recommendation_snapshot(opportunity_id: str, methodology_hash: str) -> Optional[Dict[str, Any]]:
+    rows = _safe_read(lambda s: s.query(RecommendationLedger).filter_by(
+        opportunity_id=str(opportunity_id), lsv_methodology_hash=str(methodology_hash)
+    ).limit(1).all())
+    if not rows:
+        return None
+    row = rows[0]
+    return {
+        "snapshot_id": row.id, "opportunity_id": row.opportunity_id,
+        "signal_date": row.signal_date.isoformat(), "signal_timestamp": row.signal_timestamp.isoformat(),
+        "symbol": row.symbol, "strategy": row.strategy, "reference_price": row.reference_price,
+        "allocator_status": row.allocator_status, "opportunity_rank": row.opportunity_rank,
+        "lsv_v1": json.loads(row.vector_payload), "historical_analog": json.loads(row.historical_analog_payload),
+        "market_context": json.loads(row.market_context_payload), "methodologies": json.loads(row.methodology_payload),
+        "source_timestamps": json.loads(row.source_timestamps), "missingness": json.loads(row.missingness),
+        "provenance": json.loads(row.provenance), "snapshot_hash": row.snapshot_hash,
+        "created_at": row.created_at.isoformat() if row.created_at else None,
+    }
+
+
 def _context_timestamp(value: Any) -> dt.datetime:
     if isinstance(value, dt.datetime):
         return value if value.tzinfo else value.replace(tzinfo=dt.timezone.utc)
@@ -1049,6 +1181,40 @@ def load_latest_market_context_bundle() -> Dict[str, Any]:
         investor = session.query(InvestorParticipationSnapshot).order_by(InvestorParticipationSnapshot.observation_date.desc(), InvestorParticipationSnapshot.created_at.desc()).first()
         cross = session.query(CrossAssetSnapshot).order_by(CrossAssetSnapshot.as_of_timestamp.desc(), CrossAssetSnapshot.created_at.desc()).first()
         event = session.query(EventRiskSnapshot).order_by(EventRiskSnapshot.as_of_timestamp.desc(), EventRiskSnapshot.created_at.desc()).first()
+        return {
+            "structural": json.loads(structural.payload) if structural else None,
+            "investor_participation": json.loads(investor.payload) if investor else None,
+            "cross_asset": json.loads(cross.payload) if cross else None,
+            "event_risk": json.loads(event.payload) if event else None,
+        }
+    except (SQLAlchemyError, ValueError, TypeError):
+        return {"structural": None, "investor_participation": None, "cross_asset": None, "event_risk": None}
+    finally:
+        session.close()
+
+
+def load_market_context_bundle_as_of(as_of_date: Any, as_of_timestamp: Any) -> Dict[str, Any]:
+    """Load only Market Context snapshots known by the recommendation cutoff."""
+    if not init_db():
+        return {"structural": None, "investor_participation": None, "cross_asset": None, "event_risk": None}
+    date_value = dt.date.fromisoformat(str(as_of_date)[:10])
+    timestamp = _context_timestamp(as_of_timestamp)
+    session = SessionLocal()
+    try:
+        structural = session.query(MarketContextSnapshot).filter(
+            MarketContextSnapshot.as_of_date <= date_value,
+            MarketContextSnapshot.as_of_timestamp <= timestamp,
+        ).order_by(MarketContextSnapshot.as_of_date.desc(), MarketContextSnapshot.created_at.desc()).first()
+        investor = session.query(InvestorParticipationSnapshot).filter(
+            InvestorParticipationSnapshot.observation_date <= date_value,
+            InvestorParticipationSnapshot.as_of_timestamp <= timestamp,
+        ).order_by(InvestorParticipationSnapshot.observation_date.desc(), InvestorParticipationSnapshot.created_at.desc()).first()
+        cross = session.query(CrossAssetSnapshot).filter(
+            CrossAssetSnapshot.as_of_timestamp <= timestamp,
+        ).order_by(CrossAssetSnapshot.as_of_timestamp.desc(), CrossAssetSnapshot.created_at.desc()).first()
+        event = session.query(EventRiskSnapshot).filter(
+            EventRiskSnapshot.as_of_timestamp <= timestamp,
+        ).order_by(EventRiskSnapshot.as_of_timestamp.desc(), EventRiskSnapshot.created_at.desc()).first()
         return {
             "structural": json.loads(structural.payload) if structural else None,
             "investor_participation": json.loads(investor.payload) if investor else None,

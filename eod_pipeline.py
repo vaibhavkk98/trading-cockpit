@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 from adapters import ExecutionAdapter, MarketDataProvider, PortfolioAllocationEngine, SignalEngine, UniverseProvider
 from event_intelligence import EventIntelligenceService
 from live_decision_adapter import assemble_live_decisions
+from latent_state_vector import assign_cross_sectional_rs_percentiles
 from database import persist_analysis_run
 from operational_runtime import SCAN_PARTIAL, SCAN_SUCCESS
 
@@ -130,6 +131,7 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
                 "opportunity_id",
                 f"{analysis_date.isoformat()}:{decision.get('symbol')}:{decision.get('strategy')}",
             )
+        assign_cross_sectional_rs_percentiles(decisions)
         # Advisory-only HA snapshots are captured at signal time when the
         # scanner supplied a complete causal state. Failure cannot affect the
         # qualified set, allocator, persistence, or paper-trade eligibility.
@@ -170,12 +172,21 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
                 )
             except Exception as exc:
                 market_context_refresh = {"status": "NOT_AVAILABLE", "failure_reason": type(exc).__name__}
+        try:
+            from recommendation_ledger import capture_qualified_recommendations
+            recommendation_ledger = capture_qualified_recommendations(
+                decisions, completed, DECISION_CONTRACT_VERSION, assign_percentiles=False
+            )
+        except Exception as exc:
+            recommendation_ledger = {"saved": 0, "idempotent": 0, "failed": len(decisions),
+                                     "total": len(decisions), "failure_reason": type(exc).__name__}
         mark_result = execution.refresh_portfolio_positions(source_run_id=run_id)
         snapshot_reason = "AUTOMATED_EOD" if source == "AUTOMATED_EOD" else "ANALYSIS_COMPLETED"
         execution.save_portfolio_snapshot(snapshot_reason)
         return {**run, "persisted": True, "decisions": decisions, "regime_info": regime, "diagnostics": diagnostics,
                 "market_date_diagnostics": market_date_diagnostics,
                 "market_context_refresh": market_context_refresh,
+                "recommendation_ledger": recommendation_ledger,
                 "mark_count": mark_result.get("successful_marks", 0), "mark_refresh": {key: mark_result.get(key) for key in (
                     "open_positions", "unique_symbols", "provider_calls", "successful_marks", "failed_marks", "elapsed_seconds")},
                 "snapshot_reason": snapshot_reason}
