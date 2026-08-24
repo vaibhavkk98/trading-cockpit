@@ -2,6 +2,12 @@ name: Recommendation Ledger Backfill
 
 on:
   workflow_dispatch:
+    inputs:
+      report_only:
+        description: Read coverage without rewriting or replaying rows
+        required: true
+        default: false
+        type: boolean
 
 concurrency:
   group: recommendation-ledger-backfill
@@ -21,4 +27,7 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - name: Backfill causally reconstructable recommendation states
-        run: PYTHONPATH=. python scripts/backfill_recommendation_ledger.py --require-production-db
+        run: |
+          EXTRA_ARGS=()
+          if [[ "${{ inputs.report_only }}" == "true" ]]; then EXTRA_ARGS+=(--report-only); fi
+          PYTHONPATH=. python scripts/backfill_recommendation_ledger.py --require-production-db "${EXTRA_ARGS[@]}"
