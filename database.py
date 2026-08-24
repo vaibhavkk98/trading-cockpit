@@ -1055,6 +1055,32 @@ def load_recommendation_snapshot(opportunity_id: str, methodology_hash: str) -> 
     }
 
 
+def recommendation_ledger_coverage() -> Dict[str, Any]:
+    """Summarize stored availability without changing immutable rows."""
+    rows = _safe_read(lambda s: s.query(RecommendationLedger.vector_payload).all())
+    families: Dict[str, Dict[str, int]] = {}
+    for row in rows:
+        try:
+            vector = json.loads(row.vector_payload)
+        except (TypeError, ValueError):
+            continue
+        for family, values in vector.items():
+            if not isinstance(values, dict):
+                continue
+            stats = families.setdefault(family, {"available_values": 0, "total_values": 0, "rows_with_any": 0})
+            available = sum(value not in (None, "NOT_AVAILABLE") for value in values.values())
+            stats["available_values"] += available
+            stats["total_values"] += len(values)
+            stats["rows_with_any"] += int(available > 0)
+    return {
+        "rows": len(rows),
+        "families": {
+            family: {**stats, "coverage_pct": round(100.0 * stats["available_values"] / stats["total_values"], 2) if stats["total_values"] else 0.0}
+            for family, stats in sorted(families.items())
+        },
+    }
+
+
 def _context_timestamp(value: Any) -> dt.datetime:
     if isinstance(value, dt.datetime):
         return value if value.tzinfo else value.replace(tzinfo=dt.timezone.utc)

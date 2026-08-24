@@ -130,4 +130,5 @@ def backfill_canonical_history() -> dict[str, Any]:
             result[key] += item[key]
     result["source_rows"] = len(rows)
     result["coverage_mode"] = "CANONICAL_PAYLOAD_ONLY"
+    result["ledger_coverage"] = database.recommendation_ledger_coverage()
     return result

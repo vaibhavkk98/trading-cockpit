@@ -126,6 +126,13 @@ class LSVV1Tests(unittest.TestCase):
         result = ledger.capture_qualified_recommendations(decisions, "2026-08-18T11:00:00+00:00", "TEST")
         self.assertEqual(result, {"saved": 2, "idempotent": 0, "failed": 0, "total": 2})
 
+    def test_coverage_report_is_read_only_and_explicit(self):
+        report = database.recommendation_ledger_coverage()
+        self.assertGreaterEqual(report["rows"], 0)
+        if report["rows"]:
+            self.assertIn("price_state", report["families"])
+            self.assertIn("coverage_pct", report["families"]["price_state"])
+
     def test_no_score_or_decision_behavior(self):
         source = inspect.getsource(lsv) + inspect.getsource(ledger)
         self.assertNotIn("lsv_score", source.lower())
