@@ -116,6 +116,7 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
     try:
         symbols = universe.get_universe(date_str=analysis_date.isoformat())
         shortlist, diagnostics = signals.run_stage1_screening(symbols=symbols, max_scan=None, as_of_date=analysis_date.isoformat(), return_diagnostics=True)
+        runtime_stock_histories = diagnostics.pop("_runtime_stock_histories", {})
         candidates = allocator.allocate_candidates(shortlist_df=shortlist, regime_info=regime, open_positions=execution.get_open_positions(),
                                                    position_sizing_mode="EQUAL_WEIGHT", exit_rule_mode="FIXED_10D")
         try:
@@ -180,6 +181,12 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         except Exception as exc:
             recommendation_ledger = {"saved": 0, "idempotent": 0, "failed": len(decisions),
                                      "total": len(decisions), "failure_reason": type(exc).__name__}
+        try:
+            from role_outcome_engine import observe_pending_recommendations
+            role_outcomes = observe_pending_recommendations(runtime_stock_histories, analysis_date)
+        except Exception as exc:
+            role_outcomes = {"recommendations_considered": 0, "horizons_saved": 0,
+                             "failed": 1, "failure_reason": type(exc).__name__}
         mark_result = execution.refresh_portfolio_positions(source_run_id=run_id)
         snapshot_reason = "AUTOMATED_EOD" if source == "AUTOMATED_EOD" else "ANALYSIS_COMPLETED"
         execution.save_portfolio_snapshot(snapshot_reason)
@@ -187,6 +194,7 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
                 "market_date_diagnostics": market_date_diagnostics,
                 "market_context_refresh": market_context_refresh,
                 "recommendation_ledger": recommendation_ledger,
+                "role_outcomes": role_outcomes,
                 "mark_count": mark_result.get("successful_marks", 0), "mark_refresh": {key: mark_result.get(key) for key in (
                     "open_positions", "unique_symbols", "provider_calls", "successful_marks", "failed_marks", "elapsed_seconds")},
                 "snapshot_reason": snapshot_reason}

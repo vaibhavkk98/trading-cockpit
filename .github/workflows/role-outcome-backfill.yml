@@ -1,0 +1,33 @@
+name: ROLE Outcome Backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_only:
+        description: Read lifecycle counts without fetching or writing outcomes
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: role-outcome-backfill
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Observe matured recommendation outcomes
+        run: |
+          EXTRA_ARGS=()
+          if [[ "${{ inputs.report_only }}" == "true" ]]; then EXTRA_ARGS+=(--report-only); fi
+          PYTHONPATH=. python scripts/backfill_role_outcomes.py --require-production-db "${EXTRA_ARGS[@]}"

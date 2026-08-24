@@ -400,6 +400,10 @@ def run_screener(
             diagnostics["rejection_reasons_summary"]["Insufficient Price History (<200 bars)"] = diagnostics["rejection_reasons_summary"].get("Insufficient Price History (<200 bars)", 0) + 1
             continue
 
+        # Retain the already-fetched completed-session bars only for the
+        # headless EOD outcome observer.  The caller removes this runtime key
+        # before diagnostics are serialized.
+        stock_data_map[clean_sym] = df
         diagnostics["valid_data_count"] += 1
         df_calc = calculate_indicators(df, nifty_returns)
         latest = df_calc.iloc[-1]
@@ -508,6 +512,7 @@ def run_screener(
                 "coverage": {}, "missingness": ["trend", "breadth", "volatility", "sector_participation"],
                 "provenance": [], "failure_reason": type(exc).__name__, "advisory_only": True,
             }
+        diagnostics["_runtime_stock_histories"] = stock_data_map
         return results_df, diagnostics
     return results_df
 

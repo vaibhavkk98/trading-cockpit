@@ -18,7 +18,7 @@ import pandas as pd
 import yfinance as yf
 from provider_symbols import yahoo_nse_symbol
 from position_mark_provider import fetch_latest_yahoo_marks
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, inspect, text
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, func, inspect, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import declarative_base, joinedload, relationship, sessionmaker
 
@@ -77,6 +77,10 @@ class PaperTradeConstraintError(ValueError):
 
 class RecommendationLedgerConflictError(ValueError):
     """Raised when an immutable recommendation identity is reused with new facts."""
+
+
+class RoleOutcomeConflictError(ValueError):
+    """Raised when an already-matured ROLE horizon changes."""
 
 
 DEFAULT_PORTFOLIO_CAPITAL_INR = 1_000_000.0
@@ -230,6 +234,42 @@ class RecommendationLedger(Base):
     provenance = Column(Text, nullable=False)
     snapshot_hash = Column(String(64), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class RoleOutcomeObservation(Base):
+    """Mutable lifecycle header linked to one immutable recommendation."""
+    __tablename__ = "role_outcome_observations"
+    __table_args__ = (
+        UniqueConstraint("opportunity_id", "lsv_methodology_hash", "outcome_methodology_hash", name="uq_role_outcome_identity"),
+    )
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    lsv_methodology_hash = Column(String(64), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    reference_price = Column(Float, nullable=True)
+    outcome_contract_version = Column(String(40), nullable=False)
+    outcome_methodology_hash = Column(String(64), nullable=False, index=True)
+    lifecycle_state = Column(String(20), nullable=False, index=True)
+    sessions_observed = Column(Integer, nullable=False, default=0)
+    last_observation_date = Column(Date, nullable=True)
+    source_payload = Column(Text, nullable=False)
+    completeness = Column(Text, nullable=False)
+    missingness = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class RoleOutcomeHorizon(Base):
+    """Immutable metrics for one matured trading-session horizon."""
+    __tablename__ = "role_outcome_horizons"
+    __table_args__ = (UniqueConstraint("observation_id", "horizon_sessions", name="uq_role_matured_horizon"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    observation_id = Column(Integer, ForeignKey("role_outcome_observations.id"), nullable=False, index=True)
+    horizon_sessions = Column(Integer, nullable=False)
+    observation_date = Column(Date, nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    matured_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
 class PositionMark(Base):
@@ -1079,6 +1119,162 @@ def recommendation_ledger_coverage() -> Dict[str, Any]:
             for family, stats in sorted(families.items())
         },
     }
+
+
+def load_recommendations_for_role_observation(outcome_methodology_hash: str) -> List[Dict[str, Any]]:
+    """Read immutable recommendations whose ROLE lifecycle is not yet mature."""
+    if not init_db():
+        return []
+    session = SessionLocal()
+    try:
+        observations = {
+            (row.opportunity_id, row.lsv_methodology_hash): row.lifecycle_state
+            for row in session.query(RoleOutcomeObservation).filter_by(
+                outcome_methodology_hash=str(outcome_methodology_hash)
+            ).all()
+        }
+        rows = session.query(RecommendationLedger).order_by(
+            RecommendationLedger.signal_date.asc(), RecommendationLedger.id.asc()
+        ).all()
+        result = []
+        for row in rows:
+            if observations.get((row.opportunity_id, row.lsv_methodology_hash)) == "MATURE":
+                continue
+            result.append({
+                "opportunity_id": row.opportunity_id, "lsv_methodology_hash": row.lsv_methodology_hash,
+                "signal_date": row.signal_date.isoformat(), "signal_timestamp": row.signal_timestamp.isoformat(),
+                "symbol": row.symbol, "reference_price": row.reference_price,
+                "recommendation_snapshot_hash": row.snapshot_hash,
+            })
+        return result
+    finally:
+        session.close()
+
+
+def persist_role_observation_state(state: Dict[str, Any]) -> Dict[str, Any]:
+    """Create or advance a ROLE lifecycle header without touching its recommendation."""
+    _require_database(); session = SessionLocal()
+    try:
+        opportunity_id = str(state["opportunity_id"]); lsv_hash = str(state["lsv_methodology_hash"])
+        outcome_hash = str(state["outcome_methodology_hash"])
+        signal_date = dt.date.fromisoformat(str(state["signal_date"])[:10])
+        raw_reference = state.get("reference_price")
+        reference_price = float(raw_reference) if raw_reference is not None else None
+        if reference_price is not None and (not math.isfinite(reference_price) or reference_price <= 0):
+            reference_price = None
+        row = session.query(RoleOutcomeObservation).filter_by(
+            opportunity_id=opportunity_id, lsv_methodology_hash=lsv_hash,
+            outcome_methodology_hash=outcome_hash,
+        ).first()
+        now = dt.datetime.now(dt.timezone.utc)
+        observation_date = state.get("last_observation_date")
+        if observation_date:
+            observation_date = dt.date.fromisoformat(str(observation_date)[:10])
+        values = {
+            "outcome_contract_version": str(state["outcome_contract_version"]),
+            "lifecycle_state": str(state["lifecycle_state"]),
+            "sessions_observed": int(state.get("sessions_observed") or 0),
+            "last_observation_date": observation_date,
+            "source_payload": json.dumps(_json_safe(state.get("source") or {}), sort_keys=True),
+            "completeness": json.dumps(_json_safe(state.get("completeness") or {}), sort_keys=True),
+            "missingness": json.dumps(_json_safe(state.get("missingness") or []), sort_keys=True),
+        }
+        if row is None:
+            row = RoleOutcomeObservation(
+                opportunity_id=opportunity_id, lsv_methodology_hash=lsv_hash,
+                signal_date=signal_date, reference_price=reference_price,
+                outcome_methodology_hash=outcome_hash, created_at=now, updated_at=now, **values,
+            )
+            session.add(row)
+        else:
+            reference_matches = (row.reference_price is None and reference_price is None) or (
+                row.reference_price is not None and reference_price is not None
+                and math.isclose(row.reference_price, reference_price, rel_tol=0, abs_tol=1e-9)
+            )
+            if row.signal_date != signal_date or not reference_matches:
+                raise RoleOutcomeConflictError("ROLE observation identity disagrees with immutable recommendation")
+            if row.lifecycle_state != "MATURE":
+                for key, value in values.items():
+                    setattr(row, key, value)
+                row.updated_at = now
+        session.commit(); session.refresh(row)
+        return {"observation_id": row.id, "lifecycle_state": row.lifecycle_state}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def persist_role_outcome_horizon(observation_id: int, horizon_sessions: int,
+                                 observation_date: Any, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Insert one matured horizon; retries must reproduce identical content."""
+    _require_database(); session = SessionLocal()
+    try:
+        horizon = int(horizon_sessions)
+        date_value = dt.date.fromisoformat(str(observation_date)[:10])
+        safe_payload = _json_safe(payload)
+        payload_hash = hashlib.sha256(json.dumps(safe_payload, sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
+        existing = session.query(RoleOutcomeHorizon).filter_by(
+            observation_id=int(observation_id), horizon_sessions=horizon
+        ).first()
+        if existing:
+            if existing.payload_hash != payload_hash:
+                raise RoleOutcomeConflictError(f"Matured ROLE horizon {horizon} changed")
+            return {"saved": False, "horizon_id": existing.id, "payload_hash": payload_hash}
+        row = RoleOutcomeHorizon(
+            observation_id=int(observation_id), horizon_sessions=horizon,
+            observation_date=date_value, payload=json.dumps(safe_payload, sort_keys=True, default=str),
+            payload_hash=payload_hash,
+        )
+        session.add(row); session.commit(); session.refresh(row)
+        return {"saved": True, "horizon_id": row.id, "payload_hash": payload_hash}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def load_role_outcome_observation(opportunity_id: str, lsv_methodology_hash: str,
+                                  outcome_methodology_hash: str) -> Optional[Dict[str, Any]]:
+    if not init_db():
+        return None
+    session = SessionLocal()
+    try:
+        row = session.query(RoleOutcomeObservation).filter_by(
+            opportunity_id=str(opportunity_id), lsv_methodology_hash=str(lsv_methodology_hash),
+            outcome_methodology_hash=str(outcome_methodology_hash),
+        ).first()
+        if not row:
+            return None
+        horizons = session.query(RoleOutcomeHorizon).filter_by(observation_id=row.id).order_by(
+            RoleOutcomeHorizon.horizon_sessions.asc()
+        ).all()
+        return {
+            "observation_id": row.id, "opportunity_id": row.opportunity_id,
+            "lsv_methodology_hash": row.lsv_methodology_hash, "signal_date": row.signal_date.isoformat(),
+            "reference_price": row.reference_price, "outcome_contract_version": row.outcome_contract_version,
+            "outcome_methodology_hash": row.outcome_methodology_hash, "lifecycle_state": row.lifecycle_state,
+            "sessions_observed": row.sessions_observed,
+            "last_observation_date": row.last_observation_date.isoformat() if row.last_observation_date else None,
+            "source": json.loads(row.source_payload), "completeness": json.loads(row.completeness),
+            "missingness": json.loads(row.missingness),
+            "horizons": {str(item.horizon_sessions): json.loads(item.payload) for item in horizons},
+        }
+    finally:
+        session.close()
+
+
+def role_outcome_lifecycle_counts(outcome_methodology_hash: str) -> Dict[str, int]:
+    rows = _safe_read(lambda s: s.query(
+        RoleOutcomeObservation.lifecycle_state, func.count(RoleOutcomeObservation.id)
+    ).filter_by(outcome_methodology_hash=str(outcome_methodology_hash)).group_by(
+        RoleOutcomeObservation.lifecycle_state
+    ).all())
+    counts = {state: 0 for state in ("PENDING", "PARTIAL", "MATURE", "NOT_AVAILABLE")}
+    for state, count in rows:
+        counts[str(state)] = int(count)
+    counts["TOTAL"] = sum(counts.values())
+    return counts
 
 
 def _context_timestamp(value: Any) -> dt.datetime:

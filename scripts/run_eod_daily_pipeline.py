@@ -16,7 +16,7 @@ def main() -> int:
         )
     if result.get("analysis_date"):
         print(f"Resolved expected market date: {result['analysis_date']}")
-    summary = {key: result.get(key) for key in ("status", "analysis_date", "run_id", "symbols_requested", "symbols_succeeded", "symbols_failed", "qualified_count", "allocated_count", "mark_count")}
+    summary = {key: result.get(key) for key in ("status", "analysis_date", "run_id", "symbols_requested", "symbols_succeeded", "symbols_failed", "qualified_count", "allocated_count", "mark_count", "role_outcomes")}
     print(json.dumps(summary, sort_keys=True, default=str))
     return 0 if result.get("status") in {"SUCCESS", "PARTIAL_SUCCESS", "NO_COMPLETED_MARKET_BAR"} else 1
 
