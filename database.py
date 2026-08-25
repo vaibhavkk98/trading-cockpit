@@ -1277,6 +1277,54 @@ def role_outcome_lifecycle_counts(outcome_methodology_hash: str) -> Dict[str, in
     return counts
 
 
+def load_role_learning_rows(outcome_methodology_hash: str) -> List[Dict[str, Any]]:
+    """Read immutable recommendation states and matured outcomes for ROLE research."""
+    if not init_db():
+        return []
+    session = SessionLocal()
+    try:
+        recommendations = session.query(RecommendationLedger).order_by(
+            RecommendationLedger.signal_date.asc(), RecommendationLedger.id.asc()
+        ).all()
+        observations = {
+            (row.opportunity_id, row.lsv_methodology_hash): row
+            for row in session.query(RoleOutcomeObservation).filter_by(
+                outcome_methodology_hash=str(outcome_methodology_hash)
+            ).all()
+        }
+        result = []
+        for recommendation in recommendations:
+            observation = observations.get((recommendation.opportunity_id, recommendation.lsv_methodology_hash))
+            horizons = {}
+            if observation is not None:
+                for horizon in session.query(RoleOutcomeHorizon).filter_by(
+                    observation_id=observation.id
+                ).order_by(RoleOutcomeHorizon.horizon_sessions.asc()).all():
+                    horizons[str(horizon.horizon_sessions)] = {
+                        "observation_date": horizon.observation_date.isoformat(),
+                        "payload": json.loads(horizon.payload),
+                        "payload_hash": horizon.payload_hash,
+                    }
+            result.append({
+                "opportunity_id": recommendation.opportunity_id,
+                "signal_date": recommendation.signal_date.isoformat(),
+                "symbol": recommendation.symbol,
+                "strategy": recommendation.strategy,
+                "lsv_methodology_hash": recommendation.lsv_methodology_hash,
+                "recommendation_snapshot_hash": recommendation.snapshot_hash,
+                "lsv_v1": json.loads(recommendation.vector_payload),
+                "market_context": json.loads(recommendation.market_context_payload),
+                "methodologies": json.loads(recommendation.methodology_payload),
+                "provenance": json.loads(recommendation.provenance),
+                "outcome_methodology_hash": observation.outcome_methodology_hash if observation else None,
+                "lifecycle_state": observation.lifecycle_state if observation else "PENDING",
+                "horizons": horizons,
+            })
+        return result
+    finally:
+        session.close()
+
+
 def _context_timestamp(value: Any) -> dt.datetime:
     if isinstance(value, dt.datetime):
         return value if value.tzinfo else value.replace(tzinfo=dt.timezone.utc)
