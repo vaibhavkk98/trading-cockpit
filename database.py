@@ -1292,19 +1292,23 @@ def load_role_learning_rows(outcome_methodology_hash: str) -> List[Dict[str, Any
                 outcome_methodology_hash=str(outcome_methodology_hash)
             ).all()
         }
+        observation_ids = [row.id for row in observations.values()]
+        horizon_rows = session.query(RoleOutcomeHorizon).filter(
+            RoleOutcomeHorizon.observation_id.in_(observation_ids)
+        ).order_by(
+            RoleOutcomeHorizon.observation_id.asc(), RoleOutcomeHorizon.horizon_sessions.asc()
+        ).all() if observation_ids else []
+        horizons_by_observation = {}
+        for horizon in horizon_rows:
+            horizons_by_observation.setdefault(horizon.observation_id, {})[str(horizon.horizon_sessions)] = {
+                "observation_date": horizon.observation_date.isoformat(),
+                "payload": json.loads(horizon.payload),
+                "payload_hash": horizon.payload_hash,
+            }
         result = []
         for recommendation in recommendations:
             observation = observations.get((recommendation.opportunity_id, recommendation.lsv_methodology_hash))
-            horizons = {}
-            if observation is not None:
-                for horizon in session.query(RoleOutcomeHorizon).filter_by(
-                    observation_id=observation.id
-                ).order_by(RoleOutcomeHorizon.horizon_sessions.asc()).all():
-                    horizons[str(horizon.horizon_sessions)] = {
-                        "observation_date": horizon.observation_date.isoformat(),
-                        "payload": json.loads(horizon.payload),
-                        "payload_hash": horizon.payload_hash,
-                    }
+            horizons = horizons_by_observation.get(observation.id, {}) if observation is not None else {}
             result.append({
                 "opportunity_id": recommendation.opportunity_id,
                 "signal_date": recommendation.signal_date.isoformat(),

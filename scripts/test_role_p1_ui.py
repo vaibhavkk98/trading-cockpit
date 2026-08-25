@@ -18,6 +18,7 @@ import cockpit_ui  # noqa: E402
 import database  # noqa: E402
 import latent_state_vector as lsv  # noqa: E402
 from role_outcome_engine import OUTCOME_METHOD_HASH, ROLE_OUTCOME_VERSION  # noqa: E402
+from sqlalchemy import event  # noqa: E402
 from streamlit.testing.v1 import AppTest  # noqa: E402
 
 
@@ -51,6 +52,18 @@ def run():
         seed_recommendation(f"ROLE-P1:H{index}", f"H{index}", observed=True)
     seed_recommendation("ROLE-P1:TARGET", "TARGET")
     cockpit_cache.load_role_evidence.clear()
+    statements = []
+
+    def record_statement(_connection, _cursor, statement, _parameters, _context, _executemany):
+        statements.append(statement)
+
+    event.listen(database.engine, "before_cursor_execute", record_statement)
+    try:
+        learning_rows = database.load_role_learning_rows(OUTCOME_METHOD_HASH)
+    finally:
+        event.remove(database.engine, "before_cursor_execute", record_statement)
+    assert len(learning_rows) == 6
+    assert len([statement for statement in statements if "FROM role_outcome_horizons" in statement]) == 1
 
     candidate = {
         "opportunity_id": "ROLE-P1:TARGET", "symbol": "TARGET", "signal_date": "2026-01-02",
@@ -64,7 +77,7 @@ def run():
     app.query_params["symbol"] = "TARGET"
     app.query_params["tab"] = "role_evidence"
     app.run(timeout=30)
-    passed = 0
+    passed = 1  # All recommendation horizons load in one bounded query.
 
     assert not app.exception and app.segmented_control[0].value == "ROLE Evidence"
     assert "ROLE Evidence" in app.segmented_control[0].options
@@ -142,8 +155,8 @@ def run():
     assert not app.exception and "ROLE Evidence" not in app.segmented_control[0].options
     passed += 1  # Research-only stocks do not gain recommendation evidence.
 
-    assert passed == 9
-    print(f"ROLE-P1 opportunity evidence UI tests: PASS ({passed}/9 scenarios) · warm render {warm_ms:.2f} ms")
+    assert passed == 10
+    print(f"ROLE-P1 opportunity evidence UI tests: PASS ({passed}/10 scenarios) · warm render {warm_ms:.2f} ms")
 
 
 if __name__ == "__main__":
