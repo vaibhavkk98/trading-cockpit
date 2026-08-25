@@ -29,7 +29,8 @@ def candidate(symbol="AAA", price=100.0):
     return {"opportunity_id": f"PERF:{symbol}:2026-08-14", "symbol": symbol,
             "signal_date": "2026-08-14", "qualification_status": "QUALIFIED",
             "is_qualified": True, "strategy": "Donchian Channel Breakout",
-            "entry_price": price, "allocation_status": "QUALIFIED"}
+            "entry_price": price, "current_close": price, "previous_close": price - 1.0,
+            "allocation_status": "QUALIFIED"}
 
 
 def snapshot(opportunity_id, symbol):

@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import universe_engine
 from latent_state_vector import build_causal_vector
 from provider_symbols import yahoo_nse_symbol
+from qualification_contract import positive_price_change_evidence
 
 # Dynamic Nifty 500 Symbol List from Universe Engine
 DEFAULT_NIFTY_SYMBOLS = universe_engine.get_current_universe()
@@ -127,6 +128,8 @@ def calculate_indicators(df: pd.DataFrame, nifty_returns: Dict[str, float]) -> p
     - 20-day Average Daily Turnover
     """
     df = df.copy()
+    df['Previous_Close'] = df['Close'].shift(1)
+    df['Daily_Close_To_Close_Return_Pct'] = df['Close'].pct_change(fill_method=None) * 100.0
 
     # Exponential Moving Averages
     df['EMA_20'] = ta.ema(df['Close'], length=20)
@@ -235,6 +238,7 @@ def evaluate_swing_criteria(latest_row: pd.Series) -> Dict[str, Any]:
     5. Step 11 Volume & Price Confirmation: Volume_Ratio_20 >= 2.0x AND Close > EMA20
     """
     close = latest_row['Close']
+    positive_change = positive_price_change_evidence(close, latest_row.get('Previous_Close'))
     ema20 = latest_row['EMA_20']
     ema50 = latest_row['EMA_50']
     ema200 = latest_row['EMA_200']
@@ -299,10 +303,14 @@ def evaluate_swing_criteria(latest_row: pd.Series) -> Dict[str, Any]:
     technical_pass = uptrend_pass and rs_pass and liquidity_pass and strategy_pass
 
     # Overall pass includes Step 11 confirmation
-    overall_pass = technical_pass and volume_price_confirmed
+    overall_pass = technical_pass and volume_price_confirmed and positive_change["positive_price_change_gate_pass"]
 
     return {
         "Close": round(close, 2) if pd.notna(close) else None,
+        "Previous_Close": positive_change["previous_close"],
+        "Daily_Close_To_Close_Return_Pct": positive_change["daily_close_to_close_return_pct"],
+        "Positive_Price_Change_Gate_Pass": positive_change["positive_price_change_gate_pass"],
+        "Positive_Price_Change_Gate_Version": positive_change["positive_price_change_gate_version"],
         "EMA_20": round(ema20, 2) if pd.notna(ema20) else None,
         "EMA_50": round(ema50, 2) if pd.notna(ema50) else None,
         "EMA_200": round(ema200, 2) if pd.notna(ema200) else None,
@@ -435,6 +443,10 @@ def run_screener(
                 # consumers never substitute the market-index date for it.
                 "Data_As_Of": df_calc.index[-1].strftime('%Y-%m-%d'),
                 "Close": eval_res["Close"],
+                "Previous_Close": eval_res["Previous_Close"],
+                "Daily_Close_To_Close_Return_Pct": eval_res["Daily_Close_To_Close_Return_Pct"],
+                "Positive_Price_Change_Gate_Pass": eval_res["Positive_Price_Change_Gate_Pass"],
+                "Positive_Price_Change_Gate_Version": eval_res["Positive_Price_Change_Gate_Version"],
                 "EMA_20": eval_res["EMA_20"],
                 "EMA_50": eval_res["EMA_50"],
                 "EMA_200": eval_res["EMA_200"],

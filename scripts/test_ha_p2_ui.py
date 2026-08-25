@@ -26,7 +26,8 @@ def run():
     candidate = {
         "opportunity_id": "HA-P2:AAA:2026-08-14", "symbol": "AAA.NS", "signal_date": "2026-08-14",
         "qualification_status": "QUALIFIED", "is_qualified": True, "strategy": "Donchian Channel Breakout",
-        "entry_price": 100.0, "allocation_status": "QUALIFIED", "volume_ratio_20": 2.8,
+        "entry_price": 100.0, "current_close": 100.0, "previous_close": 99.0,
+        "allocation_status": "QUALIFIED", "volume_ratio_20": 2.8,
         "ha_features": {"ret_10d": 8.5, "ret_5d": 3.0, "ret_20d": 12.0, "distance_from_ema20_pct": 4.0,
                         "distance_from_ema20_atr": 1.2, "largest_positive_daily_return_10d": 2.1, "positive_sessions_10": 7.0},
     }

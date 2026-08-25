@@ -22,6 +22,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 from universe_engine import get_universe_as_of, get_universe_metadata
 from screener import run_stage1_screener, fetch_stock_data, calculate_indicators, DEFAULT_NIFTY_SYMBOLS
 from provider_symbols import yahoo_nse_symbol
+from qualification_contract import qualification_evidence
 from database import (
     add_constrained_paper_trade,
     get_portfolio_capital,
@@ -293,6 +294,10 @@ class PortfolioAllocationEngine:
             vol_confirmed = bool(vol_ratio is not None and vol_ratio >= 2.0 and bool(row.get("Volume_Confirmed", False)))
             price_confirmed = bool(close_px is not None and ema20_px is not None and close_px > ema20_px and bool(row.get("Price_Confirmed", False)))
             vol_price_confirmed = bool(vol_confirmed and price_confirmed)
+            positive_change = qualification_evidence(row)
+            global_qualification_confirmed = bool(
+                vol_price_confirmed and positive_change["positive_price_change_gate_pass"]
+            )
 
             # Runtime Assertions - Protect Against Invalid Data Contamination
             if vol_price_confirmed:
@@ -321,6 +326,11 @@ class PortfolioAllocationEngine:
             else:
                 rejection_reasons.append(f"✗ Failed Price Confirmation (Close ₹{close_px:,.2f} <= 20 EMA {'N/A' if ema20_px is None else f'₹{ema20_px:,.2f}'})")
 
+            if positive_change["positive_price_change_gate_pass"]:
+                selection_reasons.append(f"✓ Positive daily change ({positive_change['daily_close_to_close_return_pct']:+.2f}%)")
+            else:
+                rejection_reasons.append("✗ Failed Positive Daily Change (Close[T] <= Close[T-1] or evidence unavailable)")
+
             ema50_raw = row.get("EMA_50")
             if ema50_raw is not None and pd.notna(ema50_raw) and close_px > float(ema50_raw):
                 selection_reasons.append("✓ Price above 50 EMA (Uptrend confirmed)")
@@ -332,13 +342,16 @@ class PortfolioAllocationEngine:
             selection_reasons.append(f"✓ Composite Score {composite_score:.2f} (Rank #{idx+1})")
 
             # Determine Qualification & Allocation Status
-            if not vol_price_confirmed:
+            if not global_qualification_confirmed:
                 if not vol_confirmed:
                     status_code = "REJECTED — VOLUME CONFIRMATION"
                     status_reason = f"Rejection: Volume ratio {'N/A' if vol_ratio is None else f'{vol_ratio:.2f}x'} below 2.0x threshold"
-                else:
+                elif not price_confirmed:
                     status_code = "REJECTED — PRICE CONFIRMATION"
                     status_reason = f"Rejection: Close ₹{close_px:,.2f} <= 20 EMA {'N/A' if ema20_px is None else f'₹{ema20_px:,.2f}'}"
+                else:
+                    status_code = "REJECTED — NON_POSITIVE_DAILY_CHANGE"
+                    status_reason = "Rejection: completed-session Close[T] is not greater than Close[T-1]"
             elif regime_info.get('regime', 'BULLISH') != "BULLISH":
                 status_code = "REJECTED — REGIME"
                 status_reason = "Rejection: Market regime filter failed (Nifty <= 50 EMA)"
@@ -442,6 +455,11 @@ class PortfolioAllocationEngine:
                 "composite_score": composite_score,
                 "signal_strength": "HIGH" if composite_score >= 0.70 else "MEDIUM",
                 "close": round(close_px, 2),
+                "current_close": positive_change["current_close"],
+                "previous_close": positive_change["previous_close"],
+                "daily_close_to_close_return_pct": positive_change["daily_close_to_close_return_pct"],
+                "positive_price_change_gate_pass": positive_change["positive_price_change_gate_pass"],
+                "positive_price_change_gate_version": positive_change["positive_price_change_gate_version"],
                 "entry_price": round(close_px, 2),
                 "stop_loss": round(sl_px, 2),
                 "target_price": round(tp_px, 2) if tp_px is not None else None,
@@ -470,7 +488,7 @@ class PortfolioAllocationEngine:
                 "expected_holding_period": exit_label,
                 "regime": regime_info.get('regime', 'BULLISH'),
                 "is_selected": is_selected,
-                "is_qualified": vol_price_confirmed,
+                "is_qualified": global_qualification_confirmed,
                 "status": status_code,
                 "selection_reasons": selection_reasons,
                 "rejection_reasons": rejection_reasons,
@@ -500,7 +518,7 @@ class ExecutionAdapter:
             qualification_flag is True or qualification_status == "QUALIFIED"
         )
         errors: List[str] = []
-        if not is_qualified:
+        if not is_qualified or not qualification_evidence(candidate)["positive_price_change_gate_pass"]:
             errors.append("Only a qualified opportunity can be paper traded; this opportunity is no longer available.")
 
         requested_amount = 100_000.0 if investment_amount is None else investment_amount

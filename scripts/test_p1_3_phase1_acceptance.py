@@ -52,14 +52,14 @@ def run() -> None:
                 rows = [
                     {
                         "Symbol": "SELECTED.NS", "Setup_Type": "Donchian_Breakout",
-                        "Close": 123.0, "EMA_20": 110.0, "EMA_50": 105.0,
+                        "Close": 123.0, "Previous_Close": 122.0, "EMA_20": 110.0, "EMA_50": 105.0,
                         "ATR_20": 4.0, "RS_Score": 8.0, "Strategy_Rank": 1,
                         "Volume_Ratio_20": 3.0, "Volume_Confirmed": True,
                         "Price_Confirmed": True, "Data_As_Of": "2026-08-14",
                     },
                     {
                         "Symbol": "UNSELECTED.NS", "Setup_Type": "EMA_Bounce",
-                        "Close": 77.0, "EMA_20": 70.0, "EMA_50": 68.0,
+                        "Close": 77.0, "Previous_Close": 76.0, "EMA_20": 70.0, "EMA_50": 68.0,
                         "ATR_20": 3.0, "RS_Score": 6.0, "Strategy_Rank": 2,
                         "Volume_Ratio_20": 2.5, "Volume_Confirmed": True,
                         "Price_Confirmed": True, "Data_As_Of": "2026-08-14",

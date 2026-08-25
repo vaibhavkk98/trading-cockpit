@@ -66,6 +66,7 @@ from interaction_architecture import (
     select_candidate,
     short_strategy_name,
 )
+from qualification_contract import filter_current_qualified_decisions
 from ui_components import (
     allocation_display,
     apply_theme,
@@ -188,10 +189,9 @@ for workspace_key, workspace_value in initial_workspace_state().items():
 with timed("application.routing"):
     active_route = hydrate_navigation_state(st.session_state, st.query_params)
 
-# Candidate dictionaries are session-persisted by Streamlit.  Invalidate any
-# payload produced by the pre-Step-11.1 contract, which lacked canonical
-# volume/EMA/date fields and could contain an invented 1.5x target ratio.
-COCKPIT_CANDIDATE_CONTRACT_VERSION = 3
+# Candidate dictionaries are session-persisted by Streamlit. Invalidate any
+# payload produced before the positive close-to-close qualification contract.
+COCKPIT_CANDIDATE_CONTRACT_VERSION = 4
 if st.session_state.get("candidate_contract_version") != COCKPIT_CANDIDATE_CONTRACT_VERSION:
     st.session_state["shortlist_df"] = pd.DataFrame()
     st.session_state["allocated_candidates"] = []
@@ -224,6 +224,8 @@ def load_decisions_for_page():
         if candidates:
             decisions = assemble_live_decisions(candidates)
             st.session_state["live_decisions"] = decisions
+    decisions = filter_current_qualified_decisions(decisions)
+    st.session_state["live_decisions"] = decisions
     return decisions
 
 # Compact application shell

@@ -68,7 +68,8 @@ def run():
     candidate = {
         "opportunity_id": "ROLE-P1:TARGET", "symbol": "TARGET", "signal_date": "2026-01-02",
         "qualification_status": "QUALIFIED", "is_qualified": True,
-        "strategy": "VCP", "entry_price": 100.0, "allocation_status": "QUALIFIED",
+        "strategy": "VCP", "entry_price": 100.0, "current_close": 100.0, "previous_close": 99.0,
+        "allocation_status": "QUALIFIED",
     }
     app = AppTest.from_file(str(ROOT / "app.py")).run(timeout=30)
     app.session_state["live_decisions"] = [candidate]
