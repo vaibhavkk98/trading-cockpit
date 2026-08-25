@@ -13,7 +13,7 @@ import database
 from role_outcome_engine import OUTCOME_METHOD_HASH
 
 
-ROLE_R1_VERSION = "ROLE_R1_ANALYTICS_V1"
+ROLE_R1_VERSION = "ROLE_R1_ANALYTICS_V1_1"
 NOT_AVAILABLE = "NOT_AVAILABLE"
 
 # One predeclared, interpretable anchor per LSV family.  These are frozen
@@ -162,6 +162,8 @@ def _cohort_payload(label: str, rows: list[dict[str, Any]], all_rows: list[dict[
                     eligible_count: int, total_count: int, baseline: Mapping[str, Any]) -> dict[str, Any]:
     primary = _horizon_summary(rows, 10)
     feature_coverage = 100.0 * eligible_count / total_count if total_count else 0.0
+    outcome_coverage = _number((baseline.get("data_coverage") or {}).get("outcome_10d_pct")) or 0.0
+    evidence_coverage = min(feature_coverage, outcome_coverage)
     origins = {origin: sum(row["origin"] == origin and "10" in row["horizons"] for row in rows)
                for origin in ("PROSPECTIVE", "BACKFILL")}
     return {
@@ -170,10 +172,11 @@ def _cohort_payload(label: str, rows: list[dict[str, Any]], all_rows: list[dict[
         "difference_vs_system_baseline": _differences(primary, baseline),
         "data_coverage": {
             "feature_coverage_pct": round(feature_coverage, 6),
+            "evidence_coverage_pct": round(evidence_coverage, 6),
             "cohort_share_of_eligible_pct": round(100.0 * primary["mature_sample_size"] / eligible_count, 6) if eligible_count else 0.0,
             "origin_10d_counts": origins,
         },
-        "evidence_quality": evidence_quality(primary["mature_sample_size"], feature_coverage),
+        "evidence_quality": evidence_quality(primary["mature_sample_size"], evidence_coverage),
         "secondary_context": {"5d": _horizon_summary(all_rows, 5), "20d": _horizon_summary(all_rows, 20)},
     }
 
@@ -203,12 +206,13 @@ def build_role_r1_analytics(rows: Iterable[Mapping[str, Any]], as_of_date: Any =
     baseline = _horizon_summary(records, 10)
     total_10d = baseline["mature_sample_size"]
     total = len(records)
+    outcome_coverage = round(100.0 * total_10d / total, 6) if total else 0.0
     baseline["data_coverage"] = {
-        "outcome_10d_pct": round(100.0 * total_10d / total, 6) if total else 0.0,
+        "outcome_10d_pct": outcome_coverage,
         "origin_10d_counts": {origin: sum(row["origin"] == origin and "10" in row["horizons"] for row in records)
                               for origin in ("PROSPECTIVE", "BACKFILL")},
     }
-    baseline["evidence_quality"] = evidence_quality(total_10d, 100.0)
+    baseline["evidence_quality"] = evidence_quality(total_10d, outcome_coverage)
     baseline["secondary_context"] = {"5d": _horizon_summary(records, 5), "20d": _horizon_summary(records, 20)}
 
     strategy_cohorts, _ = _grouped(records, lambda row: str(row.get("strategy") or NOT_AVAILABLE), baseline, total_10d)

@@ -77,6 +77,14 @@ class RoleR1Tests(unittest.TestCase):
         self.assertEqual(role.evidence_quality(120, 95), "STRONG")
         self.assertEqual(role.evidence_quality(120, 40), "INSUFFICIENT")
 
+    def test_low_outcome_maturity_caps_baseline_and_cohorts(self):
+        rows = [record(index) for index in range(10)]
+        rows.extend({**record(index + 20, horizons=()), "opportunity_id": f"P{index}"} for index in range(20))
+        result = role.build_role_r1_analytics(rows, "2026-02-01")
+        self.assertLess(result["baseline"]["data_coverage"]["outcome_10d_pct"], 50.0)
+        self.assertEqual(result["baseline"]["evidence_quality"], "INSUFFICIENT")
+        self.assertTrue(all(item["evidence_quality"] == "INSUFFICIENT" for item in result["strategy_cohorts"]))
+
     def test_prospective_and_backfill_are_separate(self):
         result = role.build_role_r1_analytics([record(1, prospective=True), record(2, prospective=False)], "2026-02-01")
         self.assertEqual(result["baseline"]["data_coverage"]["origin_10d_counts"], {"PROSPECTIVE": 1, "BACKFILL": 1})
