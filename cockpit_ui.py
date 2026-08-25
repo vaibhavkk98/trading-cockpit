@@ -14,13 +14,14 @@ from cockpit_cache import (
     load_closed_trade_rows, load_ha_snapshot, load_ha_summaries,
     load_market_context_bundle,
     load_open_positions, load_portfolio_pnl, load_portfolio_snapshots,
-    load_portfolio_summary,
+    load_portfolio_summary, load_role_learning_analytics,
 )
 from historical_analogs_service import HistoricalAnalogService, METHODOLOGY_HASH
 from market_context import NOT_AVAILABLE, summarize_context
 from interaction_architecture import canonical_route_symbol, compact_allocation, navigation_query, ordered_decisions, short_strategy_name
 from live_decision_adapter import summarize_live_portfolio_risk
 from performance_timing import timed
+from role_learning_analytics import FAMILY_ANCHORS, INTERACTIONS, evidence_quality
 from ui_components import (
     display_value, format_currency, format_percent, format_price, format_signed_currency,
     render_context_card, render_empty_state, render_metric_card, render_page_header,
@@ -28,8 +29,8 @@ from ui_components import (
 )
 
 
-PAGES = ["Dashboard", "Opportunities", "Portfolio", "Stock Research", "Settings"]
-PAGE_KEYS = {"Dashboard": "today", "Opportunities": "signals", "Portfolio": "portfolio", "Stock Research": "research", "Settings": "settings"}
+PAGES = ["Dashboard", "Opportunities", "Portfolio", "Stock Research", "Learning", "Settings"]
+PAGE_KEYS = {"Dashboard": "today", "Opportunities": "signals", "Portfolio": "portfolio", "Stock Research": "research", "Learning": "learning", "Settings": "settings"}
 STOCK_TABS = ["overview", "rally", "historical_analogs", "events", "trade"]
 
 PILLAR_HELP = {
@@ -752,6 +753,124 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio,
         _render_stock_ticket(candidate, execution_factory, hydrate_portfolio, symbol)
 
 
+def _role_horizon_summary(analytics: dict[str, Any], horizon: int) -> dict[str, Any]:
+    baseline = analytics.get("baseline") or {}
+    if horizon == 10:
+        return baseline
+    summary = dict((baseline.get("secondary_context") or {}).get(f"{horizon}d") or {})
+    total = int(analytics.get("recommendation_count") or 0)
+    sample = int(summary.get("mature_sample_size") or 0)
+    coverage = 100.0 * sample / total if total else 0.0
+    summary["evidence_quality"] = evidence_quality(sample, coverage)
+    summary["data_coverage"] = {"outcome_coverage_pct": coverage}
+    return summary
+
+
+def _role_metric(value: Any) -> str:
+    return format_percent(value) if isinstance(value, (int, float)) else "Not available"
+
+
+def _role_cohort_rows(cohorts: list[dict[str, Any]], baseline_quality: str) -> list[dict[str, Any]]:
+    rows = []
+    for cohort in cohorts:
+        quality = str(cohort.get("evidence_quality") or "INSUFFICIENT")
+        coverage = (cohort.get("data_coverage") or {}).get("evidence_coverage_pct")
+        difference = cohort.get("difference_vs_system_baseline") or {}
+        comparable = quality != "INSUFFICIENT" and baseline_quality != "INSUFFICIENT"
+        success_difference = difference.get("plus_5_before_minus_3_success_pct_difference")
+        return_difference = difference.get("median_close_return_pct_difference")
+        comparison = "Insufficient evidence"
+        if comparable and isinstance(success_difference, (int, float)) and isinstance(return_difference, (int, float)):
+            comparison = f"Success {success_difference:+.1f} pp · Return {return_difference:+.2f} pp"
+        rows.append({
+            "Cohort": cohort.get("cohort"), "N": int(cohort.get("mature_sample_size") or 0),
+            "Coverage": _role_metric(coverage), "Evidence": quality,
+            "+5 before -3": _role_metric(cohort.get("plus_5_before_minus_3_success_pct")),
+            "Median MFE": _role_metric(cohort.get("median_mfe_pct")),
+            "Median MAE": _role_metric(cohort.get("median_mae_pct")),
+            "Median close return": _role_metric(cohort.get("median_close_return_pct")),
+            "Vs baseline": comparison,
+        })
+    return rows
+
+
+def _render_role_cohorts(title: str, subtitle: str, cohorts: list[dict[str, Any]], baseline_quality: str):
+    with st.expander(title, expanded=title == "Strategy"):
+        st.caption(subtitle)
+        rows = _role_cohort_rows(cohorts, baseline_quality)
+        if rows:
+            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+        else:
+            st.info("INSUFFICIENT evidence · No 10D observations currently have the required persisted state.")
+
+
+def _render_learning():
+    """Read-only ROLE-R1 consumer; never observes outcomes or calls providers."""
+    render_page_header("Learning", "Explainable recommendation-outcome research · Advisory only")
+    analytics = load_role_learning_analytics()
+    total = int(analytics.get("recommendation_count") or 0)
+    maturity = analytics.get("maturity_coverage") or {}
+    baseline = analytics.get("baseline") or {}
+    baseline_quality = str(baseline.get("evidence_quality") or "INSUFFICIENT")
+    origins = (baseline.get("data_coverage") or {}).get("origin_10d_counts") or {}
+
+    st.caption(
+        f"{total} recommendations · {int(maturity.get('10d') or 0)} mature at 10D · "
+        f"Prospective 10D: {int(origins.get('PROSPECTIVE') or 0)} · Evidence: {baseline_quality}"
+    )
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: render_metric_card("Recommendations", total, "Immutable ledger snapshots")
+    with c2: render_metric_card("Mature outcomes", f"{int(maturity.get('5d') or 0)} / {int(maturity.get('10d') or 0)} / {int(maturity.get('20d') or 0)}", "5D / 10D / 20D")
+    with c3: render_metric_card("10D origin", f"{int(origins.get('PROSPECTIVE') or 0)} / {int(origins.get('BACKFILL') or 0)}", "Prospective / backfilled")
+    with c4: render_metric_card("Primary evidence", baseline_quality, "Primary horizon · 10D")
+
+    render_section_header("System baseline", "Recommendation outcomes at the selected matured horizon")
+    selected = st.segmented_control("Outcome horizon", ["5D", "10D", "20D"], default="10D", key="role_horizon") or "10D"
+    horizon = int(selected[:-1])
+    summary = _role_horizon_summary(analytics, horizon)
+    sample = int(summary.get("mature_sample_size") or 0)
+    quality = str(summary.get("evidence_quality") or "INSUFFICIENT")
+    evidence_note = f"N={sample} · Evidence {quality}"
+    m1, m2, m3, m4 = st.columns(4)
+    with m1: render_metric_card("+5% before -3%", _role_metric(summary.get("plus_5_before_minus_3_success_pct")), evidence_note)
+    with m2: render_metric_card("Median MFE", _role_metric(summary.get("median_mfe_pct")), evidence_note)
+    with m3: render_metric_card("Median MAE", _role_metric(summary.get("median_mae_pct")), evidence_note)
+    with m4: render_metric_card("Median close return", _role_metric(summary.get("median_close_return_pct")), evidence_note)
+
+    render_section_header("What ROLE is learning", "Frozen 10D family anchors; insufficient evidence never produces a comparison")
+    _render_role_cohorts("Strategy", "Outcomes grouped by the strategy recorded at recommendation time.", analytics.get("strategy_cohorts") or [], baseline_quality)
+    family_labels = {
+        "price_state": "Price State", "participation": "Participation", "relative_demand": "Relative Demand",
+        "volatility_state": "Volatility State", "price_response": "Price Response", "positioning": "Positioning",
+        "liquidity": "Liquidity", "environment": "Environment",
+    }
+    family_data = analytics.get("family_cohorts") or {}
+    for family, label in family_labels.items():
+        payload = family_data.get(family) or {}
+        anchor = payload.get("anchor_field") or FAMILY_ANCHORS[family]
+        _render_role_cohorts(label, f"Predefined anchor: {str(anchor).replace('_', ' ')}.", payload.get("cohorts") or [], baseline_quality)
+
+    render_section_header("Predefined interactions", "Only the four frozen ROLE-R1 interactions are evaluated")
+    interaction_labels = {
+        "relative_demand_x_participation": "Relative Demand × Participation",
+        "price_response_x_participation": "Price Response × Participation",
+        "strategy_x_breadth": "Strategy × Breadth",
+        "volatility_x_strategy": "Volatility × Strategy",
+    }
+    interaction_data = analytics.get("interaction_cohorts") or {}
+    for key in INTERACTIONS:
+        _render_role_cohorts(interaction_labels[key], "Predefined interaction · no automatic feature mining.", (interaction_data.get(key) or {}).get("cohorts") or [], baseline_quality)
+
+    with st.expander("How to read ROLE evidence", expanded=False):
+        st.markdown(
+            "ROLE observes realized outcomes of immutable recommendations; it does not create signals. "
+            "**INSUFFICIENT** means N<10 or coverage<50%; **EARLY** means N<30 or coverage<70%; "
+            "**DEVELOPING** means N<100 or coverage<90%; **STRONG** requires N≥100 and coverage≥90%. "
+            "Backfilled rows reconstruct causal history where possible; prospective rows were captured live. "
+            "Small samples are exploratory and not actionable. ROLE is research/advisory only and cannot alter qualification, ranking, sizing, allocation, execution, or exits."
+        )
+
+
 def render_cockpit(*, route, decisions_loader, execution_factory,
                    portfolio_summary_loader, positions_loader, hydrate_portfolio):
     """Route first, then invoke only the selected page's data dependencies."""
@@ -774,6 +893,8 @@ def render_cockpit(*, route, decisions_loader, execution_factory,
         with timed("page.portfolio"): _render_portfolio(execution_factory, portfolio_summary_loader, positions_loader, hydrate_portfolio)
     elif page == "research":
         _render_stock_research(decisions_loader(), execution_factory, hydrate_portfolio)
+    elif page == "learning":
+        with timed("page.learning"): _render_learning()
     else:
         render_page_header("Settings", "Portfolio controls and deployment status")
         health = execution_factory().database_diagnostics()

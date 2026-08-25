@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Any, Dict, Iterable, List, Optional
 
 
-NAVIGATION_PAGES = {"today", "signals", "portfolio", "journal", "research", "stock", "performance", "settings"}
+NAVIGATION_PAGES = {"today", "signals", "portfolio", "journal", "research", "stock", "learning", "performance", "settings"}
 STOCK_TABS = {"overview", "rally", "historical_analogs", "events", "trade"}
 
 

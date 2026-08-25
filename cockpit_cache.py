@@ -8,6 +8,7 @@ import streamlit as st
 import database
 from performance_timing import timed
 from portfolio_analytics import get_portfolio_pnl
+from role_learning_analytics import load_live_role_r1_analytics
 
 
 @st.cache_data(ttl=20, show_spinner=False)
@@ -42,6 +43,13 @@ def load_market_context_bundle() -> dict[str, Any]:
     """Persisted snapshots only; this read path has no provider access."""
     with timed("db.market_context_bundle"):
         return database.load_latest_market_context_bundle()
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_role_learning_analytics() -> dict[str, Any]:
+    """Read persisted ROLE state; never fetch market data or write outcomes."""
+    with timed("db.role_learning_analytics"):
+        return load_live_role_r1_analytics()
 
 
 @st.cache_data(ttl=20, show_spinner=False)
