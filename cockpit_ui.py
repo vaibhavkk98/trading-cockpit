@@ -14,7 +14,7 @@ from cockpit_cache import (
     load_closed_trade_rows, load_ha_snapshot, load_ha_summaries,
     load_market_context_bundle,
     load_open_positions, load_portfolio_pnl, load_portfolio_snapshots,
-    load_portfolio_summary, load_role_learning_analytics,
+    load_portfolio_summary, load_role_evidence, load_role_learning_analytics,
 )
 from historical_analogs_service import HistoricalAnalogService, METHODOLOGY_HASH
 from market_context import NOT_AVAILABLE, summarize_context
@@ -31,7 +31,7 @@ from ui_components import (
 
 PAGES = ["Dashboard", "Opportunities", "Portfolio", "Stock Research", "Learning", "Settings"]
 PAGE_KEYS = {"Dashboard": "today", "Opportunities": "signals", "Portfolio": "portfolio", "Stock Research": "research", "Learning": "learning", "Settings": "settings"}
-STOCK_TABS = ["overview", "rally", "historical_analogs", "events", "trade"]
+STOCK_TABS = ["overview", "rally", "historical_analogs", "role_evidence", "events", "trade"]
 
 PILLAR_HELP = {
     "Trend": {
@@ -665,6 +665,73 @@ def _render_stock_research(decisions, execution_factory, hydrate_portfolio):
     )
 
 
+def _render_role_evidence(candidate):
+    """Read-only ROLE-R2 presentation; loaded only when its tab is selected."""
+    render_section_header("ROLE Evidence", "Your own recommendation-outcome history · Advisory only")
+    opportunity_id = str(candidate.get("opportunity_id") or "")
+    signal_date = str(candidate.get("signal_date") or candidate.get("analysis_date") or "")[:10]
+    report = load_role_evidence(opportunity_id, signal_date) if opportunity_id and signal_date else None
+    if not report:
+        render_empty_state("Recommendation evidence unavailable", "No immutable recommendation snapshot exists for this opportunity.")
+        return
+
+    quality = str(report.get("evidence_quality") or "INSUFFICIENT")
+    baseline = report.get("system_baseline") or {}
+    baseline_n = int(baseline.get("mature_sample_size") or 0)
+    comparable_n = int(report.get("effective_comparable_sample_size") or 0)
+    origins = report.get("prospective_vs_backfilled_evidence") or {}
+    horizon = int(report.get("primary_horizon_sessions") or 10)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: render_context_card("Evidence state", report.get("status") or quality, f"Primary horizon · {horizon}D")
+    with c2: render_context_card("Comparable recommendations", f"N={comparable_n}", "Effective mature comparable sample")
+    with c3: render_context_card("System baseline", _role_metric(baseline.get("plus_5_before_minus_3_success_pct")), f"+5% before -3% · N={baseline_n}")
+    with c4: render_context_card("Evidence origin", f"{int(origins.get('PROSPECTIVE') or 0)} / {int(origins.get('BACKFILL') or 0)}", "Prospective / backfilled")
+
+    if quality == "INSUFFICIENT":
+        st.warning("Current evidence is too limited for a calibrated recommendation view.")
+        for reason in report.get("insufficiency_reasons") or []:
+            st.caption(f"Reason: {reason}")
+    else:
+        render_section_header("Supported estimates", f"Shrunk toward the system baseline · N={comparable_n} · {quality}")
+        values = [
+            ("Estimated +5% before -3%", "estimated_plus_5_before_minus_3_success_pct"),
+            ("Estimated MFE", "estimated_mfe_pct"),
+            ("Estimated MAE", "estimated_mae_pct"),
+            ("Estimated close return", "estimated_close_return_pct"),
+        ]
+        columns = st.columns(4)
+        for index, (label, key) in enumerate(values):
+            with columns[index]: render_context_card(label, _role_metric(report.get(key)), f"{horizon}D · N={comparable_n} · {quality}")
+        estimate = report.get("estimated_plus_5_before_minus_3_success_pct")
+        baseline_success = baseline.get("plus_5_before_minus_3_success_pct")
+        if isinstance(estimate, (int, float)) and isinstance(baseline_success, (int, float)):
+            st.caption(f"Baseline comparison: {estimate - baseline_success:+.2f} percentage points · System baseline N={baseline_n}")
+        for label, key in (("Positive learned drivers", "positive_learned_drivers"), ("Negative learned drivers", "negative_learned_drivers")):
+            drivers = report.get(key) or []
+            if drivers:
+                st.markdown(f"**{label}**")
+                for driver in drivers:
+                    st.caption(f"{driver.get('driver')} · {driver.get('state')} · N={int(driver.get('sample_size') or 0)} · {float(driver.get('success_difference_vs_baseline_pp') or 0):+.2f} pp vs baseline")
+
+    unsupported = report.get("unavailable_or_unsupported_drivers") or []
+    if unsupported:
+        with st.expander("Drivers without enough evidence", expanded=False):
+            for driver in unsupported:
+                sample = f" · N={int(driver['sample_size'])}" if driver.get("sample_size") is not None else ""
+                st.caption(f"{driver.get('driver')} · {driver.get('state')} · Not enough evidence · {driver.get('reason')}{sample}")
+
+    with st.expander("How ROLE evidence works", expanded=False):
+        st.markdown(
+            "ROLE learns from outcomes of this cockpit's own immutable recommendations. "
+            "Historical Analogs instead compares the current market state with a broader historical research pool.\n\n"
+            "Evidence states progress from **INSUFFICIENT** to **EARLY**, **DEVELOPING**, and **STRONG** "
+            "only as sample size and data coverage improve. Estimates are suppressed whenever the baseline "
+            "or comparable drivers fail the existing evidence gates.\n\n"
+            "**Advisory only:** ROLE never changes qualification, ranking, allocation, sizing, execution, or exits."
+        )
+    st.caption(f"Methodology: {report.get('methodology_version', 'NOT_AVAILABLE')} · {report.get('methodology_hash', 'NOT_AVAILABLE')}")
+
+
 def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio, *, show_header=True, sync_query=True):
     symbol = route.get("symbol")
     qualified = _is_qualified(candidate)
@@ -680,7 +747,10 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio,
     if qualified:
         badges.extend([status_badge(short_strategy_name(candidate.get("strategy")), "neutral"), status_badge(compact_allocation(candidate), "neutral")])
     st.markdown(" &nbsp; ".join(badges), unsafe_allow_html=True)
-    labels = {"overview": "Overview", "rally": "Rally", "historical_analogs": "Historical Analogs", "events": "Events", "trade": "Trade"}
+    labels = {"overview": "Overview", "rally": "Rally", "historical_analogs": "Historical Analogs"}
+    if qualified:
+        labels["role_evidence"] = "ROLE Evidence"
+    labels.update({"events": "Events", "trade": "Trade"})
     query_tab = st.query_params.get("tab")
     tab_key = f"stock_tab_{symbol}"
     route_key = f"{tab_key}_route"
@@ -688,6 +758,8 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio,
         current = query_tab if query_tab in STOCK_TABS else route.get("tab") if route.get("tab") in STOCK_TABS else "overview"
     else:
         current = st.session_state.get(route_key, "overview")
+    if current not in labels:
+        current = "overview"
     if st.session_state.get(route_key) != current:
         st.session_state[tab_key] = labels[current]
         st.session_state[route_key] = current
@@ -743,6 +815,7 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio,
                     candidate.get("ha_stock_percentiles") or {},
                 )
             _render_ha(candidate, generic_snapshot, generic_state=True)
+    elif selected == "role_evidence": _render_role_evidence(candidate)
     elif selected == "events": _render_events(candidate)
     else:
         if not qualified:

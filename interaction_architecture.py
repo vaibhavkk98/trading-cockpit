@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional
 
 
 NAVIGATION_PAGES = {"today", "signals", "portfolio", "journal", "research", "stock", "learning", "performance", "settings"}
-STOCK_TABS = {"overview", "rally", "historical_analogs", "events", "trade"}
+STOCK_TABS = {"overview", "rally", "historical_analogs", "role_evidence", "events", "trade"}
 
 
 def canonical_route_symbol(symbol: Any) -> Optional[str]:

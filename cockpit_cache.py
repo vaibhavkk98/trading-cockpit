@@ -9,6 +9,7 @@ import database
 from performance_timing import timed
 from portfolio_analytics import get_portfolio_pnl
 from role_learning_analytics import load_live_role_r1_analytics
+from role_opportunity_evidence import ROLE_R2_METHOD_HASH, load_role_r2_report
 
 
 @st.cache_data(ttl=20, show_spinner=False)
@@ -50,6 +51,14 @@ def load_role_learning_analytics() -> dict[str, Any]:
     """Read persisted ROLE state; never fetch market data or write outcomes."""
     with timed("db.role_learning_analytics"):
         return load_live_role_r1_analytics()
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_role_evidence(opportunity_id: str, signal_date: str,
+                       methodology_hash: str = ROLE_R2_METHOD_HASH) -> dict[str, Any] | None:
+    """Read one frozen recommendation's existing ROLE-R2 evidence only."""
+    with timed("db.role_evidence", opportunity_id=opportunity_id):
+        return load_role_r2_report(opportunity_id)
 
 
 @st.cache_data(ttl=20, show_spinner=False)
