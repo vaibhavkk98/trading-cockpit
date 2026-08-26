@@ -525,6 +525,7 @@ def run_screener(
                 "provenance": [], "failure_reason": type(exc).__name__, "advisory_only": True,
             }
         diagnostics["_runtime_stock_histories"] = stock_data_map
+        diagnostics["_runtime_nifty500_history"] = ha_nifty500
         return results_df, diagnostics
     return results_df
 

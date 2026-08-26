@@ -31,7 +31,7 @@ from ui_components import (
 
 PAGES = ["Dashboard", "Opportunities", "Portfolio", "Stock Research", "Learning", "Settings"]
 PAGE_KEYS = {"Dashboard": "today", "Opportunities": "signals", "Portfolio": "portfolio", "Stock Research": "research", "Learning": "learning", "Settings": "settings"}
-STOCK_TABS = ["overview", "rally", "historical_analogs", "role_evidence", "events", "trade"]
+STOCK_TABS = ["overview", "rally", "historical_analogs", "path_risk", "role_evidence", "events", "trade"]
 
 PILLAR_HELP = {
     "Trend": {
@@ -113,6 +113,11 @@ def _ha_label(candidate, summaries=None):
     quality = snapshot.get("evidence_quality", "INSUFFICIENT")
     count = snapshot.get("analog_count", 0)
     return f"{count} analogs · {quality}" if count else "INSUFFICIENT"
+
+
+def _path_risk_state(candidate) -> str:
+    state = ((candidate or {}).get("path_risk") or {}).get("state")
+    return str(state or "NOT AVAILABLE").replace("_", " ")
 
 
 def _link_table(frame: pd.DataFrame, *, link_column="Stock"):
@@ -303,7 +308,8 @@ def _render_dashboard(decisions, summary, execution_factory, hydrate_portfolio):
     left, right = st.columns([1.55, 1])
     with left:
         pulse = [{"Symbol": canonical_route_symbol(row.get("symbol")), "Strategy": short_strategy_name(row.get("strategy")),
-                  "Allocation": compact_allocation(row), "Volume": row.get("volume_ratio_20")}
+                  "Allocation": compact_allocation(row), "Path Risk": _path_risk_state(row),
+                  "Volume": row.get("volume_ratio_20")}
                  for row in ordered_decisions(decisions)[:6]]
         if pulse:
             st.dataframe(pd.DataFrame(pulse), width="stretch", hide_index=True,
@@ -337,7 +343,8 @@ def _render_opportunities(decisions):
         rows.append({
             "Stock": stock_url(symbol), "Symbol": symbol, "Strategy": short_strategy_name(row.get("strategy")),
             "Allocation": compact_allocation(row), "Entry": row.get("entry_price"),
-            "Volume ratio": row.get("volume_ratio_20"), "Historical Analogs": stock_url(symbol, "historical_analogs"),
+            "Volume ratio": row.get("volume_ratio_20"), "Path Risk": _path_risk_state(row),
+            "Historical Analogs": stock_url(symbol, "historical_analogs"),
             "HA evidence": _ha_label(row, summaries),
         })
     frame = pd.DataFrame(rows)
@@ -732,6 +739,41 @@ def _render_role_evidence(candidate):
     st.caption(f"Methodology: {report.get('methodology_version', 'NOT_AVAILABLE')} · {report.get('methodology_hash', 'NOT_AVAILABLE')}")
 
 
+def _render_path_risk(candidate):
+    payload = candidate.get("path_risk") or {}
+    state = _path_risk_state(candidate)
+    st.info("Path Risk measures downside-path adversity, not expected direction. HIGH risk can still have substantial upside potential.")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: render_context_card("10D Path Risk", state, "Advisory only", "unavailable" if state == "NOT AVAILABLE" else "neutral")
+    with c2: render_context_card("Adverse barrier", format_percent(payload.get("adverse_barrier_probability") * 100) if isinstance(payload.get("adverse_barrier_probability"), (int, float)) else "Not available", "Probability of reaching -3%")
+    with c3: render_context_card("Predicted adversity", format_percent(-payload.get("predicted_adverse_magnitude_pct")) if isinstance(payload.get("predicted_adverse_magnitude_pct"), (int, float)) else "Not available", "Expected MAE / adverse magnitude context")
+    with c4: render_context_card("Feature coverage", format_percent(payload.get("feature_coverage_pct")), "Recommendation-time inputs")
+    if state == "NOT AVAILABLE":
+        missing = payload.get("missing_features") or []
+        reason = payload.get("reason") or (f"Missing required state: {', '.join(missing)}" if missing else "No persisted Path Risk snapshot is available for this opportunity.")
+        st.warning(reason)
+    else:
+        context = payload.get("baseline_context") or {}
+        bucket = context.get("state_bucket") or {}
+        st.caption(
+            f"Historical PR-R1 context only · Overall -3% reach rate {format_percent(context.get('overall_minus_3_reached_pct'))} "
+            f"across N={context.get('research_sample_n', 'Not available')} untouched-test opportunities. "
+            f"The {state} bucket's historical median 10D MAE was {format_percent(bucket.get('median_mae_10d'))}; these are research averages, not an individual forecast."
+        )
+        drivers = payload.get("why_today") or []
+        render_section_header("Why today?", "Largest direct contributions from the frozen dual-head model")
+        for driver in drivers:
+            label = str(driver.get("feature") or "feature").replace("_", " ")
+            barrier = "higher" if driver.get("barrier_direction") == "HIGHER" else "lower"
+            magnitude = "higher" if driver.get("magnitude_direction") == "HIGHER" else "lower"
+            st.caption(f"{label.title()} · barrier contribution {barrier} · magnitude contribution {magnitude}")
+    with st.expander("Methodology & provenance", expanded=False):
+        st.caption(f"Methodology: {payload.get('methodology_version', 'NOT AVAILABLE')} · {payload.get('methodology_hash', 'NOT AVAILABLE')}")
+        st.caption(f"Artifact SHA-256: {payload.get('artifact_sha256', 'NOT AVAILABLE')}")
+        st.caption(f"As of: {payload.get('as_of_timestamp', 'NOT AVAILABLE')} · Source: {payload.get('provenance', 'NOT AVAILABLE')}")
+        st.markdown("Frozen inference only. No sklearn fitting, provider calls, qualification changes, ranking changes, or execution effects occur during navigation.")
+
+
 def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio, *, show_header=True, sync_query=True):
     symbol = route.get("symbol")
     qualified = _is_qualified(candidate)
@@ -749,6 +791,7 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio,
     st.markdown(" &nbsp; ".join(badges), unsafe_allow_html=True)
     labels = {"overview": "Overview", "rally": "Rally", "historical_analogs": "Historical Analogs"}
     if qualified:
+        labels["path_risk"] = "Path Risk"
         labels["role_evidence"] = "ROLE Evidence"
     labels.update({"events": "Events", "trade": "Trade"})
     query_tab = st.query_params.get("tab")
@@ -815,6 +858,7 @@ def _render_stock_detail(candidate, route, execution_factory, hydrate_portfolio,
                     candidate.get("ha_stock_percentiles") or {},
                 )
             _render_ha(candidate, generic_snapshot, generic_state=True)
+    elif selected == "path_risk": _render_path_risk(candidate)
     elif selected == "role_evidence": _render_role_evidence(candidate)
     elif selected == "events": _render_events(candidate)
     else:

@@ -117,6 +117,7 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         symbols = universe.get_universe(date_str=analysis_date.isoformat())
         shortlist, diagnostics = signals.run_stage1_screening(symbols=symbols, max_scan=None, as_of_date=analysis_date.isoformat(), return_diagnostics=True)
         runtime_stock_histories = diagnostics.pop("_runtime_stock_histories", {})
+        runtime_nifty500_history = diagnostics.pop("_runtime_nifty500_history", None)
         candidates = allocator.allocate_candidates(shortlist_df=shortlist, regime_info=regime, open_positions=execution.get_open_positions(),
                                                    position_sizing_mode="EQUAL_WEIGHT", exit_rule_mode="FIXED_10D")
         try:
@@ -155,6 +156,21 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
             diagnostics["ha_snapshot_failure_count"] += sum(
                 1 for decision in decisions if decision.get("ha_features") and decision.get("ha_stock_percentiles")
             )
+        try:
+            from path_risk_service import apply_path_risk
+            diagnostics["path_risk"] = apply_path_risk(
+                decisions, runtime_stock_histories, runtime_nifty500_history, analysis_date
+            )
+        except Exception as exc:
+            for decision in decisions:
+                decision["path_risk"] = {
+                    "state": "NOT AVAILABLE", "reason": type(exc).__name__,
+                    "advisory_only": True,
+                }
+            diagnostics["path_risk"] = {
+                "available": 0, "not_available": len(decisions), "failed": len(decisions),
+                "failure_reason": type(exc).__name__,
+            }
         succeeded = int(diagnostics.get("valid_data_count", 0)); requested = len(symbols); failed = max(0, requested - succeeded)
         status = SCAN_PARTIAL if succeeded and failed else SCAN_SUCCESS
         completed = dt.datetime.now(dt.timezone.utc)
