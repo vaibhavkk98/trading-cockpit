@@ -272,6 +272,25 @@ class RoleOutcomeHorizon(Base):
     matured_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class RolePipelineHealth(Base):
+    """One durable health record per EOD ROLE observation attempt."""
+    __tablename__ = "role_pipeline_health"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_id = Column(String(80), nullable=False, unique=True, index=True)
+    status = Column(String(20), nullable=False, index=True)
+    recommendations_examined = Column(Integer, nullable=False, default=0)
+    observations_updated = Column(Integer, nullable=False, default=0)
+    horizons_matured_payload = Column(Text, nullable=False)
+    lifecycle_counts_payload = Column(Text, nullable=False)
+    failures_count = Column(Integer, nullable=False, default=0)
+    failure_reasons_payload = Column(Text, nullable=False)
+    newest_session_date = Column(Date, nullable=True)
+    last_successful_refresh_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=False)
+    outcome_methodology_hash = Column(String(64), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 class PositionMark(Base):
     __tablename__ = "position_marks"
     __table_args__ = (UniqueConstraint("trade_id", "mark_date", name="uq_position_mark_trade_date"),)
@@ -1179,6 +1198,8 @@ def persist_role_observation_state(state: Dict[str, Any]) -> Dict[str, Any]:
             "completeness": json.dumps(_json_safe(state.get("completeness") or {}), sort_keys=True),
             "missingness": json.dumps(_json_safe(state.get("missingness") or []), sort_keys=True),
         }
+        saved = row is None
+        updated = False
         if row is None:
             row = RoleOutcomeObservation(
                 opportunity_id=opportunity_id, lsv_methodology_hash=lsv_hash,
@@ -1186,6 +1207,7 @@ def persist_role_observation_state(state: Dict[str, Any]) -> Dict[str, Any]:
                 outcome_methodology_hash=outcome_hash, created_at=now, updated_at=now, **values,
             )
             session.add(row)
+            updated = True
         else:
             reference_matches = (row.reference_price is None and reference_price is None) or (
                 row.reference_price is not None and reference_price is not None
@@ -1195,10 +1217,13 @@ def persist_role_observation_state(state: Dict[str, Any]) -> Dict[str, Any]:
                 raise RoleOutcomeConflictError("ROLE observation identity disagrees with immutable recommendation")
             if row.lifecycle_state != "MATURE":
                 for key, value in values.items():
+                    updated = updated or getattr(row, key) != value
                     setattr(row, key, value)
-                row.updated_at = now
+                if updated:
+                    row.updated_at = now
         session.commit(); session.refresh(row)
-        return {"observation_id": row.id, "lifecycle_state": row.lifecycle_state}
+        return {"observation_id": row.id, "lifecycle_state": row.lifecycle_state,
+                "saved": saved, "updated": updated}
     except Exception:
         session.rollback(); raise
     finally:
@@ -1275,6 +1300,87 @@ def role_outcome_lifecycle_counts(outcome_methodology_hash: str) -> Dict[str, in
         counts[str(state)] = int(count)
     counts["TOTAL"] = sum(counts.values())
     return counts
+
+
+def role_outcome_latest_session_date(outcome_methodology_hash: str) -> Optional[str]:
+    value = _safe_read(lambda s: s.query(func.max(RoleOutcomeObservation.last_observation_date)).filter_by(
+        outcome_methodology_hash=str(outcome_methodology_hash)
+    ).scalar())
+    return value.isoformat() if value else None
+
+
+def persist_role_pipeline_health(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Persist an idempotent, explicit ROLE EOD health result."""
+    _require_database(); session = SessionLocal()
+    try:
+        run_id = str(payload["run_id"])
+        now = _context_timestamp(payload.get("completed_at"))
+        status = str(payload.get("status") or "DEGRADED").upper()
+        latest_success = session.query(RolePipelineHealth).filter(
+            RolePipelineHealth.status == "HEALTHY",
+            RolePipelineHealth.last_successful_refresh_at.isnot(None),
+        ).order_by(RolePipelineHealth.last_successful_refresh_at.desc()).first()
+        successful_at = now if status == "HEALTHY" else (
+            latest_success.last_successful_refresh_at if latest_success else None
+        )
+        newest = payload.get("newest_session_date")
+        newest = dt.date.fromisoformat(str(newest)[:10]) if newest else None
+        values = {
+            "status": status,
+            "recommendations_examined": int(payload.get("recommendations_examined") or payload.get("recommendations_considered") or 0),
+            "observations_updated": int(payload.get("observations_updated") or 0),
+            "horizons_matured_payload": json.dumps(_json_safe(payload.get("new_horizons_matured") or {}), sort_keys=True),
+            "lifecycle_counts_payload": json.dumps(_json_safe(payload.get("lifecycle_counts") or {}), sort_keys=True),
+            "failures_count": int(payload.get("failures_count") or payload.get("failed") or 0),
+            "failure_reasons_payload": json.dumps(_json_safe(payload.get("failure_reasons") or []), sort_keys=True),
+            "newest_session_date": newest,
+            "last_successful_refresh_at": successful_at,
+            "completed_at": now,
+            "outcome_methodology_hash": str(payload.get("outcome_methodology_hash") or "NOT_AVAILABLE"),
+        }
+        row = session.query(RolePipelineHealth).filter_by(run_id=run_id).first()
+        if row is None:
+            row = RolePipelineHealth(run_id=run_id, **values); session.add(row)
+        else:
+            for key, value in values.items():
+                setattr(row, key, value)
+        session.commit(); session.refresh(row)
+        return load_latest_role_pipeline_health(session=session) or {}
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def load_latest_role_pipeline_health(*, session=None) -> Optional[Dict[str, Any]]:
+    """Read the latest persisted ROLE observation health without side effects."""
+    owns_session = session is None
+    if owns_session:
+        if not init_db():
+            return None
+        session = SessionLocal()
+    try:
+        row = session.query(RolePipelineHealth).order_by(
+            RolePipelineHealth.completed_at.desc(), RolePipelineHealth.id.desc()
+        ).first()
+        if row is None:
+            return None
+        return {
+            "run_id": row.run_id, "status": row.status,
+            "recommendations_examined": row.recommendations_examined,
+            "observations_updated": row.observations_updated,
+            "new_horizons_matured": json.loads(row.horizons_matured_payload),
+            "lifecycle_counts": json.loads(row.lifecycle_counts_payload),
+            "failures_count": row.failures_count,
+            "failure_reasons": json.loads(row.failure_reasons_payload),
+            "newest_session_date": row.newest_session_date.isoformat() if row.newest_session_date else None,
+            "last_successful_refresh_at": row.last_successful_refresh_at.isoformat() if row.last_successful_refresh_at else None,
+            "completed_at": row.completed_at.isoformat(),
+            "outcome_methodology_hash": row.outcome_methodology_hash,
+        }
+    finally:
+        if owns_session:
+            session.close()
 
 
 def load_role_learning_rows(outcome_methodology_hash: str) -> List[Dict[str, Any]]:

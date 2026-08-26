@@ -13,7 +13,7 @@ import database
 from role_outcome_engine import OUTCOME_METHOD_HASH
 
 
-ROLE_R1_VERSION = "ROLE_R1_ANALYTICS_V1_1"
+ROLE_R1_VERSION = "ROLE_R1_ANALYTICS_V1_2_PATH_RISK_FEATURES"
 NOT_AVAILABLE = "NOT_AVAILABLE"
 
 # One predeclared, interpretable anchor per LSV family.  These are frozen
@@ -36,12 +36,22 @@ INTERACTIONS = {
     "volatility_x_strategy": ("volatility_state", "strategy"),
 }
 
+PATH_RISK_RESEARCH_ANCHORS = {
+    "information_discreteness": ("price_state", "information_discreteness_11m_skip1m", -0.15, 0.15),
+    "max30": ("price_state", "max_daily_return_30d", 3.0, 7.0),
+    "rally_concentration": ("price_state", "positive_return_hhi_20d", 0.10, 0.25),
+    "amihud_liquidity": ("liquidity", "log_amihud_impact_20d", 0.05, 0.50),
+    "volatility_acceleration": ("volatility_state", "volatility_acceleration", -0.5, 0.5),
+    "path_risk_state": ("path_risk_context", "state", None, None),
+}
+
 ANALYTICS_METHOD_HASH = hashlib.sha256(json.dumps({
     "version": ROLE_R1_VERSION,
     "primary_horizon": 10,
     "secondary_horizons": [5, 20],
     "family_anchors": FAMILY_ANCHORS,
     "interactions": INTERACTIONS,
+    "path_risk_research_anchors": PATH_RISK_RESEARCH_ANCHORS,
     "evidence_bands": {"insufficient": 10, "early": 30, "developing": 100},
     "coverage_gates_pct": [50, 70, 90],
 }, sort_keys=True).encode()).hexdigest()
@@ -134,16 +144,21 @@ def _metric_values(rows: Iterable[Mapping[str, Any]], horizon: int, key: str) ->
 def _horizon_summary(rows: Iterable[Mapping[str, Any]], horizon: int) -> dict[str, Any]:
     rows = [row for row in rows if str(horizon) in (row.get("horizons") or {})]
     successes = []
+    adverse_first = []
     for row in rows:
         barrier = row["horizons"][str(horizon)].get("plus_5_before_minus_3") or {}
         if isinstance(barrier, Mapping) and isinstance(barrier.get("value"), bool):
             successes.append(barrier["value"])
+            first_hit = str(barrier.get("first_hit"))
+            if first_hit in ("ADVERSE_FIRST", "SAME_BAR_ADVERSE_FIRST", "TARGET_FIRST", "NEITHER"):
+                adverse_first.append(first_hit in ("ADVERSE_FIRST", "SAME_BAR_ADVERSE_FIRST"))
     def med(key: str) -> float | None:
         values = _metric_values(rows, horizon, key)
         return round(float(median(values)), 6) if values else None
     return {
         "mature_sample_size": len(rows),
         "plus_5_before_minus_3_success_pct": round(100.0 * sum(successes) / len(successes), 6) if successes else None,
+        "minus_3_before_plus_5_pct": round(100.0 * sum(adverse_first) / len(adverse_first), 6) if adverse_first else None,
         "median_mfe_pct": med("mfe_pct"),
         "median_mae_pct": med("mae_pct"),
         "median_close_return_pct": med("close_return_pct"),
@@ -152,7 +167,7 @@ def _horizon_summary(rows: Iterable[Mapping[str, Any]], horizon: int) -> dict[st
 
 def _differences(metrics: Mapping[str, Any], baseline: Mapping[str, Any]) -> dict[str, Any]:
     result = {}
-    for key in ("plus_5_before_minus_3_success_pct", "median_mfe_pct", "median_mae_pct", "median_close_return_pct"):
+    for key in ("plus_5_before_minus_3_success_pct", "minus_3_before_plus_5_pct", "median_mfe_pct", "median_mae_pct", "median_close_return_pct"):
         left = _number(metrics.get(key)); right = _number(baseline.get(key))
         result[f"{key}_difference"] = round(left - right, 6) if left is not None and right is not None else None
     return result
@@ -231,6 +246,20 @@ def build_role_r1_analytics(rows: Iterable[Mapping[str, Any]], as_of_date: Any =
         cohorts, eligible = _grouped(records, lambda row, a=left, b=right: interaction_label(row, a, b), baseline, total_10d)
         interaction_analytics[name] = {"dimensions": [left, right], "eligible_10d": eligible, "cohorts": cohorts}
 
+    path_risk_analytics = {}
+    for name, (family, field, low, high) in PATH_RISK_RESEARCH_ANCHORS.items():
+        def labeler(row, family=family, field=field, low=low, high=high):
+            value = ((row.get("lsv_v1") or {}).get(family) or {}).get(field)
+            if family == "path_risk_context":
+                state = str(value or NOT_AVAILABLE).upper()
+                return state if state in ("LOW", "NORMAL", "ELEVATED", "HIGH") else NOT_AVAILABLE
+            return _three_band(value, low, high, ("LOW", "MIDDLE", "HIGH"))
+        cohorts, eligible = _grouped(records, labeler, baseline, total_10d)
+        path_risk_analytics[name] = {
+            "family": family, "anchor_field": field, "eligible_10d": eligible, "cohorts": cohorts,
+            "descriptive_context_only": name == "path_risk_state",
+        }
+
     return {
         "contract_version": ROLE_R1_VERSION,
         "analytics_methodology_hash": ANALYTICS_METHOD_HASH,
@@ -247,6 +276,8 @@ def build_role_r1_analytics(rows: Iterable[Mapping[str, Any]], as_of_date: Any =
         "strategy_cohorts": strategy_cohorts,
         "family_cohorts": family_analytics,
         "interaction_cohorts": interaction_analytics,
+        "path_risk_research_cohorts": path_risk_analytics,
+        "pipeline_health": database.load_latest_role_pipeline_health(),
         "advisory_only": True,
     }
 

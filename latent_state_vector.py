@@ -1,4 +1,4 @@
-"""Causal LSV-V1 feature contract for qualified-opportunity snapshots.
+"""Versioned causal LSV feature contract for qualified-opportunity snapshots.
 
 This module is descriptive only.  It does not qualify, rank, allocate, size, or
 execute opportunities.  Every calculation is bounded by the supplied signal
@@ -17,14 +17,20 @@ import pandas as pd
 
 
 NOT_AVAILABLE = "NOT_AVAILABLE"
-LSV_VERSION = "LSV_V1"
+LSV_VERSION = "LSV_V2_PATH_RISK_CONTEXT"
 FAMILIES = (
     "price_state", "participation", "relative_demand", "volatility_state",
     "price_response", "positioning", "liquidity", "environment",
 )
-LSV_METHOD_HASH = hashlib.sha256(
-    json.dumps({"version": LSV_VERSION, "families": FAMILIES}, sort_keys=True).encode()
-).hexdigest()
+PATH_RISK_CONTEXT_FIELDS = (
+    "state", "adverse_barrier_probability", "predicted_adverse_magnitude_pct",
+    "methodology_hash", "artifact_sha256", "feature_coverage_pct",
+    "volatility_x_range", "upper_wick_x_max", "impact_x_range", "fip_x_abnormal_volume",
+)
+LSV_METHOD_HASH = hashlib.sha256(json.dumps({
+    "version": LSV_VERSION, "families": FAMILIES,
+    "path_risk_context_fields": PATH_RISK_CONTEXT_FIELDS,
+}, sort_keys=True).encode()).hexdigest()
 
 
 def _number(value: Any) -> float | str:
@@ -64,21 +70,66 @@ def _slice(frame: pd.DataFrame | None, as_of_date: Any) -> pd.DataFrame:
 
 def empty_vector(signal_date: Any = None) -> dict[str, Any]:
     fields = {
-        "price_state": ("return_5d_pct", "return_10d_pct", "return_20d_pct", "return_60d_pct", "ema20_extension_pct", "ema50_extension_pct", "recent_drawdown_pct", "distance_from_20d_high_pct", "distance_from_60d_high_pct"),
-        "participation": ("volume_ratio_20d", "turnover_ratio_20d", "volume_persistence_5d", "up_volume_down_volume_ratio_20d", "delivery_pct", "delivery_ratio"),
+        "price_state": ("return_5d_pct", "return_10d_pct", "return_20d_pct", "return_60d_pct", "ema20_extension_pct", "ema50_extension_pct", "recent_drawdown_pct", "distance_from_20d_high_pct", "distance_from_60d_high_pct", "information_discreteness_11m_skip1m", "max_daily_return_20d", "max_daily_return_30d", "largest_positive_contribution_20d", "top3_positive_contribution_20d", "positive_return_hhi_20d"),
+        "participation": ("volume_ratio_20d", "turnover_ratio_20d", "volume_persistence_5d", "up_volume_down_volume_ratio_20d", "abnormal_volume_frequency_20d", "delivery_pct", "delivery_ratio"),
         "relative_demand": ("stock_vs_nifty500_return_5d_pct", "stock_vs_nifty500_return_10d_pct", "stock_vs_nifty500_return_20d_pct", "cross_sectional_rs_percentile"),
-        "volatility_state": ("atr_pct", "realized_volatility_5d_ann_pct", "realized_volatility_20d_ann_pct", "short_long_volatility_ratio", "range_compression_5d_vs_20d", "range_expansion_ratio"),
+        "volatility_state": ("atr_pct", "realized_volatility_5d_ann_pct", "realized_volatility_20d_ann_pct", "short_long_volatility_ratio", "range_compression_5d_vs_20d", "range_expansion_ratio", "volatility_acceleration"),
         "price_response": ("close_location_value", "overnight_gap_pct", "intraday_return_pct", "upper_wick_ratio", "lower_wick_ratio", "range_expansion_ratio"),
         "positioning": ("futures_open_interest", "futures_basis_pct"),
-        "liquidity": ("traded_value", "traded_value_ratio_20d", "traded_value_percentile_252d", "amihud_price_impact"),
-        "environment": ("trend", "breadth", "volatility", "sector_participation", "investor_participation", "cross_asset", "external_event_risk"),
+        "liquidity": ("traded_value", "traded_value_ratio_20d", "traded_value_percentile_252d", "amihud_price_impact", "log_amihud_impact_20d"),
+        "environment": ("trend", "breadth", "volatility", "sector_participation", "investor_participation", "cross_asset", "external_event_risk", "market_realized_vol_20d", "market_breadth_ema20", "market_trend_ema20"),
     }
     vector = {family: {field: NOT_AVAILABLE for field in names} for family, names in fields.items()}
     missingness = [f"{family}.{field}" for family, names in fields.items() for field in names]
-    vector.update({"contract_version": LSV_VERSION, "methodology_hash": LSV_METHOD_HASH,
+    missingness += [f"path_risk_context.{field}" for field in PATH_RISK_CONTEXT_FIELDS]
+    vector.update({"path_risk_context": {field: NOT_AVAILABLE for field in PATH_RISK_CONTEXT_FIELDS},
+                   "contract_version": LSV_VERSION, "methodology_hash": LSV_METHOD_HASH,
                    "signal_date": str(signal_date)[:10] if signal_date else None,
                    "source_timestamp": None, "missingness": missingness, "provenance": []})
     return vector
+
+
+def apply_path_risk_learning_context(vector: Mapping[str, Any], path_risk: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Enrich a new immutable vector with frozen PR-R1 inputs and metadata."""
+    result = json.loads(json.dumps(vector))
+    payload = path_risk if isinstance(path_risk, Mapping) else {}
+    features = payload.get("learning_features") if isinstance(payload.get("learning_features"), Mapping) else {}
+    mappings = {
+        "price_state": {
+            "information_discreteness_11m_skip1m": "information_discreteness_11m_skip1m",
+            "max_daily_return_20d": "max_daily_return_20d", "max_daily_return_30d": "max_daily_return_30d",
+            "largest_positive_contribution_20d": "largest_positive_contribution_20d",
+            "top3_positive_contribution_20d": "top3_positive_contribution_20d",
+            "positive_return_hhi_20d": "positive_return_hhi_20d",
+        },
+        "participation": {"volume_persistence_5d": "volume_persistence_5d", "abnormal_volume_frequency_20d": "abnormal_volume_frequency_20d"},
+        "volatility_state": {"short_long_volatility_ratio": "realized_vol_ratio_5v20", "range_compression_5d_vs_20d": "range_ratio_5v20", "range_expansion_ratio": "range_expansion_ratio", "volatility_acceleration": "volatility_acceleration"},
+        "price_response": {"close_location_value": "close_location_value", "upper_wick_ratio": "upper_wick_ratio", "lower_wick_ratio": "lower_wick_ratio", "overnight_gap_pct": "gap_return", "intraday_return_pct": "intraday_return", "range_expansion_ratio": "range_expansion_ratio"},
+        "liquidity": {"traded_value_ratio_20d": "traded_value_ratio", "traded_value_percentile_252d": "traded_value_percentile", "log_amihud_impact_20d": "log_amihud_impact_20d"},
+        "environment": {"market_realized_vol_20d": "market_realized_vol_20d", "market_breadth_ema20": "market_breadth_ema20", "market_trend_ema20": "market_trend_ema20"},
+    }
+    for family, fields in mappings.items():
+        result.setdefault(family, {})
+        for target, source in fields.items():
+            value = _number(features.get(source))
+            if value != NOT_AVAILABLE:
+                result[family][target] = value
+    context = result.setdefault("path_risk_context", {})
+    for field in PATH_RISK_CONTEXT_FIELDS:
+        source = features.get(field) if field in ("volatility_x_range", "upper_wick_x_max", "impact_x_range", "fip_x_abnormal_volume") else payload.get(field)
+        context[field] = source if source not in (None, "") else NOT_AVAILABLE
+    result["missingness"] = [
+        f"{family}.{field}" for family in FAMILIES for field, value in result.get(family, {}).items()
+        if value == NOT_AVAILABLE
+    ] + [f"path_risk_context.{field}" for field, value in context.items() if value == NOT_AVAILABLE]
+    if payload:
+        result.setdefault("provenance", []).append({
+            "source": "frozen_pr_r1_path_risk_features",
+            "as_of": payload.get("as_of_timestamp") or NOT_AVAILABLE,
+            "methodology_hash": payload.get("methodology_hash") or NOT_AVAILABLE,
+            "artifact_sha256": payload.get("artifact_sha256") or NOT_AVAILABLE,
+        })
+    return result
 
 
 def build_causal_vector(stock_history: pd.DataFrame, benchmark_history: pd.DataFrame | None,

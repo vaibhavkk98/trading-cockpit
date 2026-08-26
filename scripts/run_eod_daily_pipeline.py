@@ -16,6 +16,15 @@ def main() -> int:
         )
     if result.get("analysis_date"):
         print(f"Resolved expected market date: {result['analysis_date']}")
+    role = result.get("role_outcomes") or {}
+    print(
+        "ROLE observation: "
+        f"{role.get('status', 'NOT_AVAILABLE')} · examined={role.get('recommendations_examined', 0)} · "
+        f"updated={role.get('observations_updated', 0)} · failed={role.get('failures_count', 0)} · "
+        f"latest_session={role.get('newest_session_date') or 'NOT_AVAILABLE'}"
+    )
+    for reason in role.get("failure_reasons") or []:
+        print(f"ROLE degraded: {reason}")
     summary = {key: result.get(key) for key in ("status", "analysis_date", "run_id", "symbols_requested", "symbols_succeeded", "symbols_failed", "qualified_count", "allocated_count", "mark_count", "role_outcomes")}
     print(json.dumps(summary, sort_keys=True, default=str))
     return 0 if result.get("status") in {"SUCCESS", "PARTIAL_SUCCESS", "NO_COMPLETED_MARKET_BAR"} else 1

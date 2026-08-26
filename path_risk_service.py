@@ -153,6 +153,21 @@ def _baseline_context(artifact: Mapping[str, Any], state: str) -> dict[str, Any]
     }
 
 
+def _learning_features(features: Mapping[str, Any]) -> dict[str, Any]:
+    """Persist only causal PR-R1 inputs; never an outcome label."""
+    result = {}
+    for key, value in features.items():
+        if key == "primary_strategy":
+            continue
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            result[key] = "NOT_AVAILABLE"
+        else:
+            result[key] = numeric if math.isfinite(numeric) else "NOT_AVAILABLE"
+    return result
+
+
 def apply_path_risk(
     decisions: list[dict[str, Any]], histories: Mapping[str, pd.DataFrame],
     benchmark_history: pd.DataFrame | None, as_of_date: Any,
@@ -201,6 +216,7 @@ def apply_path_risk(
                 "artifact_sha256": EXPECTED_ARTIFACT_FILE_SHA256,
                 "as_of_timestamp": as_of_timestamp,
                 "provenance": "completed_session_OHLCV_already_fetched_by_EOD_scanner",
+                "learning_features": _learning_features(features),
                 "advisory_only": True,
             }
             unavailable += 1
@@ -222,6 +238,7 @@ def apply_path_risk(
             "artifact_content_sha256": artifact["artifact_sha256"],
             "as_of_timestamp": as_of_timestamp,
             "provenance": "completed_session_OHLCV_already_fetched_by_EOD_scanner",
+            "learning_features": _learning_features(features),
             "advisory_only": True,
         }
         available += 1

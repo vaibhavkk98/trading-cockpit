@@ -1,4 +1,4 @@
-"""Immutable Recommendation Ledger assembly for LSV-V1."""
+"""Immutable Recommendation Ledger assembly for the current LSV contract."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import Any, Iterable, Mapping
 
 import database
 from latent_state_vector import (
-    LSV_METHOD_HASH, LSV_VERSION, NOT_AVAILABLE, assign_cross_sectional_rs_percentiles,
+    LSV_METHOD_HASH, LSV_VERSION, NOT_AVAILABLE, apply_path_risk_learning_context, assign_cross_sectional_rs_percentiles,
     empty_vector, reconstruct_from_decision_payload,
 )
 
@@ -77,10 +77,15 @@ def capture_qualified_recommendations(
             vector = copy.deepcopy(decision.get("lsv_v1") or empty_vector(signal_date))
             vector.setdefault("contract_version", LSV_VERSION)
             vector.setdefault("methodology_hash", LSV_METHOD_HASH)
+            if vector.get("methodology_hash") == LSV_METHOD_HASH:
+                vector = apply_path_risk_learning_context(vector, decision.get("path_risk"))
             bundle = database.load_market_context_bundle_as_of(signal_date, cutoff)
             environment, environment_missing = _environment(bundle)
-            vector["environment"] = environment
-            vector["missingness"] = sorted(set((vector.get("missingness") or []) + environment_missing))
+            vector.setdefault("environment", {}).update(environment)
+            vector["missingness"] = sorted({
+                f"{family}.{field}" for family, values in vector.items() if isinstance(values, Mapping)
+                for field, value in values.items() if value == NOT_AVAILABLE
+            } | set(environment_missing))
             context_timestamps, context_provenance = _context_metadata(bundle)
             opportunity_id = str(decision.get("opportunity_id") or "")
             ha = database.load_historical_analog_snapshot(opportunity_id, signal_date, HA_HASH) if HA_HASH != NOT_AVAILABLE else None

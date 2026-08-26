@@ -126,9 +126,13 @@ def observe_pending_recommendations(histories: Mapping[str, pd.DataFrame],
                                     observation_date: Any) -> dict[str, Any]:
     """Advance all non-mature recommendation outcomes from supplied daily bars."""
     recommendations = database.load_recommendations_for_role_observation(OUTCOME_METHOD_HASH)
-    horizon_saved = horizon_idempotent = failed = 0
+    horizon_saved = horizon_idempotent = failed = observations_updated = 0
+    matured_counts = {str(horizon): 0 for horizon in HORIZONS}
+    failure_reasons: list[str] = []
+    newest_session_date = None
     for recommendation in recommendations:
         try:
+            recommendation_updated = False
             try:
                 reference = float(recommendation.get("reference_price"))
             except (TypeError, ValueError):
@@ -145,6 +149,8 @@ def observe_pending_recommendations(histories: Mapping[str, pd.DataFrame],
             sessions = int(len(future))
             matured = [horizon for horizon in HORIZONS if sessions >= horizon]
             last_date = future.index[-1].date().isoformat() if sessions else None
+            if last_date and (newest_session_date is None or last_date > newest_session_date):
+                newest_session_date = last_date
             state = {
                 **recommendation, "outcome_contract_version": ROLE_OUTCOME_VERSION,
                 "outcome_methodology_hash": OUTCOME_METHOD_HASH,
@@ -159,20 +165,39 @@ def observe_pending_recommendations(histories: Mapping[str, pd.DataFrame],
             if not math.isfinite(reference) or reference <= 0:
                 state["reference_price"] = None
             header = database.persist_role_observation_state(state)
+            recommendation_updated = bool(header.get("updated"))
             for horizon in matured:
                 payload = calculate_horizon_outcome(future, reference, horizon)
                 result = database.persist_role_outcome_horizon(
                     header["observation_id"], horizon, payload["source_end_date"], payload
                 )
-                horizon_saved += int(result["saved"]); horizon_idempotent += int(not result["saved"])
+                saved = int(result["saved"])
+                horizon_saved += saved; horizon_idempotent += int(not result["saved"])
+                matured_counts[str(horizon)] += saved
+                recommendation_updated = recommendation_updated or bool(saved)
             if sessions >= 20:
                 state["lifecycle_state"] = "MATURE"
-                database.persist_role_observation_state(state)
-        except Exception:
+                mature_result = database.persist_role_observation_state(state)
+                recommendation_updated = recommendation_updated or bool(mature_result.get("updated"))
+            observations_updated += int(recommendation_updated)
+        except Exception as exc:
             failed += 1
+            reason = f"{type(exc).__name__}: {str(exc)[:160]}"
+            if reason not in failure_reasons:
+                failure_reasons.append(reason)
+    lifecycle_counts = database.role_outcome_lifecycle_counts(OUTCOME_METHOD_HASH)
+    persisted_latest = database.role_outcome_latest_session_date(OUTCOME_METHOD_HASH)
+    if persisted_latest and (newest_session_date is None or persisted_latest > newest_session_date):
+        newest_session_date = persisted_latest
     return {
         "recommendations_considered": len(recommendations), "horizons_saved": horizon_saved,
         "horizons_idempotent": horizon_idempotent, "failed": failed,
-        "lifecycle_counts": database.role_outcome_lifecycle_counts(OUTCOME_METHOD_HASH),
+        "recommendations_examined": len(recommendations),
+        "observations_updated": observations_updated,
+        "new_horizons_matured": matured_counts,
+        "lifecycle_counts": lifecycle_counts,
+        "failures_count": failed, "failure_reasons": failure_reasons,
+        "newest_session_date": newest_session_date,
+        "status": "HEALTHY" if failed == 0 else "DEGRADED",
         "outcome_methodology_hash": OUTCOME_METHOD_HASH,
     }

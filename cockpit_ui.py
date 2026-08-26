@@ -930,6 +930,17 @@ def _render_learning():
     baseline = analytics.get("baseline") or {}
     baseline_quality = str(baseline.get("evidence_quality") or "INSUFFICIENT")
     origins = (baseline.get("data_coverage") or {}).get("origin_10d_counts") or {}
+    health = analytics.get("pipeline_health") or {}
+    health_status = str(health.get("status") or "NOT_AVAILABLE")
+    freshness = (
+        f"ROLE outcomes refreshed: {health.get('last_successful_refresh_at') or 'NOT AVAILABLE'} · "
+        f"latest session: {health.get('newest_session_date') or 'NOT AVAILABLE'} · status: {health_status}"
+    )
+    if health_status == "DEGRADED":
+        reasons = "; ".join(health.get("failure_reasons") or [])
+        st.warning(f"{freshness}. {reasons}" if reasons else freshness)
+    else:
+        st.caption(freshness)
 
     st.caption(
         f"{total} recommendations · {int(maturity.get('10d') or 0)} mature at 10D · "

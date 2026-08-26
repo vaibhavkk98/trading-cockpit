@@ -8,7 +8,7 @@ from adapters import ExecutionAdapter, MarketDataProvider, PortfolioAllocationEn
 from event_intelligence import EventIntelligenceService
 from live_decision_adapter import assemble_live_decisions
 from latent_state_vector import assign_cross_sectional_rs_percentiles
-from database import persist_analysis_run
+from database import persist_analysis_run, persist_role_pipeline_health
 from operational_runtime import SCAN_PARTIAL, SCAN_SUCCESS
 
 
@@ -201,8 +201,25 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
             from role_outcome_engine import observe_pending_recommendations
             role_outcomes = observe_pending_recommendations(runtime_stock_histories, analysis_date)
         except Exception as exc:
-            role_outcomes = {"recommendations_considered": 0, "horizons_saved": 0,
-                             "failed": 1, "failure_reason": type(exc).__name__}
+            from role_outcome_engine import OUTCOME_METHOD_HASH
+            role_outcomes = {
+                "status": "DEGRADED", "recommendations_considered": 0,
+                "recommendations_examined": 0, "observations_updated": 0,
+                "horizons_saved": 0, "new_horizons_matured": {str(item): 0 for item in (1, 3, 5, 10, 20)},
+                "lifecycle_counts": {}, "failed": 1, "failures_count": 1,
+                "failure_reasons": [f"{type(exc).__name__}: {str(exc)[:160]}"],
+                "newest_session_date": None, "outcome_methodology_hash": OUTCOME_METHOD_HASH,
+            }
+        role_outcomes.update({"run_id": run_id, "completed_at": dt.datetime.now(dt.timezone.utc).isoformat()})
+        try:
+            role_outcomes["pipeline_health"] = persist_role_pipeline_health(role_outcomes)
+            role_outcomes["health_persistence_status"] = "SAVED"
+        except Exception as exc:
+            role_outcomes["status"] = "DEGRADED"
+            role_outcomes["health_persistence_status"] = "FAILED"
+            role_outcomes.setdefault("failure_reasons", []).append(
+                f"HealthPersistence{type(exc).__name__}: {str(exc)[:120]}"
+            )
         mark_result = execution.refresh_portfolio_positions(source_run_id=run_id)
         snapshot_reason = "AUTOMATED_EOD" if source == "AUTOMATED_EOD" else "ANALYSIS_COMPLETED"
         execution.save_portfolio_snapshot(snapshot_reason)
