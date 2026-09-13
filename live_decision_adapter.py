@@ -63,7 +63,7 @@ def assemble_live_decisions(candidates):
     qualifying = [
         dict(candidate)
         for candidate in candidates
-        if candidate.get("is_qualified") and candidate.get("regime", "BULLISH") == "BULLISH"
+        if candidate.get("is_qualified")
     ]
     groups = defaultdict(list)
     for candidate in qualifying:
