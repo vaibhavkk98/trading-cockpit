@@ -1,0 +1,20 @@
+{
+  "activation_market_date": "2026-09-14",
+  "activation_timestamp": "2026-09-13T12:21:55+00:00",
+  "config_hash": "86ed4f1153186874330f62e0c8bb4ad80aef7972a20188952af3697aced1d9c2",
+  "future_review_gate": {
+    "automatic_promotion": false,
+    "minimum_calendar_days_since_first_signal": 90,
+    "minimum_capacity_constrained_decisions": 30,
+    "minimum_completed_baseline_trades": 100,
+    "minimum_completed_challenger_overlap": 80,
+    "minimum_represented_strategies": 3,
+    "minimum_unique_signal_dates": 40,
+    "review_only": true
+  },
+  "historical_holdout": "SEALED: 2024-02-16..2026-07-16",
+  "methodology_hash": "3ed64bac9138d36cc1c582c78803215e0142cd12bf8c9db3c50bfc05e3f43d79",
+  "paper_only": true,
+  "real_money_authority": false,
+  "version": "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": "PB_P1_MANIFEST_V1",
+  "activation_status": "NOT_ACTIVATED",
+  "activation_date": null,
+  "blocker": "PB-P1B activation and production input-mapping validation remain pending",
+  "pb_r2_methodology_hash": "cd82dc5e6a354445506306a1a98c54de8f7287b248e89bf3f6044342d68b8e27",
+  "pb_r2_preregistration_hash": "dcb69bd5d88236f1edf69eab1e401380451cbfe7d1285c12b190742e4f577382",
+  "pb_r2_feature_schema_hash": "ebf75d15e4a7dfbd67411a7923dc314f9298c13737018a97d9f26aa057c96256",
+  "pb_r3_methodology_hash": "7534d1bc782c12e03bf726dcb45a5cd104693c8263c6446f80785fe6638eaf9c",
+  "pb_r3_preregistration_hash": "af6df94bca7926368cd43868301cd67aad5e652f1c5f8279fce1eb5baaf8564f",
+  "selected_methodology": "A_MFE_ADVERSITY_RATIO",
+  "formula": "predicted_MFE_10D / max(abs(predicted_signed_MAE_10D), causal_annual_floor)",
+  "bucket_boundaries": {"unfavorable_lt": 1.0, "favorable_gte": 1.5},
+  "denominator_floor_version": "PB_R3_ANNUAL_CALIBRATION_EXPECTED_MAE_Q25_V1",
+  "annual_mae_floors": {"2024": 5.180464348414731, "2025": 5.307665372589689, "2026": 5.884068340493699},
+  "inference_artifact": {"path": "data/production/predictability/pb_r2_frozen_inference_v1.joblib", "sha256": "5d06576fb89ea3d9d6619d07dbf6b08fc5a07e88ad4456fb623b5d7cf53ea0fd"},
+  "origin": "PROSPECTIVE",
+  "decision_authority": false
+}

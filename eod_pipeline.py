@@ -197,6 +197,35 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         except Exception as exc:
             recommendation_ledger = {"saved": 0, "idempotent": 0, "failed": len(decisions),
                                      "total": len(decisions), "failure_reason": type(exc).__name__}
+        # Prospective AutoPaper is an isolated research ledger. It consumes the
+        # frozen qualified stream but never touches manual paper trades or any
+        # allocator/qualification decision. Manual refreshes cannot advance it.
+        try:
+            from autopaper_prospective import run_prospective_autopaper
+            autopaper_runner = deps.get("autopaper_runner") or run_prospective_autopaper
+            autopaper = autopaper_runner(
+                decisions, runtime_stock_histories, analysis_date, completed, run_id, source=source
+            )
+        except Exception as exc:
+            autopaper = {"status": "DEGRADED", "active": False, "paper_only": True,
+                         "error": type(exc).__name__, "real_money_authority": False}
+        # PB-R3 is a prospective shadow only.  It runs after the canonical
+        # recommendation is finalized and is fully isolated from qualification,
+        # ordering, allocation, persistence of the core run, and ROLE outcomes.
+        try:
+            from pb_asymmetry_shadow import capture_prospective_shadows
+            shadow_capture = deps.get("pb_shadow_capture") or capture_prospective_shadows
+            pb_asymmetry_shadow = shadow_capture(
+                decisions, completed, run_id, DECISION_CONTRACT_VERSION
+            )
+        except Exception as exc:
+            pb_asymmetry_shadow = {
+                "run_id": run_id, "status": "DEGRADED",
+                "opportunities_examined": len(decisions), "qualified_opportunities": len(decisions),
+                "snapshots_created": 0, "idempotent_existing": 0,
+                "unavailable_snapshots": 0, "failures": 1,
+                "failure_reasons": [f"{type(exc).__name__}: {str(exc)[:160]}"],
+            }
         try:
             from role_outcome_engine import observe_pending_recommendations
             role_outcomes = observe_pending_recommendations(runtime_stock_histories, analysis_date)
@@ -227,6 +256,8 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
                 "market_date_diagnostics": market_date_diagnostics,
                 "market_context_refresh": market_context_refresh,
                 "recommendation_ledger": recommendation_ledger,
+                "autopaper": autopaper,
+                "pb_asymmetry_shadow": pb_asymmetry_shadow,
                 "role_outcomes": role_outcomes,
                 "mark_count": mark_result.get("successful_marks", 0), "mark_refresh": {key: mark_result.get(key) for key in (
                     "open_positions", "unique_symbols", "provider_calls", "successful_marks", "failed_marks", "elapsed_seconds")},

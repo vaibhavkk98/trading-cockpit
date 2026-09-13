@@ -1,0 +1,92 @@
+{
+  "artifact_path": "data/production/predictability/pb_r2_frozen_inference_v1.joblib",
+  "artifact_sha256": "5d06576fb89ea3d9d6619d07dbf6b08fc5a07e88ad4456fb623b5d7cf53ea0fd",
+  "component_hashes": {
+    "2024/10/adverse_first": "86f54d5a49c1391d9ac4cbd94ed35484bbac1535ea839cd01ff496bce2c3379e",
+    "2024/10/forward_volatility": "b63a9d3017fb1320e66c9ded4bd12f907220dd9d239a5d041c391bd842136522",
+    "2024/10/mae": "5719ebdde52ff0f4c7bfe669b45aafca0bdecab21b8a3b27b24fd283ecc8c4df",
+    "2024/10/mfe": "c9d42907c5dd2a20b29aee6ef77a26f5d34d409d2ec33ffa2834eef1da15f23c",
+    "2024/10/success_5_before_3": "3e9b50de222b4273db977983e101872475f10def46370a6263171f0cbbc2d154",
+    "2024/20/adverse_first": "8a80a4ffbb1d3acd1e7d585b87581c11dd83a20edd86c4571b37e3d1330a8220",
+    "2024/20/forward_volatility": "a9f7672aa905a093f370d63b8ad096199f8d7f11502962b8cff1b973cf45a633",
+    "2024/20/mae": "6ef6f5ed2ea49d5c5c47eefc16784bf45150d7c5579569c62a873008993547ed",
+    "2024/20/mfe": "45fb4f04a48e58cfbf00ec12e2d494bcb06e04a5e23b24571195c0946bb421ee",
+    "2024/20/success_5_before_3": "4b9ebf57e3e381b84d1b857d24caf473c1530361e41733ca55331401ad9bab2b",
+    "2024/5/adverse_first": "8b710b87f56a880caafde13695a9c28ef5f0d99d036192129784960ef68c33ce",
+    "2024/5/forward_volatility": "526a0312284d7f19ad002911d08718a17474d789299ce5743ad84cbea2f003c2",
+    "2024/5/mae": "f548e82ae018e74ac5ca01b391213133e5d62a88d839645863e61953b3b522bb",
+    "2024/5/mfe": "45e852b37c2bd7e53a55be8ab80dae13d886f2d8771eb989a1ad10d701b71e0c",
+    "2024/5/success_5_before_3": "cebeeee5f428f2fd5990ec184ca5ceda0ff078b866c00c12f6471393f16a551f",
+    "2025/10/adverse_first": "5f8e66a63057fcc0f6c8e5c15d3bd4905aebde34b39d3b03f840f5ea749e5d3a",
+    "2025/10/forward_volatility": "87ec6b3ab5c431bc8f5279f844d10179c938b31d3480337d78ce89c27a0eef4f",
+    "2025/10/mae": "8450433787fb50cbba20fa485f62b4b80feb347a841b3d63da3aed34fe73a303",
+    "2025/10/mfe": "0a1dd8213efa5546690e745fc5cb06c7c804f83babcd064246317e6e87ae3705",
+    "2025/10/success_5_before_3": "fa66e5166dbd6485294304a79173f93870a958ac6ef415b6510205233f169d0e",
+    "2025/20/adverse_first": "44fddca8c417348a7d10d8e0f813643d8eddf1c9cbc53cb79b22699b245c3600",
+    "2025/20/forward_volatility": "b78ff95757acf1ea55527f53ae6cd2a1143281d59d780d70f9d07c6fd05623eb",
+    "2025/20/mae": "69e458d3152f22fde14b21cd852c60ef6291ad8756343d856f0eb3325a182495",
+    "2025/20/mfe": "72cade3fc186869a756f891bd2b656b33522dca7c67c887c5d9e383512cd6749",
+    "2025/20/success_5_before_3": "8bfb82bab4ed43e2454112a64b9061641aea347b9dfb9300da9d442f5d06638c",
+    "2025/5/adverse_first": "30a0083bf15feea06f49b45d7b45175260b9ead8e6cf818e0b6ab1dc6a222d75",
+    "2025/5/forward_volatility": "c7f4337276cf932fd76063b0d8da2922e1b5cf823846e9f24819b5f7b02e7020",
+    "2025/5/mae": "5a0bef6a8c270a13431bd832a7e4cb7c89ccdd3b9ee5c499ea2c7bc5250ad9bf",
+    "2025/5/mfe": "576e2e6b0ac91f0345ccf821a467924770da6143efdb65ff7c2d404211a33915",
+    "2025/5/success_5_before_3": "62fed4093438f75a4961049f4438828163f76a350e6d1b1c5eda7c7b5af30c30",
+    "2026/10/adverse_first": "cc89d1f8e3acf469c9ca2a2bba17102683c0f8441b546575cf12dfe0ac602bae",
+    "2026/10/forward_volatility": "7edb010e8e1169a25bd6fe006c9e4c8ed75bbd5c13fda828e1cb9038eaa9b386",
+    "2026/10/mae": "140a94807224fbd19e7e0bc537c2d93c2aa01fca6f73e3ad35874803a1657145",
+    "2026/10/mfe": "ec36c4fb13ebba3432d82e0326049a3625be084650c2b78dabec0b39c3d57007",
+    "2026/10/success_5_before_3": "a4080fafe0b8123a107c881c13b76da399440765688bd8957b3ce9d817953b78",
+    "2026/20/adverse_first": "78d7fb5c8d72b8b220bace86a11a3d352b081d0f8c9df9e0cda7f743fc30df50",
+    "2026/20/forward_volatility": "b0b7f236fa09164d6d03a796e29d0c3576ab805ce60c62c0770de99758ccb10b",
+    "2026/20/mae": "a8ad18fcdff59994091a4917ced24400f2351ecd52c8fefeed44caafad377294",
+    "2026/20/mfe": "8c233555304fcaf3f9dc47fcc04d83e0a0b8948abc1813ae7576ebb40e7421e0",
+    "2026/20/success_5_before_3": "bc36192c1f6f7d80e71414fff49584edb4039d41ad26d7ab0f7eb26b34df4f6e",
+    "2026/5/adverse_first": "8b11a42cfc7c23450039e8058aa1e2d48e41a77204c3af08a4085d760b85f34a",
+    "2026/5/forward_volatility": "afa23b08da2f6ce0f6d57991c6a3dbfd970b90f11488c2c780d66144368407ce",
+    "2026/5/mae": "b3d195f062358d667ee5f315157d94789ede3722423a08e8165c708aabc7a763",
+    "2026/5/mfe": "2d2f13b596573d4e86bd1b25facedc8ff8e03f0026b9121defb899863781bd13",
+    "2026/5/success_5_before_3": "442d57a1a2c8be6a0e8ce8cf7d1cc42c146104163f2aa18217d05abd334da137"
+  },
+  "created_at": "2026-09-02T07:29:47.635282+00:00",
+  "feature_reference_file_sha256": "ebf75d15e4a7dfbd67411a7923dc314f9298c13737018a97d9f26aa057c96256",
+  "feature_schema_hash": "06ff4500156b2ace4b779dd2c4dcbc5a1ccfaba669e96aede9f2396106873d93",
+  "horizons": [
+    5,
+    10,
+    20
+  ],
+  "outputs": [
+    "mfe",
+    "mae",
+    "forward_volatility",
+    "success_5_before_3",
+    "adverse_first"
+  ],
+  "pb_r2_config_hash": "cd82dc5e6a354445506306a1a98c54de8f7287b248e89bf3f6044342d68b8e27",
+  "pb_r3_methodology_hash": "7534d1bc782c12e03bf726dcb45a5cd104693c8263c6446f80785fe6638eaf9c",
+  "runtime_fitting": false,
+  "schema_version": "PB_R2_INFERENCE_MANIFEST_V1",
+  "training_cutoffs": {
+    "2024": {
+      "base_before": "2022-01-01",
+      "calibration": "2022-01-01..2023-12-31"
+    },
+    "2025": {
+      "base_before": "2023-01-01",
+      "calibration": "2023-01-01..2024-12-31"
+    },
+    "2026": {
+      "base_before": "2024-01-01",
+      "calibration": "2024-01-01..2025-12-31"
+    }
+  },
+  "versions": {
+    "joblib": "1.5.3",
+    "numpy": "2.2.6",
+    "pandas": "3.0.5",
+    "python": "3.12.13",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0"
+  }
+}

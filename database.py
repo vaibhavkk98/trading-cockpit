@@ -83,6 +83,10 @@ class RoleOutcomeConflictError(ValueError):
     """Raised when an already-matured ROLE horizon changes."""
 
 
+class PBShadowConflictError(ValueError):
+    """Raised when an immutable prospective asymmetry identity changes."""
+
+
 DEFAULT_PORTFOLIO_CAPITAL_INR = 1_000_000.0
 DEFAULT_MAX_OPEN_POSITIONS = 10
 
@@ -288,6 +292,207 @@ class RolePipelineHealth(Base):
     last_successful_refresh_at = Column(DateTime(timezone=True), nullable=True)
     completed_at = Column(DateTime(timezone=True), nullable=False)
     outcome_methodology_hash = Column(String(64), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PBAsymmetryShadow(Base):
+    """Immutable prospective PB-R2/PB-R3 advisory snapshot; never a decision input."""
+    __tablename__ = "pb_asymmetry_shadows"
+    __table_args__ = (
+        UniqueConstraint("opportunity_id", "pb_r3_methodology_hash", name="uq_pb_shadow_identity"),
+    )
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    prediction_timestamp = Column(DateTime(timezone=True), nullable=False)
+    symbol = Column(String(32), nullable=False, index=True)
+    security_id = Column(String(180), nullable=True, index=True)
+    strategy = Column(String(120), nullable=False)
+    reference_price = Column(Float, nullable=True)
+    qualification_methodology = Column(String(120), nullable=False)
+    lsv_methodology_hash = Column(String(64), nullable=False, index=True)
+    pb_r2_methodology_hash = Column(String(64), nullable=False, index=True)
+    pb_r3_methodology_hash = Column(String(64), nullable=False, index=True)
+    origin = Column(String(20), nullable=False, index=True)
+    inference_status = Column(String(30), nullable=False, index=True)
+    asymmetry_value = Column(Float, nullable=True)
+    asymmetry_bucket = Column(String(20), nullable=False, index=True)
+    prediction_payload = Column(Text, nullable=False)
+    evidence_payload = Column(Text, nullable=False)
+    feature_coverage = Column(Text, nullable=False)
+    source_timestamps = Column(Text, nullable=False)
+    provenance = Column(Text, nullable=False)
+    snapshot_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PBShadowPipelineHealth(Base):
+    """Operational outcome of one isolated prospective shadow attempt."""
+    __tablename__ = "pb_shadow_pipeline_health"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_id = Column(String(80), nullable=False, unique=True, index=True)
+    status = Column(String(30), nullable=False, index=True)
+    opportunities_examined = Column(Integer, nullable=False, default=0)
+    qualified_opportunities = Column(Integer, nullable=False, default=0)
+    snapshots_created = Column(Integer, nullable=False, default=0)
+    idempotent_existing = Column(Integer, nullable=False, default=0)
+    unavailable_snapshots = Column(Integer, nullable=False, default=0)
+    failures = Column(Integer, nullable=False, default=0)
+    failure_reasons_payload = Column(Text, nullable=False)
+    latest_successful_prediction_date = Column(Date, nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=False)
+    pb_r3_methodology_hash = Column(String(64), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperManifest(Base):
+    """Immutable prospective paper-only methodology activation record."""
+    __tablename__ = "autopaper_manifests"
+    methodology_hash = Column(String(64), primary_key=True)
+    version = Column(String(80), nullable=False, unique=True)
+    activation_timestamp = Column(DateTime(timezone=True), nullable=False)
+    activation_market_date = Column(Date, nullable=False)
+    config_payload = Column(Text, nullable=False)
+    config_hash = Column(String(64), nullable=False)
+    code_identity = Column(String(120), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperAccount(Base):
+    __tablename__ = "autopaper_accounts"
+    account_id = Column(String(40), primary_key=True)
+    methodology_hash = Column(String(64), nullable=False, index=True)
+    initial_capital = Column(Float, nullable=False)
+    cash = Column(Float, nullable=False)
+    last_market_date = Column(Date, nullable=True)
+    status = Column(String(30), nullable=False)
+    state_version = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperOrder(Base):
+    __tablename__ = "autopaper_orders"
+    order_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    side = Column(String(8), nullable=False)
+    requested_session = Column(Date, nullable=False, index=True)
+    order_timestamp = Column(DateTime(timezone=True), nullable=False)
+    status = Column(String(30), nullable=False, index=True)
+    quantity = Column(Integer, nullable=True)
+    requested_capital = Column(Float, nullable=True)
+    fill_timestamp = Column(DateTime(timezone=True), nullable=True)
+    fill_price = Column(Float, nullable=True)
+    fees = Column(Float, nullable=True)
+    slippage = Column(Float, nullable=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperPosition(Base):
+    __tablename__ = "autopaper_positions"
+    position_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    status = Column(String(20), nullable=False, index=True)
+    entry_date = Column(Date, nullable=False)
+    quantity = Column(Integer, nullable=False)
+    entry_price = Column(Float, nullable=False)
+    age = Column(Integer, nullable=False)
+    current_mark = Column(Float, nullable=False)
+    unrealized_pnl = Column(Float, nullable=False)
+    mfe_pct = Column(Float, nullable=False)
+    mae_pct = Column(Float, nullable=False)
+    planned_exit_date = Column(Date, nullable=True)
+    planned_exit_state = Column(String(40), nullable=False)
+    payload = Column(Text, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperTrade(Base):
+    __tablename__ = "autopaper_trades"
+    trade_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    entry_date = Column(Date, nullable=False)
+    exit_date = Column(Date, nullable=False, index=True)
+    net_pnl = Column(Float, nullable=False)
+    realized_return_pct = Column(Float, nullable=False)
+    holding_sessions = Column(Integer, nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperQueueItem(Base):
+    __tablename__ = "autopaper_queue"
+    __table_args__ = (UniqueConstraint("account_id", "opportunity_id", name="uq_autopaper_queue_identity"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False)
+    signal_date = Column(Date, nullable=False)
+    age_sessions = Column(Integer, nullable=False, default=0)
+    status = Column(String(20), nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperDecision(Base):
+    __tablename__ = "autopaper_decisions"
+    decision_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    decision_timestamp = Column(DateTime(timezone=True), nullable=False)
+    market_date = Column(Date, nullable=False, index=True)
+    action = Column(String(20), nullable=False, index=True)
+    reason_code = Column(String(60), nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperCounterfactualLink(Base):
+    __tablename__ = "autopaper_counterfactual_links"
+    link_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False)
+    entered = Column(Boolean, nullable=False, default=False)
+    terminal_reason = Column(String(60), nullable=True)
+    origin = Column(String(20), nullable=False)
+    payload = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperPortfolioSnapshot(Base):
+    __tablename__ = "autopaper_portfolio_snapshots"
+    __table_args__ = (UniqueConstraint("account_id", "market_date", "state_fingerprint", name="uq_autopaper_account_snapshot"),)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    cash = Column(Float, nullable=False)
+    nav = Column(Float, nullable=False)
+    open_positions = Column(Integer, nullable=False)
+    state_fingerprint = Column(String(64), nullable=False)
+    payload = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperHealth(Base):
+    __tablename__ = "autopaper_health"
+    run_id = Column(String(80), primary_key=True)
+    market_date = Column(Date, nullable=False, index=True)
+    run_timestamp = Column(DateTime(timezone=True), nullable=False)
+    status = Column(String(30), nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
@@ -1112,6 +1317,128 @@ def load_recommendation_snapshot(opportunity_id: str, methodology_hash: str) -> 
         "provenance": json.loads(row.provenance), "snapshot_hash": row.snapshot_hash,
         "created_at": row.created_at.isoformat() if row.created_at else None,
     }
+
+
+def persist_pb_asymmetry_shadow(snapshot: Dict[str, Any]) -> Dict[str, Any]:
+    """Insert a PROSPECTIVE-only immutable shadow; identical retries are idempotent."""
+    _require_database(); session = SessionLocal()
+    try:
+        origin = str(snapshot.get("origin") or "").upper()
+        if origin != "PROSPECTIVE":
+            raise ValueError("PB shadow origin must be PROSPECTIVE")
+        signal_date = snapshot.get("signal_date")
+        if isinstance(signal_date, str): signal_date = dt.date.fromisoformat(signal_date[:10])
+        timestamp = _context_timestamp(snapshot.get("prediction_timestamp"))
+        opportunity_id = str(snapshot.get("opportunity_id") or "").strip()
+        pb_r3_hash = str(snapshot.get("pb_r3_methodology_hash") or "").strip()
+        if not opportunity_id or not pb_r3_hash or not isinstance(signal_date, dt.date):
+            raise ValueError("opportunity_id, signal_date and PB-R3 methodology hash are required")
+        content = {
+            "opportunity_id": opportunity_id, "signal_date": signal_date.isoformat(),
+            "prediction_timestamp": timestamp.isoformat(), "symbol": str(snapshot.get("symbol") or ""),
+            "security_id": snapshot.get("security_id"), "strategy": str(snapshot.get("strategy") or "NOT_AVAILABLE"),
+            "reference_price": snapshot.get("reference_price"),
+            "qualification_methodology": str(snapshot.get("qualification_methodology") or "NOT_AVAILABLE"),
+            "lsv_methodology_hash": str(snapshot.get("lsv_methodology_hash") or "NOT_AVAILABLE"),
+            "pb_r2_methodology_hash": str(snapshot.get("pb_r2_methodology_hash") or ""),
+            "pb_r3_methodology_hash": pb_r3_hash, "origin": origin,
+            "inference_status": str(snapshot.get("inference_status") or "NOT_AVAILABLE"),
+            "asymmetry_value": snapshot.get("asymmetry_value"),
+            "asymmetry_bucket": str(snapshot.get("asymmetry_bucket") or "NOT_AVAILABLE"),
+            "predictions": _json_safe(snapshot.get("predictions") or {}),
+            "evidence": _json_safe(snapshot.get("evidence") or {}),
+            "feature_coverage": _json_safe(snapshot.get("feature_coverage") or {}),
+            "source_timestamps": _json_safe(snapshot.get("source_timestamps") or {}),
+            "provenance": _json_safe(snapshot.get("provenance") or []),
+        }
+        hash_content = dict(content); hash_content.pop("prediction_timestamp", None)
+        hash_content["source_timestamps"] = dict(content["source_timestamps"])
+        hash_content["source_timestamps"].pop("prediction_timestamp", None)
+        digest = hashlib.sha256(json.dumps(hash_content, sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
+        existing = session.query(PBAsymmetryShadow).filter_by(opportunity_id=opportunity_id, pb_r3_methodology_hash=pb_r3_hash).first()
+        if existing:
+            if existing.snapshot_hash != digest:
+                raise PBShadowConflictError(f"Immutable PB shadow conflict for {opportunity_id}")
+            return {"saved": False, "snapshot_id": existing.id, "snapshot_hash": digest}
+        row = PBAsymmetryShadow(
+            opportunity_id=opportunity_id, signal_date=signal_date, prediction_timestamp=timestamp,
+            symbol=content["symbol"], security_id=content["security_id"], strategy=content["strategy"],
+            reference_price=content["reference_price"], qualification_methodology=content["qualification_methodology"],
+            lsv_methodology_hash=content["lsv_methodology_hash"], pb_r2_methodology_hash=content["pb_r2_methodology_hash"],
+            pb_r3_methodology_hash=pb_r3_hash, origin=origin, inference_status=content["inference_status"],
+            asymmetry_value=content["asymmetry_value"], asymmetry_bucket=content["asymmetry_bucket"],
+            prediction_payload=json.dumps(content["predictions"], sort_keys=True, default=str),
+            evidence_payload=json.dumps(content["evidence"], sort_keys=True, default=str),
+            feature_coverage=json.dumps(content["feature_coverage"], sort_keys=True, default=str),
+            source_timestamps=json.dumps(content["source_timestamps"], sort_keys=True, default=str),
+            provenance=json.dumps(content["provenance"], sort_keys=True, default=str), snapshot_hash=digest,
+        )
+        session.add(row);session.commit();session.refresh(row)
+        return {"saved": True, "snapshot_id": row.id, "snapshot_hash": digest}
+    except Exception:
+        session.rollback();raise
+    finally:
+        session.close()
+
+
+def persist_pb_shadow_pipeline_health(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Persist one idempotent operational result without changing recommendation state."""
+    _require_database();session=SessionLocal()
+    try:
+        run_id=str(payload["run_id"]);completed=_context_timestamp(payload.get("completed_at"));latest=payload.get("latest_successful_prediction_date")
+        latest=dt.date.fromisoformat(str(latest)[:10]) if latest else None
+        values={
+            "status":str(payload.get("status") or "DEGRADED"),"opportunities_examined":int(payload.get("opportunities_examined") or 0),
+            "qualified_opportunities":int(payload.get("qualified_opportunities") or 0),"snapshots_created":int(payload.get("snapshots_created") or 0),
+            "idempotent_existing":int(payload.get("idempotent_existing") or 0),"unavailable_snapshots":int(payload.get("unavailable_snapshots") or 0),
+            "failures":int(payload.get("failures") or 0),"failure_reasons_payload":json.dumps(_json_safe(payload.get("failure_reasons") or []),sort_keys=True),
+            "latest_successful_prediction_date":latest,"completed_at":completed,
+            "pb_r3_methodology_hash":str(payload.get("pb_r3_methodology_hash") or "NOT_AVAILABLE"),
+        }
+        row=session.query(PBShadowPipelineHealth).filter_by(run_id=run_id).first()
+        if row is None:row=PBShadowPipelineHealth(run_id=run_id,**values);session.add(row)
+        else:
+            for key,value in values.items():setattr(row,key,value)
+        session.commit();session.refresh(row);return load_latest_pb_shadow_pipeline_health(session=session) or {}
+    except Exception:
+        session.rollback();raise
+    finally:session.close()
+
+
+def load_latest_pb_shadow_pipeline_health(*, session=None) -> Optional[Dict[str, Any]]:
+    owns=session is None
+    if owns:
+        if not init_db():return None
+        session=SessionLocal()
+    try:
+        row=session.query(PBShadowPipelineHealth).order_by(PBShadowPipelineHealth.completed_at.desc(),PBShadowPipelineHealth.id.desc()).first()
+        if row is None:return None
+        return {"run_id":row.run_id,"status":row.status,"opportunities_examined":row.opportunities_examined,"qualified_opportunities":row.qualified_opportunities,"snapshots_created":row.snapshots_created,"idempotent_existing":row.idempotent_existing,"unavailable_snapshots":row.unavailable_snapshots,"failures":row.failures,"failure_reasons":json.loads(row.failure_reasons_payload),"latest_successful_prediction_date":row.latest_successful_prediction_date.isoformat() if row.latest_successful_prediction_date else None,"completed_at":row.completed_at.isoformat(),"pb_r3_methodology_hash":row.pb_r3_methodology_hash}
+    finally:
+        if owns:session.close()
+
+
+def pb_shadow_snapshot_count(origin: str = "PROSPECTIVE") -> int:
+    rows=_safe_read(lambda s:s.query(PBAsymmetryShadow).filter_by(origin=str(origin)).all())
+    return len(rows)
+
+
+def load_pb_shadow_research_rows() -> List[Dict[str, Any]]:
+    """Read prospective shadows with existing ROLE horizons; never matures outcomes."""
+    if not init_db():return []
+    session=SessionLocal()
+    try:
+        shadows=session.query(PBAsymmetryShadow).filter_by(origin="PROSPECTIVE").order_by(PBAsymmetryShadow.signal_date,PBAsymmetryShadow.id).all()
+        observations={(x.opportunity_id,x.lsv_methodology_hash):x for x in session.query(RoleOutcomeObservation).all()}
+        ids=[x.id for x in observations.values()]
+        horizons=session.query(RoleOutcomeHorizon).filter(RoleOutcomeHorizon.observation_id.in_(ids)).all() if ids else []
+        by_observation={}
+        for h in horizons:by_observation.setdefault(h.observation_id,{})[str(h.horizon_sessions)]=json.loads(h.payload)
+        result=[]
+        for row in shadows:
+            observation=observations.get((row.opportunity_id,row.lsv_methodology_hash));result.append({"opportunity_id":row.opportunity_id,"signal_date":row.signal_date.isoformat(),"symbol":row.symbol,"strategy":row.strategy,"origin":row.origin,"asymmetry_bucket":row.asymmetry_bucket,"asymmetry_value":row.asymmetry_value,"predictions":json.loads(row.prediction_payload),"evidence":json.loads(row.evidence_payload),"provenance":json.loads(row.provenance),"lifecycle_state":observation.lifecycle_state if observation else "PENDING","horizons":by_observation.get(observation.id,{}) if observation else {}})
+        return result
+    finally:session.close()
 
 
 def recommendation_ledger_coverage() -> Dict[str, Any]:
