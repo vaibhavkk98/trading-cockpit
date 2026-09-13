@@ -496,6 +496,70 @@ class AutoPaperHealth(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class AutoPaperExecutionTelemetry(Base):
+    """Immutable observation of one simulated fill attempt; never controls execution."""
+    __tablename__ = "autopaper_execution_telemetry"
+    telemetry_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    methodology_hash = Column(String(64), nullable=False, index=True)
+    order_id = Column(String(64), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    side = Column(String(8), nullable=False)
+    intended_session = Column(Date, nullable=False, index=True)
+    observed_session = Column(Date, nullable=False, index=True)
+    execution_status = Column(String(30), nullable=False, index=True)
+    market_state = Column(String(40), nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperOpportunityMetadata(Base):
+    """Immutable recommendation-time classification snapshot."""
+    __tablename__ = "autopaper_opportunity_metadata"
+    opportunity_id = Column(String(180), primary_key=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    sector = Column(String(120), nullable=False, index=True)
+    industry = Column(String(160), nullable=False)
+    classification_source = Column(String(120), nullable=False)
+    classification_version = Column(String(80), nullable=False)
+    confidence_status = Column(String(40), nullable=False)
+    payload = Column(Text, nullable=False)
+    snapshot_hash = Column(String(64), nullable=False)
+    captured_at = Column(DateTime(timezone=True), nullable=False)
+
+
+class AutoPaperRiskTelemetry(Base):
+    """Read-only concentration/correlation snapshot, isolated from decisions."""
+    __tablename__ = "autopaper_risk_telemetry"
+    telemetry_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    schema_version = Column(String(60), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperCatastropheObservation(Base):
+    """Prospective catastrophe trigger and later H10 counterfactual observation."""
+    __tablename__ = "autopaper_catastrophe_observations"
+    observation_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    position_id = Column(String(64), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    trigger_date = Column(Date, nullable=False, index=True)
+    status = Column(String(30), nullable=False, index=True)
+    sessions_after_trigger = Column(Integer, nullable=False, default=0)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 class PositionMark(Base):
     __tablename__ = "position_marks"
     __table_args__ = (UniqueConstraint("trade_id", "mark_date", name="uq_position_mark_trade_date"),)

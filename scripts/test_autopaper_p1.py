@@ -60,12 +60,12 @@ def main():
     at = dt.datetime(2026,9,14,12,tzinfo=dt.timezone.utc)
     first = ap.run_prospective_autopaper([decision(advisory={"state":"HIGH"})], histories(), DATES[0].date(), at, "EOD-2026-09-14")
     assert first["active"] and first["paper_only"] and not first["real_money_authority"]
-    assert count(database.AutoPaperAccount) == 3 and count(database.AutoPaperOrder, status="PENDING") == 3
+    assert count(database.AutoPaperAccount) == 4 and count(database.AutoPaperOrder, status="PENDING") == 4
     assert count(database.AutoPaperPosition, status="OPEN") == 0
-    assert count(database.AutoPaperCounterfactualLink, origin="PROSPECTIVE") == 3
+    assert count(database.AutoPaperCounterfactualLink, origin="PROSPECTIVE") == 4
     retry = ap.run_prospective_autopaper([decision(advisory={"state":"LOW"})], histories(), DATES[0].date(), at, "EOD-2026-09-14")
     assert all(x["idempotent"] for x in retry["accounts"].values())
-    assert count(database.AutoPaperOrder) == 3 and count(database.AutoPaperQueueItem) == 3
+    assert count(database.AutoPaperOrder) == 4 and count(database.AutoPaperQueueItem) == 4
 
     second = ap.run_prospective_autopaper([], histories(), DATES[1].date(),
         dt.datetime.combine(DATES[1].date(), dt.time(12), tzinfo=dt.timezone.utc), "EOD-2026-09-15")
@@ -93,18 +93,18 @@ def main():
     for date in DATES[2:11]:
         ap.run_prospective_autopaper([], histories(), date.date(),
             dt.datetime.combine(date.date(), dt.time(12), tzinfo=dt.timezone.utc), f"EOD-{date.date()}")
-    assert count(database.AutoPaperOrder, side="SELL", status="PENDING") == 3
+    assert count(database.AutoPaperOrder, side="SELL", status="PENDING") == 4
     no_exit_bar = {symbol: frame.drop(DATES[11]) for symbol, frame in histories().items()}
     deferred = ap.run_prospective_autopaper([], no_exit_bar, DATES[11].date(),
         dt.datetime.combine(DATES[11].date(), dt.time(12), tzinfo=dt.timezone.utc), f"EOD-{DATES[11].date()}")
     assert all(x["failed_fills"] == 1 for x in deferred["accounts"].values())
-    assert count(database.AutoPaperOrder, side="SELL", status="PENDING") == 3
+    assert count(database.AutoPaperOrder, side="SELL", status="PENDING") == 4
     exit_date = DATES[12].date()
     final = ap.run_prospective_autopaper([], histories(), exit_date,
         dt.datetime.combine(exit_date, dt.time(12), tzinfo=dt.timezone.utc), f"EOD-{exit_date}")
     assert all(x["exits"] == 1 for x in final["accounts"].values())
-    assert count(database.AutoPaperTrade) == 3 and count(database.AutoPaperPosition, status="OPEN") == 0
-    assert count(database.AutoPaperDecision, action="EXIT") == 3
+    assert count(database.AutoPaperTrade) == 4 and count(database.AutoPaperPosition, status="OPEN") == 0
+    assert count(database.AutoPaperDecision, action="EXIT") == 4
     assert count(database.AutoPaperHealth) == 13
     evidence = ap.prospective_evidence()
     assert evidence["accounts"]["BASELINE_C3"]["completed_trades"] == 1
@@ -118,7 +118,7 @@ def main():
     os.environ["AUTOPAPER_KILL_SWITCH"] = "1"
     killed = ap.run_prospective_autopaper([], histories(), DATES[13].date(),
         dt.datetime.combine(DATES[13].date(), dt.time(12), tzinfo=dt.timezone.utc), f"EOD-{DATES[13].date()}")
-    assert killed["kill_switch"] and not killed["active"] and count(database.AutoPaperOrder) == 6
+    assert killed["kill_switch"] and not killed["active"] and count(database.AutoPaperOrder) == 8
     os.environ["AUTOPAPER_KILL_SWITCH"] = "0"
     source = Path(ap.__file__).read_text()
     assert "Replacement" not in source and "add_constrained_paper_trade" not in source

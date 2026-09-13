@@ -6,13 +6,14 @@ import json
 import math
 import os
 from collections import Counter, defaultdict
+from statistics import median
 from typing import Any, Iterable
 
 import database
 
 
 BASELINE = "BASELINE_C3"
-SHADOWS = ("SHADOW_C0", "SHADOW_D1")
+SHADOWS = ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE")
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 METHODOLOGY_HASH = "3ed64bac9138d36cc1c582c78803215e0142cd12bf8c9db3c50bfc05e3f43d79"
 CONFIG_HASH = "86ed4f1153186874330f62e0c8bb4ad80aef7972a20188952af3697aced1d9c2"
@@ -98,10 +99,11 @@ def _account_metrics(account, positions, trades, snapshots) -> dict[str, Any]:
         "today_pnl": snapshots[-1].nav - snapshots[-2].nav if len(snapshots) >= 2 else None,
         "average_trade_return_pct": sum(row.realized_return_pct for row in trades) / len(trades) if trades else None,
         "average_holding_period": sum(row.holding_sessions for row in trades) / len(trades) if trades else None,
+        "catastrophe_exits": sum(_json(row.payload).get("exit_reason") == "CATASTROPHE_EXIT" for row in trades),
     }
 
 
-def _position_row(position, buy_order, entry_decision, nav) -> dict[str, Any]:
+def _position_row(position, buy_order, entry_decision, nav, metadata=None) -> dict[str, Any]:
     pp, op, dp = _json(position.payload), _json(buy_order.payload) if buy_order else {}, _json(entry_decision.payload) if entry_decision else {}
     candidate = op.get("candidate") or {}
     market_value = position.quantity * position.current_mark
@@ -122,7 +124,36 @@ def _position_row(position, buy_order, entry_decision, nav) -> dict[str, Any]:
         "atr_pct": candidate.get("atr_pct"), "sizing_multiplier": dp.get("sizing_multiplier"),
         "requested_capital": dp.get("requested_capital"), "actual_allocation": dp.get("actual_allocated_capital"),
         "advisory": candidate.get("advisory_annotations") or {},
+        "sector": metadata.sector if metadata else "NOT_AVAILABLE",
+        "catastrophe_threshold": pp.get("catastrophe_threshold") if position.account_id == "SHADOW_CATASTROPHE" else None,
     }
+
+
+def _execution_projection(rows) -> dict[str, Any]:
+    payloads = [(_json(row.payload), row) for row in rows]
+    by_order = defaultdict(list)
+    for payload, row in payloads: by_order[row.order_id].append((payload, row))
+    filled = [item for item in payloads if item[1].execution_status == "FILLED"]
+    states = Counter(row.market_state for _, row in payloads)
+    slippage = defaultdict(list)
+    for payload, row in filled:
+        theoretical, actual = payload.get("theoretical_slippage_price"), payload.get("simulated_fill_price")
+        if theoretical is not None and actual is not None: slippage[row.market_state].append(float(actual) - float(theoretical))
+    return {"attempted_entries": sum(row.side == "BUY" for _, row in payloads),
+        "attempted_exits": sum(row.side == "SELL" for _, row in payloads),
+        "filled_attempts": len(filled), "attempts": len(rows),
+        "executable_fill_rate": len(filled) / len(rows) if rows else None,
+        "normal_fills": sum(row.market_state == "NORMAL_EXECUTABLE" for _, row in filled),
+        "gap_fills": sum(row.market_state == "GAP_EXECUTION" for _, row in filled),
+        "locked_range_attempts": states["LOCKED_RANGE"], "zero_volume_attempts": states["ZERO_VOLUME"],
+        "confirmed_upper_circuit_attempts": states["CONFIRMED_UPPER_CIRCUIT"],
+        "confirmed_lower_circuit_attempts": states["CONFIRMED_LOWER_CIRCUIT"],
+        "unfilled_orders": len({row.order_id for _, row in payloads if row.execution_status != "FILLED"}),
+        "next_session_eventual_fills": sum(len(items) > 1 and any(row.execution_status == "FILLED" for _, row in items) for items in by_order.values()),
+        "average_execution_delay_sessions": (sum(max(0, len(items) - 1) for items in by_order.values() if any(row.execution_status == "FILLED" for _, row in items)) /
+            sum(any(row.execution_status == "FILLED" for _, row in items) for items in by_order.values())) if any(any(row.execution_status == "FILLED" for _, row in items) for items in by_order.values()) else None,
+        "slippage_vs_theoretical_by_state": {key: sum(values) / len(values) for key, values in slippage.items()},
+        "circuit_source": "NOT_AVAILABLE"}
 
 
 def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, Any]:
@@ -131,10 +162,12 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
     killed = os.environ.get("AUTOPAPER_KILL_SWITCH", "0").strip().lower() in {"1", "true", "yes"}
     base = {"version": VERSION, "methodology_hash": METHODOLOGY_HASH, "config_hash": CONFIG_HASH,
             "activation_timestamp": ACTIVATION_TIMESTAMP, "first_market_date": FIRST_MARKET_DATE,
-            "paper_only": True, "enabled": enabled, "kill_switch": killed, "accounts": {},
+            "paper_only": True, "enabled": enabled, "kill_switch": killed, "accounts": {}, "shadow_positions": {},
             "positions": [], "orders": {"pending_entries": [], "pending_exits": [], "unfilled": []},
             "latest_decisions": [], "opportunity_statuses": {}, "snapshots": {}, "recent_trades": [],
-            "review_gate": review_gate_progress({}), "health": {"status": "NOT YET RUN"}}
+            "review_gate": review_gate_progress({}), "health": {"status": "NOT YET RUN"},
+            "execution_quality": _execution_projection([]), "risk_observability": {},
+            "catastrophe": {"triggers": 0, "fills": 0, "mature": 0}}
     try:
         database._require_database()
         session = database.SessionLocal()
@@ -149,6 +182,18 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
             all_snapshots = session.query(database.AutoPaperPortfolioSnapshot).order_by(database.AutoPaperPortfolioSnapshot.market_date.asc()).all()
             decisions = session.query(database.AutoPaperDecision).order_by(database.AutoPaperDecision.market_date.desc(), database.AutoPaperDecision.created_at.desc()).all()
             links = session.query(database.AutoPaperCounterfactualLink).all()
+            execution_telemetry = session.query(database.AutoPaperExecutionTelemetry).order_by(
+                database.AutoPaperExecutionTelemetry.observed_session.desc()).all()
+            metadata_rows = session.query(database.AutoPaperOpportunityMetadata).all()
+            risk_rows = session.query(database.AutoPaperRiskTelemetry).order_by(
+                database.AutoPaperRiskTelemetry.market_date.desc()).all()
+            catastrophe_rows = session.query(database.AutoPaperCatastropheObservation).all()
+            queue_rows = session.query(database.AutoPaperQueueItem).all()
+            role_observations = session.query(database.RoleOutcomeObservation).all()
+            role_ids = [x.id for x in role_observations]
+            role_horizons = session.query(database.RoleOutcomeHorizon).filter(
+                database.RoleOutcomeHorizon.observation_id.in_(role_ids),
+                database.RoleOutcomeHorizon.horizon_sessions == 10).all() if role_ids else []
         finally: session.close()
     except Exception as exc:
         base["health"] = {"status": "NOT AVAILABLE", "reason": type(exc).__name__}
@@ -165,11 +210,19 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
         base["snapshots"][account_id] = [{"date": x.market_date.isoformat(), "nav": x.nav, "cash": x.cash} for x in by_snapshots[account_id]]
 
     baseline_orders = by_orders[BASELINE]
+    metadata = {row.opportunity_id: row for row in metadata_rows}
     order_by_opportunity = {row.opportunity_id: row for row in reversed(baseline_orders) if row.side == "BUY"}
     entry_decisions = {row.opportunity_id: row for row in reversed(decisions) if row.account_id == BASELINE and row.action == "ENTER"}
     nav = (base["accounts"].get(BASELINE) or {}).get("nav")
-    base["positions"] = [_position_row(row, order_by_opportunity.get(row.opportunity_id), entry_decisions.get(row.opportunity_id), nav)
+    base["positions"] = [_position_row(row, order_by_opportunity.get(row.opportunity_id), entry_decisions.get(row.opportunity_id), nav, metadata.get(row.opportunity_id))
                          for row in by_positions[BASELINE] if row.status == "OPEN"]
+    for account_id in SHADOWS:
+        shadow_orders = {row.opportunity_id: row for row in reversed(by_orders[account_id]) if row.side == "BUY"}
+        shadow_decisions = {row.opportunity_id: row for row in reversed(decisions) if row.account_id == account_id and row.action == "ENTER"}
+        shadow_nav = (base["accounts"].get(account_id) or {}).get("nav")
+        base["shadow_positions"][account_id] = [_position_row(row, shadow_orders.get(row.opportunity_id),
+            shadow_decisions.get(row.opportunity_id), shadow_nav, metadata.get(row.opportunity_id))
+            for row in by_positions[account_id] if row.status == "OPEN"]
 
     for order in baseline_orders:
         payload = _json(order.payload); candidate = payload.get("candidate") or {}
@@ -178,6 +231,9 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
                "side": order.side, "quantity": order.quantity, "requested_capital": order.requested_capital,
                "status": order.status, "display_status": lifecycle_display(order_status=order.status, side=order.side),
                "next_action": "Next executable open" if order.status == "PENDING" else humanize_reason(order.status)}
+        latest_attempt = next((x for x in execution_telemetry if x.order_id == order.order_id), None)
+        row["market_state"] = latest_attempt.market_state if latest_attempt else "NOT_AVAILABLE"
+        row["fillability_reason"] = (_json(latest_attempt.payload).get("fillability_reason") if latest_attempt else "Not yet attempted")
         if order.status == "PENDING": base["orders"]["pending_exits" if order.side == "SELL" else "pending_entries"].append(row)
         elif order.status in {"FAILED_DATA", "EXPIRED", "REJECTED"}: base["orders"]["unfilled"].append(row)
 
@@ -223,9 +279,11 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
     calendar_days = max(0, (dt.date.today() - first_signal).days + 1) if first_signal else 0
     strategies = len({_json(x.payload).get("strategy") for x in by_trades[BASELINE] if _json(x.payload).get("strategy")})
     capacity = sum(x.account_id == BASELINE and x.reason_code == "NO_CAPACITY" for x in decisions)
-    overlap = min([len(by_trades[x]) for x in (BASELINE, *SHADOWS)], default=0)
+    # Frozen baseline review gate remains tied to its original C0/D1 challengers.
+    overlap = min([len(by_trades[x]) for x in (BASELINE, "SHADOW_C0", "SHADOW_D1")], default=0)
     base["review_gate"] = review_gate_progress({"completed_trades": completed, "signal_dates": signal_dates,
         "calendar_days": calendar_days, "strategies": strategies, "capacity_decisions": capacity, "challenger_overlaps": overlap})
+    base["catastrophe_overlap"] = min(len(by_trades[BASELINE]), len(by_trades["SHADOW_CATASTROPHE"]))
     base["role_linkage_status"] = "ACTIVE" if baseline_links else "NOT YET RUN"
     base["decision_funnel"] = {"qualified": int(health_payload.get("qualified_opportunities") or 0),
         "considered": len(latest_by_opportunity),
@@ -236,6 +294,44 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
         "market_date": latest_date.isoformat() if latest_date else None}
     base["recent_trades"] = [{"symbol": x.symbol, "strategy": _json(x.payload).get("strategy"),
         "entry": x.entry_date.isoformat(), "exit": x.exit_date.isoformat(), "holding_period": x.holding_sessions,
-        "exit_reason": "H10 time exit", "gross_pnl": _json(x.payload).get("gross_pnl"), "costs": sum((_json(x.payload).get(k) or 0) for k in ("entry_fee", "exit_fee", "entry_slippage", "exit_slippage")),
+        "exit_reason": str(_json(x.payload).get("exit_reason") or "H10_TIME_EXIT").replace("_", " ").title(), "gross_pnl": _json(x.payload).get("gross_pnl"), "costs": sum((_json(x.payload).get(k) or 0) for k in ("entry_fee", "exit_fee", "entry_slippage", "exit_slippage")),
         "net_pnl": x.net_pnl, "mfe_pct": _json(x.payload).get("mfe_pct"), "mae_pct": _json(x.payload).get("mae_pct")} for x in by_trades[BASELINE][:20]]
+    baseline_telemetry = [x for x in execution_telemetry if x.account_id == BASELINE]
+    base["execution_quality"] = _execution_projection(baseline_telemetry)
+    latest_risk = next((x for x in risk_rows if x.account_id == BASELINE), None)
+    base["risk_observability"] = _json(latest_risk.payload) if latest_risk else {}
+    catastrophe_payloads = [_json(x.payload) for x in catastrophe_rows]
+    base["catastrophe"] = {"triggers": len(catastrophe_rows),
+        "fills": sum(x.status in {"FILLED_AWAITING_H10", "MATURE"} for x in catastrophe_rows),
+        "mature": sum(x.status == "MATURE" for x in catastrophe_rows),
+        "trigger_rate": len(catastrophe_rows) / len([x for x in links if x.account_id == "SHADOW_CATASTROPHE"]) if any(x.account_id == "SHADOW_CATASTROPHE" for x in links) else None,
+        "average_catastrophe_loss_pct": (sum(x.get("net_catastrophe_return") for x in catastrophe_payloads if x.get("net_catastrophe_return") is not None) /
+            sum(x.get("net_catastrophe_return") is not None for x in catastrophe_payloads)) if any(x.get("net_catastrophe_return") is not None for x in catastrophe_payloads) else None,
+        "average_exit_regret_pct": (sum(x.get("exit_regret_pct") for x in catastrophe_payloads if x.get("exit_regret_pct") is not None) /
+            sum(x.get("exit_regret_pct") is not None for x in catastrophe_payloads)) if any(x.get("exit_regret_pct") is not None for x in catastrophe_payloads) else None}
+    observations_by_id = {x.id: x for x in role_observations}
+    outcomes = {observations_by_id[x.observation_id].opportunity_id: _json(x.payload) for x in role_horizons}
+    baseline_queue = {x.opportunity_id: x for x in queue_rows if x.account_id == BASELINE}
+    cohorts = defaultdict(lambda: {"qualified": 0, "entered": 0, "sectors": Counter(),
+        "strategies": Counter(), "allocation": 0.0, "outcomes": []})
+    for link in baseline_links:
+        key = link.signal_date.isoformat(); cohort = cohorts[key]; cohort["qualified"] += 1
+        cohort["entered"] += int(link.entered)
+        meta = metadata.get(link.opportunity_id); cohort["sectors"][meta.sector if meta else "NOT_AVAILABLE"] += 1
+        queue = baseline_queue.get(link.opportunity_id); qp = _json(queue.payload) if queue else {}
+        cohort["strategies"][qp.get("strategy", "NOT_AVAILABLE")] += 1
+        order = next((x for x in baseline_orders if x.opportunity_id == link.opportunity_id and x.side == "BUY" and x.status == "FILLED"), None)
+        if order: cohort["allocation"] += float(order.quantity or 0) * float(order.fill_price or 0) + float(order.fees or 0)
+        if link.opportunity_id in outcomes: cohort["outcomes"].append(outcomes[link.opportunity_id])
+    base["date_cohorts"] = []
+    for date, cohort in sorted(cohorts.items(), reverse=True):
+        outcome_rows = cohort.pop("outcomes")
+        base["date_cohorts"].append({"signal_date": date, "qualified": cohort["qualified"],
+            "entered": cohort["entered"], "sector_mix": dict(cohort["sectors"]),
+            "strategy_mix": dict(cohort["strategies"]), "aggregate_allocation": cohort["allocation"],
+            "mature_h10_n": len(outcome_rows),
+            "median_h10_return_pct": float(median(float(x["close_return_pct"]) for x in outcome_rows)) if outcome_rows else None,
+            "median_mfe_pct": float(median(float(x["mfe_pct"]) for x in outcome_rows)) if outcome_rows else None,
+            "median_mae_pct": float(median(float(x["mae_pct"]) for x in outcome_rows)) if outcome_rows else None,
+            "plus_5_before_minus_3_rate": sum(x.get("plus_5_before_minus_3") == "TARGET_FIRST" for x in outcome_rows) / len(outcome_rows) if outcome_rows else None})
     return base

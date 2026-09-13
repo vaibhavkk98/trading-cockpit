@@ -587,6 +587,23 @@ def _autopaper_risk(state):
     st.caption("Volatility sizing active: higher-ATR opportunities receive smaller allocations. Frozen parameters are read-only.")
 
 
+def _autopaper_observability(state):
+    execution = state.get("execution_quality") or {}; risk = state.get("risk_observability") or {}
+    sector = risk.get("portfolio_sector_concentration") or {}
+    correlation = risk.get("portfolio_correlation") or {}
+    render_section_header("Prospective risk observability", "Telemetry only · no allocation or execution authority")
+    values = (("Executable fill rate", format_percent(execution.get("executable_fill_rate") * 100) if execution.get("executable_fill_rate") is not None else "Not available"),
+              ("Locked / zero-volume", (execution.get("locked_range_attempts") or 0) + (execution.get("zero_volume_attempts") or 0)),
+              ("Gap fills", execution.get("gap_fills") or 0),
+              ("Largest sector", format_percent(sector.get("largest_sector_share") * 100) if sector.get("largest_sector_share") is not None else "Not available"),
+              ("Largest signal date", format_percent(risk.get("largest_signal_date_exposure") * 100) if risk.get("largest_signal_date_exposure") is not None else "Not available"),
+              ("Average correlation", display_value(correlation.get("average_pairwise_correlation"))))
+    cols = st.columns(3)
+    for index, (label, value) in enumerate(values):
+        with cols[index % 3]: render_context_card(label, value)
+    st.caption("Correlation uses a fixed trailing 20-session close-return window with at least 10 overlapping observations. Missing history remains NOT AVAILABLE.")
+
+
 def _autopaper_gate(state):
     gate = state.get("review_gate") or {}
     render_section_header("Prospective review gate", gate.get("status") or "NOT YET MET")
@@ -620,20 +637,31 @@ def _autopaper_performance(state):
 def _autopaper_shadows(state):
     st.info("Counterfactual research portfolios — they do not affect baseline orders or cash.")
     rows = []
-    labels = {"BASELINE_C3": "Baseline C3", "SHADOW_C0": "Shadow C0", "SHADOW_D1": "Shadow D1"}
-    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1"):
+    labels = {"BASELINE_C3": "Baseline C3", "SHADOW_C0": "Shadow C0", "SHADOW_D1": "Shadow D1",
+              "SHADOW_CATASTROPHE": "Shadow Catastrophe"}
+    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE"):
         item = state.get("accounts", {}).get(account_id)
         if item: rows.append({"Portfolio": labels[account_id], "NAV": item.get("nav"), "Return %": item.get("net_return_pct"),
             "Max drawdown %": item.get("max_drawdown_pct"), "Completed trades": item.get("completed_trades"),
-            "Turnover %": item.get("turnover_pct"), "Costs": item.get("costs"), "Exposure %": item.get("invested_pct")})
+            "Turnover %": item.get("turnover_pct"), "Costs": item.get("costs"), "Exposure %": item.get("invested_pct"),
+            "Catastrophe exits": item.get("catastrophe_exits")})
     if rows: st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
-    else: render_empty_state("No shadow state yet", "All three portfolios begin with the first eligible automated EOD session.")
+    else: render_empty_state("No shadow state yet", "All four portfolios begin with an eligible automated EOD session.")
     series = {}
     for account_id, label in labels.items():
         snapshots = state.get("snapshots", {}).get(account_id) or []
         if snapshots: series[label] = pd.Series({x["date"]: x["nav"] for x in snapshots})
     if series and max(map(len, series.values())) >= 2: st.line_chart(pd.DataFrame(series), width="stretch")
     else: st.caption("No challenger conclusion is available; prospective evidence is still immature.")
+    catastrophe = state.get("catastrophe") or {}
+    st.caption(f"Catastrophe shadow: {catastrophe.get('triggers', 0)} triggers · {catastrophe.get('fills', 0)} fills · {catastrophe.get('mature', 0)} mature counterfactuals · overlap {state.get('catastrophe_overlap', 0)}. Counterfactual research portfolio — no baseline authority.")
+    catastrophe_positions = (state.get("shadow_positions") or {}).get("SHADOW_CATASTROPHE") or []
+    if catastrophe_positions:
+        with st.expander("Catastrophe shadow positions", expanded=False):
+            st.dataframe(pd.DataFrame([{"Symbol": x.get("symbol"), "Sector": x.get("sector"),
+                "Signal date": x.get("signal_date"), "Hold": x.get("hold_label"),
+                "Catastrophe threshold": x.get("catastrophe_threshold")} for x in catastrophe_positions]),
+                width="stretch", hide_index=True)
 
 
 def _autopaper_health(state):
@@ -642,7 +670,7 @@ def _autopaper_health(state):
     rows = [{"Layer": "AutoPaper run", "Status": health.get("status")},
             {"Layer": "Data freshness", "Status": health.get("market_date") or "NOT YET RUN"},
             {"Layer": "Portfolio reconciliation", "Status": health.get("reconciliation") or "NOT AVAILABLE"}]
-    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1"):
+    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE"):
         payload = (health.get("accounts") or {}).get(account_id) or {}
         rows.append({"Layer": account_id, "Status": payload.get("status") or ("HEALTHY" if payload else "NOT AVAILABLE")})
     rows.append({"Layer": "ROLE linkage", "Status": state.get("role_linkage_status") or "NOT AVAILABLE"})
@@ -671,6 +699,7 @@ def _render_portfolio(execution_factory, portfolio_summary_loader, positions_loa
             if pending: st.dataframe(pd.DataFrame(pending), width="stretch", hide_index=True)
             else: st.caption("No pending AutoPaper orders.")
             _autopaper_risk(state)
+            _autopaper_observability(state)
             _autopaper_gate(state)
             _autopaper_health(state)
         elif selected == "Positions":
@@ -1203,6 +1232,17 @@ def _render_learning():
         if not baseline_auto.get("completed_trades"):
             st.info("Open and queued observations are NOT MATURE and are not treated as losses or performance evidence.")
         with st.expander("Baseline vs shadow prospective evidence", expanded=False): _autopaper_shadows(auto)
+        with st.expander("Execution realism, concentration & common factor", expanded=False):
+            _autopaper_observability(auto)
+            execution = auto.get("execution_quality") or {}
+            st.caption(f"Attempts: {execution.get('attempts', 0)} · unfilled orders: {execution.get('unfilled_orders', 0)} · next-session eventual fills: {execution.get('next_session_eventual_fills', 0)} · average delay: {display_value(execution.get('average_execution_delay_sessions'))} sessions.")
+            catastrophe = auto.get("catastrophe") or {}
+            st.caption(f"Catastrophe shadow: {catastrophe.get('triggers', 0)} triggers · trigger rate {format_percent(catastrophe.get('trigger_rate') * 100) if catastrophe.get('trigger_rate') is not None else 'Not available'} · exit regret {format_percent(catastrophe.get('average_exit_regret_pct'))}.")
+            cohorts = auto.get("date_cohorts") or []
+            if cohorts:
+                st.dataframe(pd.DataFrame(cohorts[:20]), width="stretch", hide_index=True)
+            else:
+                st.caption("No prospective date/sector cohorts yet.")
         with st.expander("Frozen review-gate progress", expanded=False): _autopaper_gate(auto)
         st.caption("Entered/non-entered ROLE outcomes, H10 capture, MFE/MAE and +5-before−3 become interpretable only after their persisted horizons mature. Historical/backfilled research is never mixed into these prospective portfolio metrics.")
 

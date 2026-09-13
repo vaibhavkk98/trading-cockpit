@@ -14,13 +14,17 @@ from sqlalchemy.exc import IntegrityError
 
 import database
 from autopaper_v1 import Configuration, ExecutionSimulator, digest
+from autopaper_observability import (
+    TELEMETRY_CONFIG, TELEMETRY_CONFIG_HASH, TELEMETRY_HASH, TELEMETRY_VERSION,
+    bar_context, capture_sector_metadata, persist_risk_snapshot, record_execution_attempt,
+)
 from provider_symbols import yahoo_nse_symbol
 
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 ACTIVATION_TIMESTAMP = dt.datetime(2026, 9, 13, 12, 21, 55, tzinfo=dt.timezone.utc)
 ACTIVATION_MARKET_DATE = dt.date(2026, 9, 14)
 CODE_IDENTITY = "autopaper_prospective.py:v1"
-ACCOUNTS = {
+BASELINE_ACCOUNTS = {
     "BASELINE_C3": {"volatility_sizing": True, "date_cap": None, "authority": "RESEARCH_BASELINE"},
     "SHADOW_C0": {"volatility_sizing": False, "date_cap": None, "authority": "SHADOW_ONLY"},
     "SHADOW_D1": {"volatility_sizing": True, "date_cap": .20, "authority": "SHADOW_ONLY"},
@@ -31,12 +35,26 @@ CONFIG = {
     "participation_limit": .01, "queue_expiry_sessions": 2, "hold_sessions": 10,
     "slippage": .0005, "brokerage_rate": .0015, "brokerage_cap": 20.0,
     "sell_stt": .001, "priority": "P0_FRESHNESS", "replacement": False,
-    "stop": None, "target": None, "paper_only": True, "accounts": ACCOUNTS,
+    "stop": None, "target": None, "paper_only": True, "accounts": BASELINE_ACCOUNTS,
     "activation_timestamp": ACTIVATION_TIMESTAMP.isoformat(),
     "activation_market_date": ACTIVATION_MARKET_DATE.isoformat(),
 }
 CONFIG_HASH = digest(CONFIG)
 METHODOLOGY_HASH = digest({"version": VERSION, "config_hash": CONFIG_HASH, "code_identity": CODE_IDENTITY})
+CATASTROPHE_VERSION = "AUTOPAPER_SHADOW_CATASTROPHE_V1"
+CATASTROPHE_ACTIVATION_TIMESTAMP = dt.datetime(2026, 9, 13, 17, 0, tzinfo=dt.timezone.utc)
+CATASTROPHE_CONFIG = {
+    "baseline_methodology_hash": METHODOLOGY_HASH, "capital": 1_000_000.0,
+    "volatility_sizing": True, "date_cap": None, "hold_sessions": 10,
+    "exit": "WIDER_OF_3_5_ENTRY_ATR_OR_12_PERCENT", "execution": "CAUSAL_DAILY_BAR",
+    "ordinary_stop": None, "target": None, "replacement": False, "authority": "SHADOW_ONLY",
+    "activation_timestamp": CATASTROPHE_ACTIVATION_TIMESTAMP.isoformat(),
+}
+CATASTROPHE_CONFIG_HASH = digest(CATASTROPHE_CONFIG)
+CATASTROPHE_METHODOLOGY_HASH = digest({"version": CATASTROPHE_VERSION,
+    "config_hash": CATASTROPHE_CONFIG_HASH, "code_identity": "autopaper_prospective.py:catastrophe-v1"})
+ACCOUNTS = {**BASELINE_ACCOUNTS, "SHADOW_CATASTROPHE": {
+    "volatility_sizing": True, "date_cap": None, "authority": "SHADOW_ONLY", "catastrophe": True}}
 FUTURE_REVIEW_GATE = {
     "minimum_completed_baseline_trades": 100,
     "minimum_unique_signal_dates": 40,
@@ -116,7 +134,7 @@ def _json(value):
 
 
 def _journal(session, account, market_date, timestamp, action, opportunity_id, reason, **details):
-    payload = {"methodology_hash": METHODOLOGY_HASH, "portfolio_snapshot_id": f"{account.account_id}:{market_date}", **details}
+    payload = {"methodology_hash": account.methodology_hash, "portfolio_snapshot_id": f"{account.account_id}:{market_date}", **details}
     identity = _hash([account.account_id, market_date.isoformat(), opportunity_id, action, reason])
     if session.get(database.AutoPaperDecision, identity):
         return
@@ -141,15 +159,30 @@ def _manifest_and_accounts():
                 config_payload=_json(payload), config_hash=CONFIG_HASH, code_identity=CODE_IDENTITY))
         elif existing.config_hash != CONFIG_HASH:
             raise RuntimeError("AUTOPAPER_IMMUTABLE_MANIFEST_CONFLICT")
+        extra_manifests = (
+            (CATASTROPHE_METHODOLOGY_HASH, CATASTROPHE_VERSION, CATASTROPHE_CONFIG,
+             CATASTROPHE_CONFIG_HASH, "autopaper_prospective.py:catastrophe-v1", CATASTROPHE_ACTIVATION_TIMESTAMP),
+            (TELEMETRY_HASH, TELEMETRY_VERSION, TELEMETRY_CONFIG,
+             TELEMETRY_CONFIG_HASH, "autopaper_observability.py:v1", CATASTROPHE_ACTIVATION_TIMESTAMP),
+        )
+        for method_hash, version, config, config_hash, code_identity, activation_timestamp in extra_manifests:
+            manifest = session.get(database.AutoPaperManifest, method_hash)
+            if manifest is None:
+                session.add(database.AutoPaperManifest(methodology_hash=method_hash, version=version,
+                    activation_timestamp=activation_timestamp, activation_market_date=ACTIVATION_MARKET_DATE,
+                    config_payload=_json(config), config_hash=config_hash, code_identity=code_identity))
+            elif manifest.config_hash != config_hash:
+                raise RuntimeError("AUTOPAPER_IMMUTABLE_MANIFEST_CONFLICT")
         now = dt.datetime.now(dt.timezone.utc)
         for account_id in ACCOUNTS:
+            account_method = CATASTROPHE_METHODOLOGY_HASH if account_id == "SHADOW_CATASTROPHE" else METHODOLOGY_HASH
             account = session.get(database.AutoPaperAccount, account_id)
             if account is None:
                 session.add(database.AutoPaperAccount(
-                    account_id=account_id, methodology_hash=METHODOLOGY_HASH,
+                    account_id=account_id, methodology_hash=account_method,
                     initial_capital=CONFIG["capital"], cash=CONFIG["capital"], status="ACTIVE",
                     state_version=0, created_at=now, updated_at=now))
-            elif account.methodology_hash != METHODOLOGY_HASH:
+            elif account.methodology_hash != account_method:
                 raise RuntimeError("AUTOPAPER_ACCOUNT_METHODOLOGY_CONFLICT")
         session.commit()
     except Exception:
@@ -166,12 +199,115 @@ def _nav(account, positions):
     return float(account.cash + sum(p.quantity * p.current_mark for p in positions))
 
 
+def catastrophe_threshold(entry_price: float, entry_atr: float) -> tuple[float, float]:
+    """Return threshold and permissible downside; rule is frozen, not optimized."""
+    downside = max(.12, 3.5 * entry_atr / entry_price)
+    return entry_price * (1 - downside), downside
+
+
+def _submit_catastrophe_order(session, account, position, market_date, now, bar, execution,
+                              previous_close=None, telemetry_attempts=None):
+    pp = json.loads(position.payload); threshold = float(pp["catastrophe_threshold"])
+    if bar is None or len(bar) < 6 or not all(math.isfinite(x) for x in bar[:4]) or bar[2] > threshold:
+        return False
+    gap = bar[0] <= threshold
+    breach_type = "GAP_THROUGH" if gap else "INTRADAY_BREACH"
+    executable = execution.executable(bar)
+    order_id = _hash([account.account_id, position.position_id, market_date.isoformat(), "CATASTROPHE_SELL"])
+    order = session.get(database.AutoPaperOrder, order_id)
+    payload = {"position_id": position.position_id, "reason": "CATASTROPHE_EXIT",
+        "execution": "ACTUAL_OPEN" if gap else "OBSERVED_INTRADAY_THRESHOLD",
+        "trigger_date": market_date.isoformat(), "trigger_threshold": threshold,
+        "threshold_basis": pp["catastrophe_formula"], "entry_atr": pp["entry_atr"],
+        "entry_price": position.entry_price, "breach_type": breach_type, "gap": gap}
+    if order is None:
+        order = database.AutoPaperOrder(order_id=order_id, account_id=account.account_id,
+            opportunity_id=position.opportunity_id, symbol=position.symbol, side="SELL",
+            requested_session=market_date, order_timestamp=now, status="PENDING",
+            quantity=position.quantity, requested_capital=None, payload=_json(payload), payload_hash=_hash(payload))
+        session.add(order); session.flush()
+    observation_id = _hash([account.account_id, position.position_id, "CATASTROPHE"])
+    observation = session.get(database.AutoPaperCatastropheObservation, observation_id)
+    if observation is None:
+        observation_payload = {**payload, "execution_delay": None, "actual_exit_price": None,
+            "net_catastrophe_return": None, "h10_counterfactual_return": None,
+            "subsequent_mfe_pct": None, "subsequent_mae_pct": None,
+            "position_age_at_trigger": position.age}
+        observation = database.AutoPaperCatastropheObservation(observation_id=observation_id,
+            account_id=account.account_id, opportunity_id=position.opportunity_id,
+            position_id=position.position_id, symbol=position.symbol, trigger_date=market_date,
+            status="TRIGGERED_PENDING" if not executable else "TRIGGERED",
+            sessions_after_trigger=0, payload=_json(observation_payload), payload_hash=_hash(observation_payload))
+        session.add(observation)
+    if not executable:
+        position.planned_exit_state = "CATASTROPHE_PENDING_NEXT_EXECUTABLE_OPEN"
+        position.planned_exit_date = market_date
+        _journal(session, account, market_date, now, "QUEUE", position.opportunity_id,
+            "CATASTROPHE_EXIT_PENDING", order_id=order_id,
+            **{key: value for key, value in payload.items() if key != "reason"})
+        (telemetry_attempts if telemetry_attempts is not None else []).append(
+            (order_id, bar, previous_close, "PENDING", None))
+        return True
+    # Apply frozen sell slippage without creating a synthetic fill below the
+    # completed bar's observed low.
+    reference = max(bar[0] if gap else threshold, bar[2] / (1 - CONFIG["slippage"]))
+    fill = execution.sell(reference, position.quantity)
+    account.cash += fill["proceeds"]
+    entry_cost = pp["entry_cost"]; pnl = fill["proceeds"] - entry_cost
+    trade_payload = {**pp, **payload, "exit_date": market_date.isoformat(),
+        "quantity": position.quantity, "exit_price": fill["price"], "exit_fee": fill["fee"],
+        "exit_slippage": fill["slippage_cost"], "gross_pnl": (reference - position.entry_price / (1 + CONFIG["slippage"])) * position.quantity,
+        "net_pnl": pnl, "holding_sessions": position.age, "mfe_pct": position.mfe_pct,
+        "mae_pct": min(position.mae_pct, (bar[2] / position.entry_price - 1) * 100),
+        "exit_reason": "CATASTROPHE_EXIT"}
+    session.add(database.AutoPaperTrade(trade_id=_hash([account.account_id, position.position_id, "TRADE"]),
+        account_id=account.account_id, opportunity_id=position.opportunity_id, symbol=position.symbol,
+        entry_date=position.entry_date, exit_date=market_date, net_pnl=pnl,
+        realized_return_pct=(fill["proceeds"] / entry_cost - 1) * 100,
+        holding_sessions=position.age, payload=_json(trade_payload), payload_hash=_hash(trade_payload)))
+    position.status = "CLOSED"; position.planned_exit_state = "FILLED"
+    order.status = "FILLED"; order.fill_timestamp = now; order.fill_price = fill["price"]
+    order.fees = fill["fee"]; order.slippage = fill["slippage_cost"]
+    op = json.loads(observation.payload); op.update({"execution_delay": 0,
+        "actual_exit_price": fill["price"], "net_catastrophe_return": (fill["proceeds"] / entry_cost - 1) * 100})
+    observation.status = "FILLED_AWAITING_H10"; observation.payload = _json(op); observation.payload_hash = _hash(op)
+    _journal(session, account, market_date, now, "EXIT", position.opportunity_id,
+        "CATASTROPHE_EXIT", order_id=order_id, actual_allocated_capital=fill["proceeds"],
+        **{key: value for key, value in payload.items() if key != "reason"})
+    (telemetry_attempts if telemetry_attempts is not None else []).append(
+        (order_id, bar, previous_close, "FILLED", fill))
+    return True
+
+
+def _advance_catastrophe_observations(session, histories, market_date, execution):
+    rows = session.query(database.AutoPaperCatastropheObservation).filter_by(
+        account_id="SHADOW_CATASTROPHE", status="FILLED_AWAITING_H10").all()
+    for row in rows:
+        bar = _bar(histories, row.symbol, market_date)
+        if not execution.executable(bar) or market_date <= row.trigger_date:
+            continue
+        payload = json.loads(row.payload); row.sessions_after_trigger += 1
+        exit_price = payload.get("actual_exit_price")
+        if exit_price:
+            gain = (bar[1] / exit_price - 1) * 100; loss = (bar[2] / exit_price - 1) * 100
+            payload["subsequent_mfe_pct"] = max(payload.get("subsequent_mfe_pct") or 0., gain)
+            payload["subsequent_mae_pct"] = min(payload.get("subsequent_mae_pct") or 0., loss)
+        remaining = max(0, 10 - int(payload.get("position_age_at_trigger") or 0))
+        if row.sessions_after_trigger >= remaining:
+            reference = bar[0]; entry_price = float(payload["entry_price"])
+            payload["h10_counterfactual_return"] = (reference * (1 - CONFIG["slippage"]) / entry_price - 1) * 100
+            payload["exit_regret_pct"] = payload["h10_counterfactual_return"] - float(payload.get("net_catastrophe_return") or 0)
+            row.status = "MATURE"
+        row.payload = _json(payload); row.payload_hash = _hash(payload)
+
+
 def _process_account(account_id, decisions, histories, market_date, timestamp):
     cfg = Configuration()
     execution = ExecutionSimulator(cfg)
     session = database.SessionLocal()
     stats = {"account_id": account_id, "new_entries": 0, "exits": 0, "failed_fills": 0,
              "warnings": [], "idempotent": False}
+    telemetry_attempts = []
     try:
         if database.DATABASE_BACKEND == "SQLITE":
             from sqlalchemy import text
@@ -182,6 +318,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             return stats
         account_cfg = ACCOUNTS[account_id]
         now = timestamp
+        if account_id == "SHADOW_CATASTROPHE":
+            _advance_catastrophe_observations(session, histories, market_date, execution)
         # Advance the persisted queue by one observed EOD session.
         queue = session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, status="ACTIVE").all()
         for item in queue:
@@ -190,7 +328,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
         pending = session.query(database.AutoPaperOrder).filter_by(account_id=account_id, status="PENDING").order_by(
             database.AutoPaperOrder.side.desc(), database.AutoPaperOrder.created_at.asc()).all()
         for order in sorted(pending, key=lambda x: (x.side != "SELL", x.created_at)):
-            bar = _bar(histories, order.symbol, market_date)
+            context = bar_context(histories, order.symbol, market_date)
+            bar = context["bar"]
             if not execution.executable(bar):
                 # Frozen simulator semantics retain time exits until the next
                 # executable open. Entry attempts can be regenerated only
@@ -200,6 +339,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 stats["failed_fills"] += 1
                 _journal(session, account, market_date, now, "QUEUE", order.opportunity_id,
                          "DATA_UNAVAILABLE", order_id=order.order_id)
+                telemetry_attempts.append((order.order_id, bar, context["previous_close"],
+                    "PENDING" if order.side == "SELL" else "UNFILLED", None))
                 continue
             if order.side == "SELL":
                 payload = json.loads(order.payload); position = session.get(database.AutoPaperPosition, payload["position_id"])
@@ -209,12 +350,13 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 account.cash += fill["proceeds"]
                 entry_cost = json.loads(position.payload)["entry_cost"]
                 pnl = fill["proceeds"] - entry_cost
+                exit_reason = payload.get("reason", "H10_TIME_EXIT")
                 trade_payload = {**json.loads(position.payload), "exit_date": market_date.isoformat(),
                     "quantity": position.quantity, "exit_price": fill["price"],
                     "exit_fee": fill["fee"], "exit_slippage": fill["slippage_cost"],
                     "gross_pnl": (bar[0] - position.entry_price / (1 + CONFIG["slippage"])) * position.quantity,
                     "net_pnl": pnl, "holding_sessions": position.age, "mfe_pct": position.mfe_pct,
-                    "mae_pct": position.mae_pct, "exit_reason": "H10_TIME_EXIT"}
+                    "mae_pct": position.mae_pct, "exit_reason": exit_reason}
                 trade_id = _hash([account_id, position.position_id, "TRADE"])
                 session.add(database.AutoPaperTrade(
                     trade_id=trade_id, account_id=account_id, opportunity_id=position.opportunity_id,
@@ -225,7 +367,17 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 order.status = "FILLED"; order.quantity = position.quantity; order.fill_timestamp = now
                 order.fill_price = fill["price"]; order.fees = fill["fee"]; order.slippage = fill["slippage_cost"]
                 _journal(session, account, market_date, now, "EXIT", position.opportunity_id,
-                         "H10_TIME_EXIT", order_id=order.order_id, actual_allocated_capital=fill["proceeds"])
+                         exit_reason, order_id=order.order_id, actual_allocated_capital=fill["proceeds"])
+                telemetry_attempts.append((order.order_id, bar, context["previous_close"], "FILLED", fill))
+                if exit_reason == "CATASTROPHE_EXIT":
+                    observation = session.query(database.AutoPaperCatastropheObservation).filter_by(
+                        account_id=account_id, position_id=position.position_id).first()
+                    if observation:
+                        op = json.loads(observation.payload); delay = max(0, (market_date - observation.trigger_date).days)
+                        op.update({"execution_delay": delay, "actual_exit_price": fill["price"],
+                            "net_catastrophe_return": (fill["proceeds"] / entry_cost - 1) * 100})
+                        observation.status = "FILLED_AWAITING_H10"; observation.payload = _json(op)
+                        observation.payload_hash = _hash(op)
                 stats["exits"] += 1
             else:
                 queue_item = session.query(database.AutoPaperQueueItem).filter_by(
@@ -242,13 +394,22 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 available = max(0., account.cash - current_nav * CONFIG["reserve"])
                 fill = execution.buy(bar, min(float(order.requested_capital or 0), available))
                 if fill is None:
-                    order.status = "FAILED_DATA"; stats["failed_fills"] += 1; continue
+                    order.status = "FAILED_DATA"; stats["failed_fills"] += 1
+                    telemetry_attempts.append((order.order_id, bar, context["previous_close"], "UNFILLED", None))
+                    continue
                 account.cash -= fill["cost"]
                 position_id = _hash([account_id, order.opportunity_id, "POSITION"])
                 qpayload = json.loads(queue_item.payload)
                 ppayload = {"signal_date": qpayload["signal_date"], "strategy": qpayload["strategy"],
                     "entry_cost": fill["cost"], "entry_fee": fill["fee"], "entry_slippage": fill["slippage_cost"],
-                    "methodology_hash": METHODOLOGY_HASH, "planned_hold_sessions": 10}
+                    "methodology_hash": account.methodology_hash, "planned_hold_sessions": 10}
+                if account_id == "SHADOW_CATASTROPHE":
+                    entry_atr = float(qpayload["reference_price"]) * float(qpayload["atr_pct"]) / 100
+                    threshold, downside = catastrophe_threshold(fill["price"], entry_atr)
+                    ppayload.update({"entry_atr": float(qpayload["reference_price"]) * float(qpayload["atr_pct"]) / 100,
+                        "catastrophe_downside_pct": downside * 100,
+                        "catastrophe_threshold": threshold,
+                        "catastrophe_formula": "WIDER_OF_3_5_ENTRY_ATR_OR_12_PERCENT"})
                 session.add(database.AutoPaperPosition(
                     position_id=position_id, account_id=account_id, opportunity_id=order.opportunity_id,
                     symbol=order.symbol, status="OPEN", entry_date=market_date, quantity=fill["quantity"],
@@ -264,12 +425,20 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                          order_id=order.order_id, sizing_multiplier=json.loads(order.payload)["sizing_multiplier"],
                          requested_capital=order.requested_capital, actual_allocated_capital=fill["cost"],
                          quantity=fill["quantity"], fill_price=fill["price"])
+                telemetry_attempts.append((order.order_id, bar, context["previous_close"], "FILLED", fill))
                 stats["new_entries"] += 1
         # Entry occurs at today's open, so today's completed bar is holding session 1.
         session.flush()
         # Mark positions with completed-session OHLC and submit H10 exits for next open.
         for position in _active_positions(session, account_id):
-            bar = _bar(histories, position.symbol, market_date)
+            mark_context = bar_context(histories, position.symbol, market_date)
+            bar = mark_context["bar"]
+            if account_id == "SHADOW_CATASTROPHE" and _submit_catastrophe_order(
+                    session, account, position, market_date, now, bar, execution,
+                    mark_context["previous_close"], telemetry_attempts):
+                if position.status == "CLOSED": stats["exits"] += 1
+                else: stats["failed_fills"] += 1
+                continue
             if not execution.executable(bar):
                 stats["warnings"].append(f"DATA_UNAVAILABLE:{position.symbol}"); continue
             position.age += 1; position.current_mark = bar[3]
@@ -360,7 +529,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 continue
             order_id = _hash([account_id, oid, market_date.isoformat(), "BUY"])
             payload = {"candidate": candidate, "execution": "NEXT_EXECUTABLE_OPEN",
-                       "sizing_multiplier": multiplier, "methodology_hash": METHODOLOGY_HASH}
+                       "sizing_multiplier": multiplier, "methodology_hash": account.methodology_hash}
             if session.get(database.AutoPaperOrder, order_id) is None:
                 session.add(database.AutoPaperOrder(
                     order_id=order_id, account_id=account_id, opportunity_id=oid, symbol=item.symbol,
@@ -375,7 +544,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
         positions = _active_positions(session, account_id); nav = _nav(account, positions)
         if account.cash < -1e-7 or abs(nav - (account.cash + sum(p.quantity * p.current_mark for p in positions))) > .01:
             raise RuntimeError("AUTOPAPER_PORTFOLIO_RECONCILIATION_FAILED")
-        snapshot_payload = {"methodology_hash": METHODOLOGY_HASH, "account": account_id,
+        snapshot_payload = {"methodology_hash": account.methodology_hash, "account": account_id,
             "cash": account.cash, "nav": nav, "open_positions": len(positions),
             "pending_orders": session.query(database.AutoPaperOrder).filter_by(account_id=account_id, status="PENDING").count()}
         fingerprint = _hash(snapshot_payload)
@@ -386,6 +555,22 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 open_positions=len(positions), state_fingerprint=fingerprint, payload=_json(snapshot_payload)))
         account.last_market_date = market_date; account.state_version += 1; account.updated_at = now
         session.commit()
+        if telemetry_attempts:
+            telemetry_session = database.SessionLocal()
+            try:
+                telemetry_account = telemetry_session.get(database.AutoPaperAccount, account_id)
+                for order_id, observed_bar, previous_close, attempt_status, fill in telemetry_attempts:
+                    telemetry_order = telemetry_session.get(database.AutoPaperOrder, order_id)
+                    if telemetry_order:
+                        record_execution_attempt(telemetry_session, account=telemetry_account,
+                            order=telemetry_order, market_date=market_date, bar=observed_bar,
+                            previous_close=previous_close, filled=attempt_status == "FILLED",
+                            fill=fill, status=attempt_status)
+                telemetry_session.commit()
+            except Exception as exc:
+                telemetry_session.rollback(); stats["warnings"].append(f"EXECUTION_TELEMETRY:{type(exc).__name__}")
+            finally:
+                telemetry_session.close()
         stats.update(cash=account.cash, nav=nav, open_positions=len(positions),
                      queue_size=session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, status="ACTIVE").count())
         return stats
@@ -409,7 +594,15 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
     if market_date < ACTIVATION_MARKET_DATE or timestamp < ACTIVATION_TIMESTAMP:
         return {"status": "PRE_ACTIVATION", "active": False, "paper_only": True, "historical_backfill": False}
     _manifest_and_accounts()
-    results, errors = {}, []
+    results, errors, observability_warnings = {}, [], []
+    metadata_session = database.SessionLocal()
+    try:
+        capture_sector_metadata(metadata_session, decisions, timestamp)
+        metadata_session.commit()
+    except Exception as exc:
+        metadata_session.rollback(); observability_warnings.append(f"SECTOR_TELEMETRY:{type(exc).__name__}")
+    finally:
+        metadata_session.close()
     for account_id in ACCOUNTS:
         try:
             # Kill switch blocks new opportunities but still permits deterministic H10 exits.
@@ -418,11 +611,16 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
         except Exception as exc:
             errors.append(f"{account_id}:{type(exc).__name__}")
             results[account_id] = {"account_id": account_id, "status": "FAILED", "error": type(exc).__name__}
+        try:
+            if results[account_id].get("status") != "FAILED":
+                persist_risk_snapshot(account_id, market_date, histories, decisions)
+        except Exception as exc:
+            observability_warnings.append(f"RISK_TELEMETRY:{account_id}:{type(exc).__name__}")
     health = {"run_id": f"AUTOPAPER-{run_id}", "run_timestamp": timestamp.isoformat(),
         "market_date": market_date.isoformat(), "qualified_opportunities": len(decisions),
         "kill_switch": killed, "paper_only": True, "accounts": results,
-        "shadow_run_status": "HEALTHY" if all(k in results and results[k].get("status") != "FAILED" for k in ("SHADOW_C0", "SHADOW_D1")) else "DEGRADED",
-        "errors": errors, "warnings": [w for value in results.values() for w in value.get("warnings", [])],
+        "shadow_run_status": "HEALTHY" if all(k in results and results[k].get("status") != "FAILED" for k in ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE")) else "DEGRADED",
+        "errors": errors, "warnings": [w for value in results.values() for w in value.get("warnings", [])] + observability_warnings,
         "status": "HEALTHY" if not errors else "DEGRADED"}
     session = database.SessionLocal()
     try:
@@ -438,8 +636,11 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
         session.rollback(); raise
     finally:
         session.close()
-    return {**health, "active": not killed and not errors, "methodology_hash": METHODOLOGY_HASH,
+    baseline_failed = results.get("BASELINE_C3", {}).get("status") == "FAILED"
+    return {**health, "active": not killed and not baseline_failed, "methodology_hash": METHODOLOGY_HASH,
             "config_hash": CONFIG_HASH, "activation_timestamp": ACTIVATION_TIMESTAMP.isoformat(),
+            "telemetry_version": TELEMETRY_VERSION, "catastrophe_methodology_hash": CATASTROPHE_METHODOLOGY_HASH,
+            "catastrophe_config_hash": CATASTROPHE_CONFIG_HASH,
             "historical_holdout_opened": False, "real_money_authority": False}
 
 
