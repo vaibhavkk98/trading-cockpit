@@ -10,6 +10,7 @@ from performance_timing import timed
 from portfolio_analytics import get_portfolio_pnl
 from role_learning_analytics import load_live_role_r1_analytics
 from role_opportunity_evidence import ROLE_R2_METHOD_HASH, load_role_r2_report
+from autopaper_ui_service import load_autopaper_ui_state
 
 
 @st.cache_data(ttl=20, show_spinner=False)
@@ -59,6 +60,13 @@ def load_role_evidence(opportunity_id: str, signal_date: str,
     """Read one frozen recommendation's existing ROLE-R2 evidence only."""
     with timed("db.role_evidence", opportunity_id=opportunity_id):
         return load_role_r2_report(opportunity_id)
+
+
+@st.cache_data(ttl=20, show_spinner=False)
+def load_autopaper_cockpit(opportunity_ids: tuple[str, ...] = ()) -> dict[str, Any]:
+    """Persisted AutoPaper projection only; never invokes the paper engine."""
+    with timed("db.autopaper_cockpit"):
+        return load_autopaper_ui_state(opportunity_ids)
 
 
 @st.cache_data(ttl=20, show_spinner=False)
@@ -116,6 +124,7 @@ def invalidate_portfolio_reads() -> None:
     load_portfolio_pnl.clear()
     load_portfolio_snapshots.clear()
     load_closed_trade_rows.clear()
+    load_autopaper_cockpit.clear()
 
 
 def invalidate_opportunity_reads() -> None:

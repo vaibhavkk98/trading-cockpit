@@ -11,7 +11,7 @@ import streamlit as st
 
 import database
 from cockpit_cache import (
-    load_closed_trade_rows, load_ha_snapshot, load_ha_summaries,
+    load_autopaper_cockpit, load_closed_trade_rows, load_ha_snapshot, load_ha_summaries,
     load_market_context_bundle,
     load_open_positions, load_portfolio_pnl, load_portfolio_snapshots,
     load_portfolio_summary, load_role_evidence, load_role_learning_analytics,
@@ -307,8 +307,11 @@ def _render_dashboard(decisions, summary, execution_factory, hydrate_portfolio):
     render_section_header("Decision workspace", "A compact view of the current opportunity set")
     left, right = st.columns([1.55, 1])
     with left:
+        identities = tuple(str(row.get("opportunity_id")) for row in decisions if row.get("opportunity_id"))
+        autopaper = load_autopaper_cockpit(identities).get("opportunity_statuses") or {}
         pulse = [{"Symbol": canonical_route_symbol(row.get("symbol")), "Strategy": short_strategy_name(row.get("strategy")),
                   "Allocation": compact_allocation(row), "Path Risk": _path_risk_state(row),
+                  "AutoPaper": (autopaper.get(str(row.get("opportunity_id"))) or {}).get("state", "NOT YET RUN"),
                   "Volume": row.get("volume_ratio_20")}
                  for row in ordered_decisions(decisions)[:6]]
         if pulse:
@@ -337,6 +340,7 @@ def _render_opportunities(decisions):
         for row in decisions if row.get("opportunity_id") and (row.get("signal_date") or row.get("analysis_date"))
     ))
     summaries = load_ha_summaries(identities, METHODOLOGY_HASH) if identities else {}
+    autopaper = load_autopaper_cockpit(tuple(identity[0] for identity in identities)).get("opportunity_statuses") or {}
     rows = []
     for row in ordered_decisions(decisions):
         symbol = canonical_route_symbol(row.get("symbol"))
@@ -344,6 +348,8 @@ def _render_opportunities(decisions):
             "Stock": stock_url(symbol), "Symbol": symbol, "Strategy": short_strategy_name(row.get("strategy")),
             "Allocation": compact_allocation(row), "Entry": row.get("entry_price"),
             "Volume ratio": row.get("volume_ratio_20"), "Path Risk": _path_risk_state(row),
+            "AutoPaper": (autopaper.get(str(row.get("opportunity_id"))) or {}).get("state", "NOT YET RUN"),
+            "AutoPaper reason": (autopaper.get(str(row.get("opportunity_id"))) or {}).get("reason", "Awaiting an eligible automated EOD session."),
             "Historical Analogs": stock_url(symbol, "historical_analogs"),
             "HA evidence": _ha_label(row, summaries),
         })
@@ -477,26 +483,211 @@ def _portfolio_risk(positions):
     st.caption("Reference Heat is informational. Executable Stop Heat is supplementary. Neither is a maximum-loss estimate.")
 
 
+def _autopaper_status(state):
+    health = state.get("health") or {}; status = health.get("status") or "NOT AVAILABLE"
+    message = f"AutoPaper Research Baseline V1  |  {status}  |  PAPER ONLY"
+    if status == "HEALTHY": st.success(message)
+    elif status in {"DEGRADED", "STALE", "NOT AVAILABLE"}: st.warning(message)
+    else: st.info(message)
+    if status == "NOT YET RUN":
+        st.caption("AutoPaper is active and awaiting its first eligible processed market session.")
+    else:
+        st.caption(f"Represented market date: {health.get('market_date') or 'NOT AVAILABLE'} · Last successful run: {health.get('last_successful_run') or 'NOT AVAILABLE'}")
+    with st.expander("Locked methodology & technical details", expanded=False):
+        st.caption(f"{state.get('version')} · Methodology {state.get('methodology_hash')} · Config {state.get('config_hash')}")
+        st.caption(f"Activated {state.get('activation_timestamp')} · First eligible session {state.get('first_market_date')}")
+        st.caption("P0 freshness · C3 ATR sizing · H10 · T+1 · no stop, target, replacement, or broker routing")
+
+
+def _autopaper_kpis(state):
+    account = state.get("accounts", {}).get("BASELINE_C3") or {}
+    pending_buys = len(state.get("orders", {}).get("pending_entries") or [])
+    pending_exits = len(state.get("orders", {}).get("pending_exits") or [])
+    cards = [("NAV", format_currency(account.get("nav")), "Prospective baseline"),
+             ("Cash", format_currency(account.get("cash")), "Available baseline cash"),
+             ("Invested", format_percent(account.get("invested_pct")), "Gross exposure / NAV"),
+             ("Positions", f"{account.get('open_positions', 0)} / 10" if account else "Not yet run", "Frozen capacity"),
+             ("Pending", f"{pending_buys} buys · {pending_exits} exits", "Next executable actions"),
+             ("Today's P&L", format_signed_currency(account.get("today_pnl")), "Requires two valid persisted marks"),
+             ("Realized P&L", format_signed_currency(account.get("realized_pnl")), "Completed prospective trades"),
+             ("Drawdown", format_percent(account.get("current_drawdown_pct")), "From prospective NAV peak"),
+             ("Completed", account.get("completed_trades") if account else "Not yet run", "H10 trades")]
+    columns = st.columns(4)
+    for index, (label, value, caption) in enumerate(cards):
+        with columns[index % 4]: render_metric_card(label, value, caption)
+
+
+def _autopaper_funnel(state):
+    funnel = state.get("decision_funnel") or {}
+    render_section_header("What AutoPaper did", f"Latest processed session · {funnel.get('market_date') or 'NOT YET RUN'}")
+    labels = (("Qualified", "qualified"), ("Considered", "considered"), ("Entered", "entered"),
+              ("Queued", "queued"), ("Rejected", "rejected"), ("Expired", "expired"))
+    columns = st.columns(6)
+    for column, (label, key) in zip(columns, labels):
+        with column: render_context_card(label, funnel.get(key) if funnel else "Not yet run")
+    rows = state.get("latest_decisions") or []
+    if rows:
+        st.dataframe(pd.DataFrame([{"Symbol": x["symbol"], "Strategy": x["strategy"], "Decision": x["decision"],
+            "Reason": x["reason"], "Rank": x["rank"], "Requested capital": x["requested_capital"],
+            "Final allocation": x["actual_allocation"], "C3 multiplier": x["sizing_multiplier"],
+            "Status / next action": f"{x['status']} · {x['next_action']}"} for x in rows]), width="stretch", hide_index=True)
+    else:
+        render_empty_state("No prospective decisions yet", "The automated EOD process has not persisted an eligible prospective decision session.")
+
+
+def _autopaper_positions(state, *, compact=False):
+    rows = state.get("positions") or []
+    if not rows:
+        render_empty_state("No AutoPaper positions", "The baseline has no filled prospective positions yet.")
+        return
+    display_rows = [{"Symbol": x["symbol"], "Strategy": short_strategy_name(x["strategy"]), "Entry date": x["entry_date"],
+        "Entry": x["entry_price"], "Mark": x["current_mark"], "Qty": x["quantity"], "Market value": x["market_value"],
+        "Weight": x["portfolio_weight_pct"], "Unrealized P&L": x["unrealized_pnl"], "MFE": x["mfe_pct"],
+        "MAE": x["mae_pct"], "H10": x["hold_label"], "Planned action": x["planned_action"]} for x in rows]
+    st.dataframe(pd.DataFrame(display_rows[:5] if compact else display_rows), width="stretch", hide_index=True)
+    if compact: return
+    for position in rows:
+        with st.expander(f"{position['symbol']} · {position['hold_label']} · {position['planned_action']}"):
+            a, b, c, d = st.columns(4)
+            with a: render_context_card("Origin", position.get("opportunity_id"), f"Signal {position.get('signal_date')} · {position.get('strategy')}")
+            with b: render_context_card("Execution", format_price(position.get("entry_price")), f"Fill {position.get('fill_date')} · Qty {position.get('quantity')}")
+            with c: render_context_card("Allocation", format_currency(position.get("actual_allocation")), f"C3 × {display_value(position.get('sizing_multiplier'))} · ATR {format_percent(position.get('atr_pct'))}")
+            with d: render_context_card("Lifecycle", position.get("hold_label"), position.get("planned_action"))
+            st.caption(f"Fees {format_currency(position.get('fees'))} · Slippage {format_currency(position.get('slippage'))} · MFE {format_percent(position.get('mfe_pct'))} · MAE {format_percent(position.get('mae_pct'))}")
+            st.info("Advisory only — Path Risk, ROLE, Historical Analogs and Market Context do not control AutoPaper decisions.")
+            if position.get("advisory"): st.json(position["advisory"], expanded=False)
+
+
+def _autopaper_orders(state):
+    groups = (("Pending entries", "pending_entries"), ("Pending exits", "pending_exits"), ("Unfilled / blocked", "unfilled"))
+    for title, key in groups:
+        render_section_header(title, "Persisted next-action state")
+        rows = state.get("orders", {}).get(key) or []
+        if rows: st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+        else: st.caption(f"No {title.lower()}.")
+    render_section_header("Decision journal", "Latest represented session; rejected decisions remain visible")
+    rows = state.get("latest_decisions") or []
+    if rows: st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    else: st.caption("NOT YET RUN")
+
+
+def _autopaper_risk(state):
+    positions = state.get("positions") or []; account = state.get("accounts", {}).get("BASELINE_C3") or {}
+    largest = max((x.get("portfolio_weight_pct") or 0 for x in positions), default=None)
+    strategies = {}
+    for row in positions: strategies[row.get("strategy")] = strategies.get(row.get("strategy"), 0) + (row.get("market_value") or 0)
+    largest_strategy = max(strategies.values(), default=None)
+    nav = account.get("nav")
+    values = (("Gross exposure", format_currency(account.get("invested"))), ("Cash", format_percent(100 - account.get("invested_pct")) if account.get("invested_pct") is not None else "Not available"),
+              ("Largest stock", format_percent(largest)), ("Largest strategy", format_percent(largest_strategy / nav * 100) if largest_strategy is not None and nav else "Not available"),
+              ("Turnover", format_percent(account.get("turnover_pct"))), ("Costs", format_currency(account.get("costs"))))
+    cols = st.columns(3)
+    for index, (label, value) in enumerate(values):
+        with cols[index % 3]: render_context_card(label, value)
+    st.caption("Volatility sizing active: higher-ATR opportunities receive smaller allocations. Frozen parameters are read-only.")
+
+
+def _autopaper_gate(state):
+    gate = state.get("review_gate") or {}
+    render_section_header("Prospective review gate", gate.get("status") or "NOT YET MET")
+    for row in gate.get("rows") or []:
+        left, right = st.columns([3, 1])
+        with left: st.progress(min(1.0, row["value"] / row["target"]), text=row["label"])
+        with right: st.caption(f"{row['value']} / {row['target']}")
+    st.caption("Gate completion permits offline review; promotion remains manual and is never automatic.")
+
+
+def _autopaper_performance(state):
+    account = state.get("accounts", {}).get("BASELINE_C3") or {}; snapshots = state.get("snapshots", {}).get("BASELINE_C3") or []
+    metrics = (("Net return", format_percent(account.get("net_return_pct"))), ("Max drawdown", format_percent(account.get("max_drawdown_pct"))),
+               ("Realized P&L", format_signed_currency(account.get("realized_pnl"))), ("Costs", format_currency(account.get("costs"))),
+               ("Turnover", format_percent(account.get("turnover_pct"))), ("Completed trades", account.get("completed_trades", "Not yet run")),
+               ("Average trade", format_percent(account.get("average_trade_return_pct"))), ("Average hold", f"{account.get('average_holding_period'):.1f} sessions" if account.get("average_holding_period") is not None else "Not enough observations"))
+    cols = st.columns(4)
+    for index, (label, value) in enumerate(metrics):
+        with cols[index % 4]: render_metric_card(label, value, "Prospective only")
+    if len(snapshots) >= 2:
+        frame = pd.DataFrame(snapshots).set_index("date")
+        st.line_chart(frame[["nav"]], width="stretch")
+        running_peak = frame["nav"].cummax(); drawdown = (frame["nav"] / running_peak - 1) * 100
+        st.line_chart(pd.DataFrame({"Drawdown %": drawdown}), width="stretch")
+    else: render_empty_state("Not enough prospective observations", "NAV and drawdown charts require at least two persisted sessions.")
+    render_section_header("Recent closed trades", "Frozen H10 lifecycle")
+    if state.get("recent_trades"): st.dataframe(pd.DataFrame(state["recent_trades"]), width="stretch", hide_index=True)
+    else: st.caption("No completed prospective trades yet.")
+
+
+def _autopaper_shadows(state):
+    st.info("Counterfactual research portfolios — they do not affect baseline orders or cash.")
+    rows = []
+    labels = {"BASELINE_C3": "Baseline C3", "SHADOW_C0": "Shadow C0", "SHADOW_D1": "Shadow D1"}
+    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1"):
+        item = state.get("accounts", {}).get(account_id)
+        if item: rows.append({"Portfolio": labels[account_id], "NAV": item.get("nav"), "Return %": item.get("net_return_pct"),
+            "Max drawdown %": item.get("max_drawdown_pct"), "Completed trades": item.get("completed_trades"),
+            "Turnover %": item.get("turnover_pct"), "Costs": item.get("costs"), "Exposure %": item.get("invested_pct")})
+    if rows: st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    else: render_empty_state("No shadow state yet", "All three portfolios begin with the first eligible automated EOD session.")
+    series = {}
+    for account_id, label in labels.items():
+        snapshots = state.get("snapshots", {}).get(account_id) or []
+        if snapshots: series[label] = pd.Series({x["date"]: x["nav"] for x in snapshots})
+    if series and max(map(len, series.values())) >= 2: st.line_chart(pd.DataFrame(series), width="stretch")
+    else: st.caption("No challenger conclusion is available; prospective evidence is still immature.")
+
+
+def _autopaper_health(state):
+    health = state.get("health") or {}
+    render_section_header("System health", "Persisted operational telemetry")
+    rows = [{"Layer": "AutoPaper run", "Status": health.get("status")},
+            {"Layer": "Data freshness", "Status": health.get("market_date") or "NOT YET RUN"},
+            {"Layer": "Portfolio reconciliation", "Status": health.get("reconciliation") or "NOT AVAILABLE"}]
+    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1"):
+        payload = (health.get("accounts") or {}).get(account_id) or {}
+        rows.append({"Layer": account_id, "Status": payload.get("status") or ("HEALTHY" if payload else "NOT AVAILABLE")})
+    rows.append({"Layer": "ROLE linkage", "Status": state.get("role_linkage_status") or "NOT AVAILABLE"})
+    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    if health.get("warnings") or health.get("errors"):
+        with st.expander("Recent warnings and errors"): st.json({"warnings": health.get("warnings"), "errors": health.get("errors")})
+
+
 @st.fragment
 def _render_portfolio(execution_factory, portfolio_summary_loader, positions_loader, hydrate_portfolio):
-    render_page_header("Portfolio", "Paper-ledger accounting, contribution and risk")
-    tabs = ["Performance", "Positions & Risk"]
+    render_page_header("Portfolio", "AutoPaper operational cockpit · prospective research only")
+    state = load_autopaper_cockpit()
+    _autopaper_status(state)
+    _autopaper_kpis(state)
+    tabs = ["Overview", "Positions", "Orders & Decisions", "Performance", "Shadows"]
     if st.session_state.get("portfolio_view") not in {None, *tabs}:
-        st.session_state["portfolio_view"] = "Performance"
-    selected = st.segmented_control("Portfolio view", tabs, default="Performance", key="portfolio_view")
+        st.session_state["portfolio_view"] = "Overview"
+    selected = st.segmented_control("Portfolio view", tabs, default="Overview", key="portfolio_view")
     with timed("portfolio.selected_view", view=selected):
-        if selected == "Performance":
-            _portfolio_overview(portfolio_summary_loader())
-            render_section_header("Performance history", "Period P&L and contribution")
-            _portfolio_pnl()
-        else:
-            positions = positions_loader()
-            render_section_header("Open positions", "Current paper positions and marks")
-            _portfolio_positions(positions, execution_factory(), hydrate_portfolio)
-            render_section_header("Closed positions", "Completed paper trades")
-            _portfolio_closed()
-            render_section_header("Portfolio risk", "Measured stop-risk coverage")
-            _portfolio_risk(positions)
+        if selected == "Overview":
+            _autopaper_funnel(state)
+            render_section_header("Open positions", "Current baseline holdings and H10 state")
+            _autopaper_positions(state, compact=True)
+            render_section_header("Pending orders / next actions", "Entries and exits waiting for an executable open")
+            pending = (state.get("orders", {}).get("pending_entries") or []) + (state.get("orders", {}).get("pending_exits") or [])
+            if pending: st.dataframe(pd.DataFrame(pending), width="stretch", hide_index=True)
+            else: st.caption("No pending AutoPaper orders.")
+            _autopaper_risk(state)
+            _autopaper_gate(state)
+            _autopaper_health(state)
+        elif selected == "Positions":
+            render_section_header("AutoPaper positions", "Baseline only; shadow holdings remain isolated")
+            _autopaper_positions(state)
+            _autopaper_risk(state)
+            with st.expander("Manual paper ledger", expanded=False):
+                st.caption("Separate user-triggered paper positions; never merged with AutoPaper.")
+                _portfolio_positions(positions_loader(), execution_factory(), hydrate_portfolio)
+        elif selected == "Orders & Decisions": _autopaper_orders(state)
+        elif selected == "Performance":
+            _autopaper_performance(state)
+            with st.expander("Manual paper-ledger performance", expanded=False):
+                st.caption("Separate user-triggered portfolio; never merged into AutoPaper prospective metrics.")
+                _portfolio_overview(portfolio_summary_loader())
+                _portfolio_pnl()
+        else: _autopaper_shadows(state)
 
 
 @st.fragment
@@ -997,6 +1188,23 @@ def _render_learning():
             "Backfilled rows reconstruct causal history where possible; prospective rows were captured live. "
             "Small samples are exploratory and not actionable. ROLE is research/advisory only and cannot alter qualification, ranking, sizing, allocation, execution, or exits."
         )
+
+    render_section_header("AutoPaper prospective learning", "Baseline and challenger evidence collected after activation only")
+    auto = load_autopaper_cockpit()
+    baseline_auto = auto.get("accounts", {}).get("BASELINE_C3") or {}
+    if not baseline_auto:
+        render_empty_state("AutoPaper evidence not yet available", "The baseline is active and awaiting its first eligible automated EOD session.")
+    else:
+        a1, a2, a3, a4 = st.columns(4)
+        with a1: render_metric_card("Completed H10 trades", baseline_auto.get("completed_trades"), "Immature positions excluded")
+        with a2: render_metric_card("Net return", format_percent(baseline_auto.get("net_return_pct")), "Prospective baseline only")
+        with a3: render_metric_card("Average trade", format_percent(baseline_auto.get("average_trade_return_pct")), "Completed trades only")
+        with a4: render_metric_card("Capacity decisions", next((x["value"] for x in auto.get("review_gate", {}).get("rows", []) if x["key"] == "capacity_decisions"), 0), "Counterfactual selection evidence")
+        if not baseline_auto.get("completed_trades"):
+            st.info("Open and queued observations are NOT MATURE and are not treated as losses or performance evidence.")
+        with st.expander("Baseline vs shadow prospective evidence", expanded=False): _autopaper_shadows(auto)
+        with st.expander("Frozen review-gate progress", expanded=False): _autopaper_gate(auto)
+        st.caption("Entered/non-entered ROLE outcomes, H10 capture, MFE/MAE and +5-before−3 become interpretable only after their persisted horizons mature. Historical/backfilled research is never mixed into these prospective portfolio metrics.")
 
 
 def render_cockpit(*, route, decisions_loader, execution_factory,

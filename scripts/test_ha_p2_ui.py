@@ -56,9 +56,10 @@ def run():
     passed += 1  # 1 sidebar routes
 
     app.radio[0].set_value("Portfolio").run(timeout=30)
-    assert not app.exception and app.segmented_control[0].options == ["Performance", "Positions & Risk"]
+    assert not app.exception and app.segmented_control[0].options == ["Overview", "Positions", "Orders & Decisions", "Performance", "Shadows"]
     passed += 1  # 2 portfolio tabs
 
+    app.segmented_control[0].set_value("Performance").run(timeout=30)
     period = next(widget for widget in app.selectbox if widget.label == "P&L period")
     assert period.value == "Lifetime"
     passed += 1  # 3 Lifetime default
