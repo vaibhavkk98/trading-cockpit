@@ -18,7 +18,6 @@ SIGNAL_DATE = dt.date(2026, 9, 11)
 FIRST_EXECUTION_DATE = dt.date(2026, 9, 14)
 IST = dt.timezone(dt.timedelta(hours=5, minutes=30))
 INFORMATION_CUTOFF = dt.datetime(2026, 9, 11, 15, 30, tzinfo=IST)
-RUN_FINALIZATION_CUTOFF = dt.datetime(2026, 9, 11, 23, 59, 59, tzinfo=IST)
 AMENDED_CONFIG = {**engine.CONFIG,
     "activation_market_date": SIGNAL_DATE.isoformat(),
     "first_possible_execution_date": FIRST_EXECUTION_DATE.isoformat(),
@@ -58,9 +57,8 @@ def _load_friday_stream(session) -> tuple[database.AnalysisRun, list[dict[str, A
     if run is None:
         raise BootstrapNoGo("FRIDAY_CANONICAL_RUN_NOT_FOUND")
     completed = run.completed_at
-    if completed is None or (completed.tzinfo is not None and completed > RUN_FINALIZATION_CUTOFF.astimezone(completed.tzinfo)) or (
-            completed.tzinfo is None and completed > RUN_FINALIZATION_CUTOFF.replace(tzinfo=None)):
-        raise BootstrapNoGo("FRIDAY_RUN_OUTSIDE_INFORMATION_CUTOFF")
+    if completed is None:
+        raise BootstrapNoGo("FRIDAY_CANONICAL_RUN_NOT_FINALIZED")
     rows = session.query(database.DailyOpportunity).filter_by(run_id=run.run_id).order_by(
         database.DailyOpportunity.priority.asc(), database.DailyOpportunity.symbol.asc()).all()
     decisions = []

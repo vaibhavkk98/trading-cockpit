@@ -37,7 +37,9 @@ def check(condition):
 
 
 def main():
-    completed = dt.datetime(2026, 9, 11, 11, 0, tzinfo=dt.timezone.utc)
+    # Processing may finalize after Friday; causal identity comes from the
+    # canonical analysis/signal date, not the database write timestamp.
+    completed = dt.datetime(2026, 9, 12, 3, 0, tzinfo=dt.timezone.utc)
     opportunities = []
     for rank, (symbol, strategy, sector) in enumerate((
         ("AAA.NS", "Donchian Channel Breakout", "Industrials"),
@@ -91,7 +93,8 @@ def main():
         check(all(json.loads(row.payload).get("intended_execution_date") == "2026-09-14"
                   for row in session.query(database.AutoPaperOrder).all()))
         check(session.query(database.AutoPaperOpportunityMetadata).count() == 3)
-        check(all(row.captured_at.date() == SIGNAL_DATE for row in session.query(database.AutoPaperOpportunityMetadata).all()))
+        check(all(row.signal_date == SIGNAL_DATE and json.loads(row.payload)["signal_date"] == "2026-09-11"
+                  for row in session.query(database.AutoPaperOpportunityMetadata).all()))
         check(session.query(database.AutoPaperRiskTelemetry).count() == 4)
         check(all(json.loads(row.payload)["portfolio_correlation"]["status"] == "NOT_AVAILABLE"
                   for row in session.query(database.AutoPaperRiskTelemetry).all()))
