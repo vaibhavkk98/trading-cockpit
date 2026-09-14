@@ -466,7 +466,7 @@ class AutoPaperCounterfactualLink(Base):
     signal_date = Column(Date, nullable=False)
     entered = Column(Boolean, nullable=False, default=False)
     terminal_reason = Column(String(60), nullable=True)
-    origin = Column(String(20), nullable=False)
+    origin = Column(String(40), nullable=False)
     payload = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
@@ -572,6 +572,35 @@ class AutoPaperActivationAmendment(Base):
     methodology_hash = Column(String(64), nullable=False)
     old_config_hash = Column(String(64), nullable=False)
     amended_config_hash = Column(String(64), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperRollingActivation(Base):
+    """Immutable activation boundary for the isolated rolling-admission shadow."""
+    __tablename__ = "autopaper_rolling_activation"
+    activation_id = Column(String(80), primary_key=True)
+    status = Column(String(30), nullable=False, index=True)
+    activation_mode = Column(String(40), nullable=False)
+    activation_timestamp = Column(DateTime(timezone=True), nullable=False)
+    activation_signal_date = Column(Date, nullable=True, index=True)
+    after_market_date = Column(Date, nullable=True)
+    methodology_hash = Column(String(64), nullable=False)
+    config_hash = Column(String(64), nullable=False)
+    provenance = Column(String(40), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class AutoPaperRollingTelemetry(Base):
+    """Decision-free rolling occupancy, queue, and age-ladder observation."""
+    __tablename__ = "autopaper_rolling_telemetry"
+    telemetry_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
     payload = Column(Text, nullable=False)
     payload_hash = Column(String(64), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
@@ -756,6 +785,12 @@ def init_db() -> bool:
                 for name, sql_type in _PORTFOLIO_CONFIGURATION_ADDITIONS.items():
                     if name not in existing_configuration:
                         connection.exec_driver_sql(f"ALTER TABLE portfolio_configuration ADD COLUMN {name} {sql_type}")
+                if DATABASE_BACKEND == "POSTGRES":
+                    link_columns = {column["name"]: column for column in inspect(engine).get_columns("autopaper_counterfactual_links")}
+                    origin_type = link_columns.get("origin", {}).get("type")
+                    if origin_type is not None and getattr(origin_type, "length", 0) < 40:
+                        connection.exec_driver_sql(
+                            "ALTER TABLE autopaper_counterfactual_links ALTER COLUMN origin TYPE VARCHAR(40)")
             _database_available, _database_error = True, None
             return True
         except SQLAlchemyError as exc:

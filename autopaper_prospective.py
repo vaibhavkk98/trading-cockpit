@@ -55,6 +55,21 @@ CATASTROPHE_METHODOLOGY_HASH = digest({"version": CATASTROPHE_VERSION,
     "config_hash": CATASTROPHE_CONFIG_HASH, "code_identity": "autopaper_prospective.py:catastrophe-v1"})
 ACCOUNTS = {**BASELINE_ACCOUNTS, "SHADOW_CATASTROPHE": {
     "volatility_sizing": True, "date_cap": None, "authority": "SHADOW_ONLY", "catastrophe": True}}
+ROLLING_ACCOUNT_ID = "SHADOW_ROLLING"
+ROLLING_VERSION = "AUTOPAPER_SHADOW_ROLLING_V1"
+ROLLING_CONFIG = {
+    "baseline_methodology_hash": METHODOLOGY_HASH, "capital": 1_000_000.0,
+    "volatility_sizing": True, "max_positions_hard": 10, "target_occupancy": 9,
+    "admissions_below_5": 2, "admissions_from_5_to_8": 1, "admissions_at_9": 0,
+    "queue_expiry_sessions": CONFIG["queue_expiry_sessions"], "hold_sessions": 10,
+    "priority": "P0_FRESHNESS", "replacement": False, "stop": None, "target": None,
+    "authority": "SHADOW_ONLY", "paper_only": True,
+}
+ROLLING_CONFIG_HASH = digest(ROLLING_CONFIG)
+ROLLING_METHODOLOGY_HASH = digest({"version": ROLLING_VERSION,
+    "config_hash": ROLLING_CONFIG_HASH, "code_identity": "autopaper_prospective.py:rolling-v1"})
+ACCOUNT_CONFIGS = {**ACCOUNTS, ROLLING_ACCOUNT_ID: {
+    "volatility_sizing": True, "date_cap": None, "authority": "SHADOW_ONLY", "rolling": True}}
 FUTURE_REVIEW_GATE = {
     "minimum_completed_baseline_trades": 100,
     "minimum_unique_signal_dates": 40,
@@ -196,6 +211,36 @@ def _manifest_and_accounts():
         session.close()
 
 
+def ensure_rolling_account(activation_timestamp, activation_market_date):
+    """Create only the isolated rolling manifest/account; never alters baseline state."""
+    database._require_database()
+    timestamp = _utc(activation_timestamp)
+    session = database.SessionLocal()
+    try:
+        manifest = session.get(database.AutoPaperManifest, ROLLING_METHODOLOGY_HASH)
+        if manifest is None:
+            session.add(database.AutoPaperManifest(
+                methodology_hash=ROLLING_METHODOLOGY_HASH, version=ROLLING_VERSION,
+                activation_timestamp=timestamp, activation_market_date=activation_market_date,
+                config_payload=_json(ROLLING_CONFIG), config_hash=ROLLING_CONFIG_HASH,
+                code_identity="autopaper_prospective.py:rolling-v1"))
+        elif manifest.config_hash != ROLLING_CONFIG_HASH:
+            raise RuntimeError("AUTOPAPER_ROLLING_MANIFEST_CONFLICT")
+        account = session.get(database.AutoPaperAccount, ROLLING_ACCOUNT_ID)
+        if account is None:
+            session.add(database.AutoPaperAccount(
+                account_id=ROLLING_ACCOUNT_ID, methodology_hash=ROLLING_METHODOLOGY_HASH,
+                initial_capital=CONFIG["capital"], cash=CONFIG["capital"], status="ACTIVE",
+                state_version=0, created_at=timestamp, updated_at=timestamp))
+        elif account.methodology_hash != ROLLING_METHODOLOGY_HASH:
+            raise RuntimeError("AUTOPAPER_ROLLING_ACCOUNT_CONFLICT")
+        session.commit()
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
 def _active_positions(session, account_id):
     return session.query(database.AutoPaperPosition).filter_by(account_id=account_id, status="OPEN").all()
 
@@ -208,6 +253,14 @@ def catastrophe_threshold(entry_price: float, entry_atr: float) -> tuple[float, 
     """Return threshold and permissible downside; rule is frozen, not optimized."""
     downside = max(.12, 3.5 * entry_atr / entry_price)
     return entry_price * (1 - downside), downside
+
+
+def rolling_admission_budget(open_positions: int) -> int:
+    """Frozen 2/1/0 policy; target occupancy is nine, hard capacity remains ten."""
+    count = max(0, int(open_positions))
+    if count >= ROLLING_CONFIG["target_occupancy"]:
+        return 0
+    return 2 if count < 5 else 1
 
 
 def _submit_catastrophe_order(session, account, position, market_date, now, bar, execution,
@@ -321,7 +374,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
         if account.last_market_date and account.last_market_date >= market_date:
             stats["idempotent"] = True
             return stats
-        account_cfg = ACCOUNTS[account_id]
+        account_cfg = ACCOUNT_CONFIGS[account_id]
         now = timestamp
         if account_id == "SHADOW_CATASTROPHE":
             _advance_catastrophe_observations(session, histories, market_date, execution)
@@ -495,6 +548,11 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
         active = session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, status="ACTIVE").all()
         active.sort(key=lambda x: (-x.signal_date.toordinal(), x.opportunity_id))
         positions = _active_positions(session, account_id)
+        rolling = bool(account_cfg.get("rolling"))
+        admission_start_positions = len(positions)
+        rolling_budget = rolling_admission_budget(admission_start_positions)
+        rolling_used = 0
+        rolling_deferred = 0
         virtual_symbols = {p.symbol for p in positions}; virtual_positions = len(positions)
         virtual_cash = account.cash; current_nav = _nav(account, positions)
         strategy_value = {}
@@ -509,6 +567,10 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             elif item.symbol in virtual_symbols: reason = "POSITION_ALREADY_EXISTS"
             elif virtual_positions >= CONFIG["max_positions"]: reason = "NO_CAPACITY"
             elif candidate["traded_value"] < CONFIG["minimum_traded_value"]: reason = "LIQUIDITY_FAIL"
+            elif rolling and virtual_positions >= ROLLING_CONFIG["target_occupancy"]:
+                reason = "ROLLING_TARGET_OCCUPANCY"
+            elif rolling and rolling_used >= rolling_budget:
+                reason = "ROLLING_DAILY_ADMISSION_LIMIT"
             multiplier = 1.
             if account_cfg["volatility_sizing"] and not reason:
                 multiplier = max(.5, min(1., 4. / candidate["atr_pct"])) if candidate["atr_pct"] > 0 else 0.
@@ -529,6 +591,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                          rank=active.index(item) + 1, sizing_multiplier=multiplier)
                 continue
             if budget <= 0:
+                if reason in {"ROLLING_DAILY_ADMISSION_LIMIT", "ROLLING_TARGET_OCCUPANCY"}:
+                    rolling_deferred += 1
                 _journal(session, account, market_date, now, "QUEUE", oid, reason or "LOWER_PRIORITY",
                          rank=active.index(item) + 1, sizing_multiplier=multiplier)
                 continue
@@ -550,14 +614,25 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                     intended_execution_date=candidate.get("intended_execution_date"))
             _journal(session, account, market_date, now, "QUEUE", oid, "ORDER_SUBMITTED_T1", **journal_details)
             virtual_cash -= budget; virtual_positions += 1; virtual_symbols.add(item.symbol)
+            if rolling: rolling_used += 1
             strategy_value[candidate["strategy"]] = strategy_value.get(candidate["strategy"], 0.) + budget
             date_commitment[candidate["signal_date"]] = date_commitment.get(candidate["signal_date"], 0.) + budget
         positions = _active_positions(session, account_id); nav = _nav(account, positions)
+        if len(positions) > CONFIG["max_positions"]:
+            raise RuntimeError("AUTOPAPER_HARD_CAPACITY_BREACH")
+        if rolling and virtual_positions > ROLLING_CONFIG["target_occupancy"]:
+            raise RuntimeError("AUTOPAPER_ROLLING_TARGET_BREACH")
         if account.cash < -1e-7 or abs(nav - (account.cash + sum(p.quantity * p.current_mark for p in positions))) > .01:
             raise RuntimeError("AUTOPAPER_PORTFOLIO_RECONCILIATION_FAILED")
         snapshot_payload = {"methodology_hash": account.methodology_hash, "account": account_id,
             "cash": account.cash, "nav": nav, "open_positions": len(positions),
             "pending_orders": session.query(database.AutoPaperOrder).filter_by(account_id=account_id, status="PENDING").count()}
+        if rolling:
+            snapshot_payload.update({"target_occupancy": ROLLING_CONFIG["target_occupancy"],
+                "hard_capacity": ROLLING_CONFIG["max_positions_hard"],
+                "admission_start_positions": admission_start_positions,
+                "admission_budget": rolling_budget, "admission_used": rolling_used,
+                "rolling_deferred": rolling_deferred})
         fingerprint = _hash(snapshot_payload)
         if not session.query(database.AutoPaperPortfolioSnapshot).filter_by(
                 account_id=account_id, market_date=market_date, state_fingerprint=fingerprint).first():
@@ -565,6 +640,48 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 account_id=account_id, market_date=market_date, cash=account.cash, nav=nav,
                 open_positions=len(positions), state_fingerprint=fingerprint, payload=_json(snapshot_payload)))
         account.last_market_date = market_date; account.state_version += 1; account.updated_at = now
+        if rolling:
+            rolling_positions = _active_positions(session, account_id)
+            active_queue = session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, status="ACTIVE").all()
+            ages = [int(p.age) for p in rolling_positions]
+            age_counts = {str(age): ages.count(age) for age in sorted(set(ages))}
+            signal_value = {}
+            signal_positions = {}
+            for position in rolling_positions:
+                signal = json.loads(position.payload).get("signal_date", "NOT_AVAILABLE")
+                signal_value[signal] = signal_value.get(signal, 0.) + position.quantity * position.current_mark
+                signal_positions[signal] = signal_positions.get(signal, 0) + 1
+            total_value = sum(signal_value.values())
+            shares = [value / total_value for value in signal_value.values()] if total_value else []
+            position_shares = [value / len(rolling_positions) for value in signal_positions.values()] if rolling_positions else []
+            prior_deferred = {x.opportunity_id for x in session.query(database.AutoPaperDecision).filter_by(
+                account_id=account_id).all() if x.reason_code in {"ROLLING_DAILY_ADMISSION_LIMIT", "ROLLING_TARGET_OCCUPANCY"}}
+            entered_ids = {x.opportunity_id for x in session.query(database.AutoPaperCounterfactualLink).filter_by(
+                account_id=account_id, entered=True).all()}
+            expired_ids = {x.opportunity_id for x in session.query(database.AutoPaperCounterfactualLink).filter_by(
+                account_id=account_id, terminal_reason="EXPIRED").all()}
+            telemetry = {"version": ROLLING_VERSION, "methodology_hash": ROLLING_METHODOLOGY_HASH,
+                "market_date": market_date.isoformat(), "decision_authority": False,
+                "open_positions": len(rolling_positions), "target_occupancy": 9, "hard_capacity": 10,
+                "admission_start_positions": admission_start_positions, "admission_budget": rolling_budget,
+                "admission_used": rolling_used, "valid_queued": len(active_queue),
+                "rolling_deferred_today": rolling_deferred,
+                "expiring_soon": sum(x.age_sessions >= CONFIG["queue_expiry_sessions"] - 1 for x in active_queue),
+                "age_counts": age_counts, "mean_age": float(np.mean(ages)) if ages else None,
+                "median_age": float(np.median(ages)) if ages else None,
+                "largest_same_age_share": max(age_counts.values()) / len(ages) if ages else None,
+                "unique_active_signal_dates": len(signal_value),
+                "largest_signal_date_capital_share": max(shares) if shares else None,
+                "signal_date_hhi": sum(x * x for x in shares) if shares else None,
+                "largest_signal_date_position_share": max(position_shares) if position_shares else None,
+                "signal_date_position_hhi": sum(x * x for x in position_shares) if position_shares else None,
+                "deferred_then_entered": len(prior_deferred & entered_ids),
+                "deferred_then_expired": len(prior_deferred & expired_ids)}
+            telemetry_id = _hash([ROLLING_VERSION, account_id, market_date.isoformat()])
+            if session.get(database.AutoPaperRollingTelemetry, telemetry_id) is None:
+                session.add(database.AutoPaperRollingTelemetry(
+                    telemetry_id=telemetry_id, account_id=account_id, market_date=market_date,
+                    payload=_json(telemetry), payload_hash=_hash(telemetry)))
         session.commit()
         if telemetry_attempts:
             telemetry_session = database.SessionLocal()
@@ -584,11 +701,52 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 telemetry_session.close()
         stats.update(cash=account.cash, nav=nav, open_positions=len(positions),
                      queue_size=session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, status="ACTIVE").count())
+        if rolling:
+            stats.update(admission_budget=rolling_budget, admission_used=rolling_used,
+                         rolling_deferred=rolling_deferred, target_occupancy=9, hard_capacity=10)
         return stats
     except Exception:
         session.rollback(); raise
     finally:
         session.close()
+
+
+def _process_rolling_if_activated(decisions, histories, market_date, timestamp, killed):
+    """Advance the isolated challenger, activating only on an allowed future cohort."""
+    session = database.SessionLocal()
+    try:
+        activation = session.query(database.AutoPaperRollingActivation).order_by(
+            database.AutoPaperRollingActivation.created_at.desc()).first()
+        if activation is None:
+            return None
+        if activation.status == "PENDING_NEXT_COHORT":
+            if activation.after_market_date is not None and market_date <= activation.after_market_date:
+                return {"account_id": ROLLING_ACCOUNT_ID, "status": "PENDING_NEXT_COHORT"}
+            activation.status = "ACTIVE"
+            activation.activation_signal_date = market_date
+            activation.provenance = "ROLLING_PROSPECTIVE"
+            payload = json.loads(activation.payload)
+            payload.update({"status": "ACTIVE", "activation_signal_date": market_date.isoformat(),
+                            "provenance": "ROLLING_PROSPECTIVE"})
+            activation.payload = _json(payload); activation.payload_hash = _hash(payload)
+            session.commit()
+        activation_date = activation.activation_signal_date
+        provenance = activation.provenance
+        activation_timestamp = activation.activation_timestamp
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+    if activation_date is None or market_date < activation_date:
+        return {"account_id": ROLLING_ACCOUNT_ID, "status": "PRE_ACTIVATION"}
+    ensure_rolling_account(activation_timestamp, activation_date)
+    rolling_decisions = [{**row, "prospective_origin": provenance} for row in ([] if killed else decisions)]
+    result = _process_account(ROLLING_ACCOUNT_ID, rolling_decisions, histories, market_date, timestamp)
+    try:
+        persist_risk_snapshot(ROLLING_ACCOUNT_ID, market_date, histories, decisions)
+    except Exception as exc:
+        result.setdefault("warnings", []).append(f"RISK_TELEMETRY:{type(exc).__name__}")
+    return result
 
 
 def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, run_id,
@@ -627,10 +785,21 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
                 persist_risk_snapshot(account_id, market_date, histories, decisions)
         except Exception as exc:
             observability_warnings.append(f"RISK_TELEMETRY:{account_id}:{type(exc).__name__}")
+    try:
+        rolling_result = _process_rolling_if_activated(decisions, histories, market_date, timestamp, killed)
+        if rolling_result is not None:
+            results[ROLLING_ACCOUNT_ID] = rolling_result
+    except Exception as exc:
+        # Challenger isolation: a rolling failure is visible but cannot degrade
+        # baseline or the already-frozen shadows.
+        results[ROLLING_ACCOUNT_ID] = {"account_id": ROLLING_ACCOUNT_ID,
+            "status": "FAILED", "error": type(exc).__name__}
+        observability_warnings.append(f"{ROLLING_ACCOUNT_ID}:{type(exc).__name__}")
     health = {"run_id": f"AUTOPAPER-{run_id}", "run_timestamp": timestamp.isoformat(),
         "market_date": market_date.isoformat(), "qualified_opportunities": len(decisions),
         "kill_switch": killed, "paper_only": True, "accounts": results,
         "shadow_run_status": "HEALTHY" if all(k in results and results[k].get("status") != "FAILED" for k in ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE")) else "DEGRADED",
+        "rolling_shadow_status": (results.get(ROLLING_ACCOUNT_ID) or {}).get("status", "NOT_ACTIVATED"),
         "errors": errors, "warnings": [w for value in results.values() for w in value.get("warnings", [])] + observability_warnings,
         "status": "HEALTHY" if not errors else "DEGRADED"}
     session = database.SessionLocal()
@@ -684,7 +853,7 @@ def prospective_evidence():
                     "median_mfe_pct": float(np.median([row["mfe_pct"] for row in rows])) if rows else None,
                     "median_mae_pct": float(np.median([row["mae_pct"] for row in rows])) if rows else None}
 
-        for account_id in ACCOUNTS:
+        for account_id in (*ACCOUNTS, ROLLING_ACCOUNT_ID):
             account = session.get(database.AutoPaperAccount, account_id)
             if account is None: continue
             trades = session.query(database.AutoPaperTrade).filter_by(account_id=account_id).all()

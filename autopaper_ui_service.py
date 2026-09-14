@@ -13,7 +13,7 @@ import database
 
 
 BASELINE = "BASELINE_C3"
-SHADOWS = ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE")
+SHADOWS = ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING")
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 METHODOLOGY_HASH = "3ed64bac9138d36cc1c582c78803215e0142cd12bf8c9db3c50bfc05e3f43d79"
 CONFIG_HASH = "86ed4f1153186874330f62e0c8bb4ad80aef7972a20188952af3697aced1d9c2"
@@ -36,6 +36,8 @@ REASON_TEXT = {
     "DATA_UNAVAILABLE": "Mandatory execution or sizing data was unavailable.",
     "EXPIRED": "The opportunity expired before an executable entry was available.",
     "POSITION_ALREADY_EXISTS": "The baseline already owns this stock.",
+    "ROLLING_DAILY_ADMISSION_LIMIT": "Daily rolling-admission budget has been reached; opportunity remains queued while valid.",
+    "ROLLING_TARGET_OCCUPANCY": "Rolling portfolio has reached its normal 9-position target; one slot is intentionally reserved for future opportunities.",
 }
 
 
@@ -196,6 +198,10 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
                 database.RoleOutcomeHorizon.horizon_sessions == 10).all() if role_ids else []
             activation_amendment = session.query(database.AutoPaperActivationAmendment).filter_by(
                 status="COMPLETED").order_by(database.AutoPaperActivationAmendment.created_at.desc()).first()
+            rolling_activation = session.query(database.AutoPaperRollingActivation).order_by(
+                database.AutoPaperRollingActivation.created_at.desc()).first()
+            rolling_telemetry = session.query(database.AutoPaperRollingTelemetry).order_by(
+                database.AutoPaperRollingTelemetry.market_date.asc()).all()
         finally: session.close()
     except Exception as exc:
         base["health"] = {"status": "NOT AVAILABLE", "reason": type(exc).__name__}
@@ -298,6 +304,54 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
         "calendar_days": calendar_days, "strategies": strategies, "capacity_decisions": capacity, "challenger_overlaps": overlap})
     base["catastrophe_overlap"] = min(len(by_trades[BASELINE]), len(by_trades["SHADOW_CATASTROPHE"]))
     base["role_linkage_status"] = "ACTIVE" if baseline_links else "NOT YET RUN"
+    rolling_links = [x for x in links if x.account_id == "SHADOW_ROLLING"]
+    rolling_decisions = [x for x in decisions if x.account_id == "SHADOW_ROLLING"]
+    rolling_queue = [x for x in queue_rows if x.account_id == "SHADOW_ROLLING"]
+    rolling_orders = by_orders["SHADOW_ROLLING"]
+    deferred_ids = {x.opportunity_id for x in rolling_decisions if x.reason_code in {
+        "ROLLING_DAILY_ADMISSION_LIMIT", "ROLLING_TARGET_OCCUPANCY"}}
+    entered_ids = {x.opportunity_id for x in rolling_links if x.entered}
+    expired_ids = {x.opportunity_id for x in rolling_links if x.terminal_reason == "EXPIRED"}
+    telemetry_payloads = [_json(x.payload) for x in rolling_telemetry]
+    latest_rolling = telemetry_payloads[-1] if telemetry_payloads else {}
+    base["rolling"] = {
+        "activation": ({"status": rolling_activation.status, "mode": rolling_activation.activation_mode,
+            "activation_signal_date": rolling_activation.activation_signal_date.isoformat() if rolling_activation.activation_signal_date else None,
+            "activation_timestamp": rolling_activation.activation_timestamp.isoformat(),
+            "provenance": rolling_activation.provenance, "methodology_hash": rolling_activation.methodology_hash,
+            "config_hash": rolling_activation.config_hash} if rolling_activation else {"status": "NOT_ACTIVATED"}),
+        "current": latest_rolling,
+        "total_considered": len(rolling_links), "total_entered": len(entered_ids),
+        "total_queued_decisions": sum(x.action == "QUEUE" for x in rolling_decisions),
+        "total_expired": len(expired_ids),
+        "hard_capacity_blocked": sum(x.reason_code == "NO_CAPACITY" for x in rolling_decisions),
+        "rolling_deferred": len(deferred_ids),
+        "deferred_then_entered": len(deferred_ids & entered_ids),
+        "deferred_then_expired": len(deferred_ids & expired_ids),
+        "valid_queued": sum(x.status == "ACTIVE" for x in rolling_queue),
+        "pending_entries": sum(x.side == "BUY" and x.status == "PENDING" for x in rolling_orders),
+        "mean_occupancy": (sum(float(x.get("open_positions") or 0) for x in telemetry_payloads) / len(telemetry_payloads)) if telemetry_payloads else None,
+        "median_occupancy": median(float(x.get("open_positions") or 0) for x in telemetry_payloads) if telemetry_payloads else None,
+        "pct_sessions_at_target": (sum(int(x.get("open_positions") or 0) == 9 for x in telemetry_payloads) / len(telemetry_payloads)) if telemetry_payloads else None,
+        "pct_sessions_at_hard_capacity": (sum(int(x.get("open_positions") or 0) >= 10 for x in telemetry_payloads) / len(telemetry_payloads)) if telemetry_payloads else None,
+        "qualified_participation_rate": len(entered_ids) / len(rolling_links) if rolling_links else None,
+        "hard_capacity_block_rate": sum(x.reason_code == "NO_CAPACITY" for x in rolling_decisions) / len(rolling_links) if rolling_links else None,
+        "rolling_deferral_rate": len(deferred_ids) / len(rolling_links) if rolling_links else None,
+        "eventual_entry_rate": len(deferred_ids & entered_ids) / len(deferred_ids) if deferred_ids else None,
+        "expiry_after_deferral_rate": len(deferred_ids & expired_ids) / len(deferred_ids) if deferred_ids else None,
+    }
+    latest_rolling_by_opportunity = {}
+    for row in rolling_decisions:
+        if row.opportunity_id not in latest_rolling_by_opportunity:
+            latest_rolling_by_opportunity[row.opportunity_id] = row
+    base["rolling_opportunity_statuses"] = {}
+    for opportunity_id, row in latest_rolling_by_opportunity.items():
+        order = next((x for x in rolling_orders if x.opportunity_id == opportunity_id), None)
+        state = ("ROLLING DEFERRED" if row.reason_code in {"ROLLING_DAILY_ADMISSION_LIMIT", "ROLLING_TARGET_OCCUPANCY"}
+                 else lifecycle_display(action=row.action, order_status=order.status if order else None,
+                                        side=order.side if order else None))
+        base["rolling_opportunity_statuses"][opportunity_id] = {
+            "state": state, "reason_code": row.reason_code, "reason": humanize_reason(row.reason_code)}
     base["decision_funnel"] = {"qualified": int(health_payload.get("qualified_opportunities") or 0),
         "considered": len(latest_by_opportunity),
         "entered": len({x.opportunity_id for x in today if x.action == "ENTER"}),
@@ -324,6 +378,17 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
             sum(x.get("exit_regret_pct") is not None for x in catastrophe_payloads)) if any(x.get("exit_regret_pct") is not None for x in catastrophe_payloads) else None}
     observations_by_id = {x.id: x for x in role_observations}
     outcomes = {observations_by_id[x.observation_id].opportunity_id: _json(x.payload) for x in role_horizons}
+    def _rolling_outcome_summary(ids):
+        rows = [outcomes[opportunity_id] for opportunity_id in ids if opportunity_id in outcomes]
+        return {"mature_n": len(rows),
+            "median_close_return_pct": float(median(float(x["close_return_pct"]) for x in rows)) if rows else None,
+            "median_mfe_pct": float(median(float(x["mfe_pct"]) for x in rows)) if rows else None,
+            "median_mae_pct": float(median(float(x["mae_pct"]) for x in rows)) if rows else None,
+            "plus_5_before_minus_3_rate": sum(x.get("plus_5_before_minus_3") == "TARGET_FIRST" for x in rows) / len(rows) if rows else None}
+    if base.get("rolling"):
+        base["rolling"]["entered_outcomes"] = _rolling_outcome_summary(entered_ids)
+        base["rolling"]["deferred_outcomes"] = _rolling_outcome_summary(deferred_ids - entered_ids)
+        base["rolling"]["expired_after_deferral_outcomes"] = _rolling_outcome_summary(deferred_ids & expired_ids)
     baseline_queue = {x.opportunity_id: x for x in queue_rows if x.account_id == BASELINE}
     cohorts = defaultdict(lambda: {"qualified": 0, "entered": 0, "sectors": Counter(),
         "strategies": Counter(), "allocation": 0.0, "outcomes": []})

@@ -308,10 +308,13 @@ def _render_dashboard(decisions, summary, execution_factory, hydrate_portfolio):
     left, right = st.columns([1.55, 1])
     with left:
         identities = tuple(str(row.get("opportunity_id")) for row in decisions if row.get("opportunity_id"))
-        autopaper = load_autopaper_cockpit(identities).get("opportunity_statuses") or {}
+        auto_state = load_autopaper_cockpit(identities)
+        autopaper = auto_state.get("opportunity_statuses") or {}
+        rolling = auto_state.get("rolling_opportunity_statuses") or {}
         pulse = [{"Symbol": canonical_route_symbol(row.get("symbol")), "Strategy": short_strategy_name(row.get("strategy")),
                   "Allocation": compact_allocation(row), "Path Risk": _path_risk_state(row),
                   "AutoPaper": (autopaper.get(str(row.get("opportunity_id"))) or {}).get("state", "NOT YET RUN"),
+                  "Rolling": (rolling.get(str(row.get("opportunity_id"))) or {}).get("state", "NOT YET RUN"),
                   "Volume": row.get("volume_ratio_20")}
                  for row in ordered_decisions(decisions)[:6]]
         if pulse:
@@ -340,7 +343,9 @@ def _render_opportunities(decisions):
         for row in decisions if row.get("opportunity_id") and (row.get("signal_date") or row.get("analysis_date"))
     ))
     summaries = load_ha_summaries(identities, METHODOLOGY_HASH) if identities else {}
-    autopaper = load_autopaper_cockpit(tuple(identity[0] for identity in identities)).get("opportunity_statuses") or {}
+    auto_state = load_autopaper_cockpit(tuple(identity[0] for identity in identities))
+    autopaper = auto_state.get("opportunity_statuses") or {}
+    rolling = auto_state.get("rolling_opportunity_statuses") or {}
     rows = []
     for row in ordered_decisions(decisions):
         symbol = canonical_route_symbol(row.get("symbol"))
@@ -350,6 +355,8 @@ def _render_opportunities(decisions):
             "Volume ratio": row.get("volume_ratio_20"), "Path Risk": _path_risk_state(row),
             "AutoPaper": (autopaper.get(str(row.get("opportunity_id"))) or {}).get("state", "NOT YET RUN"),
             "AutoPaper reason": (autopaper.get(str(row.get("opportunity_id"))) or {}).get("reason", "Awaiting an eligible automated EOD session."),
+            "Rolling Shadow": (rolling.get(str(row.get("opportunity_id"))) or {}).get("state", "NOT YET RUN"),
+            "Rolling reason": (rolling.get(str(row.get("opportunity_id"))) or {}).get("reason", "Counterfactual challenger only."),
             "Historical Analogs": stock_url(symbol, "historical_analogs"),
             "HA evidence": _ha_label(row, summaries),
         })
@@ -641,15 +648,15 @@ def _autopaper_shadows(state):
     st.info("Counterfactual research portfolios — they do not affect baseline orders or cash.")
     rows = []
     labels = {"BASELINE_C3": "Baseline C3", "SHADOW_C0": "Shadow C0", "SHADOW_D1": "Shadow D1",
-              "SHADOW_CATASTROPHE": "Shadow Catastrophe"}
-    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE"):
+              "SHADOW_CATASTROPHE": "Shadow Catastrophe", "SHADOW_ROLLING": "Rolling Admission Shadow"}
+    for account_id in labels:
         item = state.get("accounts", {}).get(account_id)
         if item: rows.append({"Portfolio": labels[account_id], "NAV": item.get("nav"), "Return %": item.get("net_return_pct"),
             "Max drawdown %": item.get("max_drawdown_pct"), "Completed trades": item.get("completed_trades"),
             "Turnover %": item.get("turnover_pct"), "Costs": item.get("costs"), "Exposure %": item.get("invested_pct"),
             "Catastrophe exits": item.get("catastrophe_exits")})
     if rows: st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
-    else: render_empty_state("No shadow state yet", "All four portfolios begin with an eligible automated EOD session.")
+    else: render_empty_state("No shadow state yet", "The baseline and isolated shadows begin with a causally eligible automated EOD session.")
     series = {}
     for account_id, label in labels.items():
         snapshots = state.get("snapshots", {}).get(account_id) or []
@@ -665,6 +672,32 @@ def _autopaper_shadows(state):
                 "Signal date": x.get("signal_date"), "Hold": x.get("hold_label"),
                 "Catastrophe threshold": x.get("catastrophe_threshold")} for x in catastrophe_positions]),
                 width="stretch", hide_index=True)
+    _autopaper_rolling(state)
+
+
+def _autopaper_rolling(state):
+    rolling = state.get("rolling") or {}; activation = rolling.get("activation") or {}
+    current = rolling.get("current") or {}
+    render_section_header("Rolling Admission Shadow", "Counterfactual research portfolio · no baseline authority")
+    if activation.get("status") in {None, "NOT_ACTIVATED", "PENDING_NEXT_COHORT"}:
+        st.info("Rolling shadow is awaiting its causally eligible activation cohort.")
+        st.caption(f"Status {activation.get('status', 'NOT_ACTIVATED')} · provenance {activation.get('provenance', 'NOT_AVAILABLE')}")
+        return
+    open_positions = int(current.get("open_positions") or 0)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: render_context_card("Occupancy", f"{open_positions} / 9 target", "10 hard maximum")
+    with c2: render_context_card("Admission budget", current.get("admission_budget", 0), f"Used {current.get('admission_used', 0)}")
+    with c3: render_context_card("Reserved capacity", "1 slot", "Structural reserve")
+    with c4: render_context_card("Queue", rolling.get("valid_queued", 0), f"Deferred {rolling.get('rolling_deferred', 0)}")
+    ages = {int(key): int(value) for key, value in (current.get("age_counts") or {}).items()}
+    ladder = {"Day 1–3": sum(value for age, value in ages.items() if 1 <= age <= 3),
+        "Day 4–6": sum(value for age, value in ages.items() if 4 <= age <= 6),
+        "Day 7–9": sum(value for age, value in ages.items() if 7 <= age <= 9),
+        "Day 10 / exit pending": sum(value for age, value in ages.items() if age >= 10)}
+    st.dataframe(pd.DataFrame([ladder]), width="stretch", hide_index=True)
+    st.caption(f"Valid queued {rolling.get('valid_queued', 0)} · expiring soon {current.get('expiring_soon', 0)} · "
+               f"deferred then entered {rolling.get('deferred_then_entered', 0)} · deferred then expired {rolling.get('deferred_then_expired', 0)}")
+    st.caption(f"Activated {activation.get('activation_signal_date')} · {activation.get('provenance')} · methodology {activation.get('methodology_hash')}")
 
 
 def _autopaper_health(state):
@@ -673,7 +706,7 @@ def _autopaper_health(state):
     rows = [{"Layer": "AutoPaper run", "Status": health.get("status")},
             {"Layer": "Data freshness", "Status": health.get("market_date") or "NOT YET RUN"},
             {"Layer": "Portfolio reconciliation", "Status": health.get("reconciliation") or "NOT AVAILABLE"}]
-    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE"):
+    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING"):
         payload = (health.get("accounts") or {}).get(account_id) or {}
         rows.append({"Layer": account_id, "Status": payload.get("status") or ("HEALTHY" if payload else "NOT AVAILABLE")})
     rows.append({"Layer": "ROLE linkage", "Status": state.get("role_linkage_status") or "NOT AVAILABLE"})
@@ -1235,6 +1268,28 @@ def _render_learning():
         if not baseline_auto.get("completed_trades"):
             st.info("Open and queued observations are NOT MATURE and are not treated as losses or performance evidence.")
         with st.expander("Baseline vs shadow prospective evidence", expanded=False): _autopaper_shadows(auto)
+        with st.expander("Rolling Admission prospective diagnostics", expanded=False):
+            _autopaper_rolling(auto)
+            rolling = auto.get("rolling") or {}; current = rolling.get("current") or {}
+            considered = int(rolling.get("total_considered") or 0)
+            deferred = int(rolling.get("rolling_deferred") or 0)
+            expired = int(rolling.get("deferred_then_expired") or 0)
+            st.caption(f"Participation {int(rolling.get('total_entered') or 0)} / {considered} · "
+                       f"rolling deferral rate {format_percent(deferred / considered * 100) if considered else 'Not available'} · "
+                       f"expiry-after-deferral rate {format_percent(expired / deferred * 100) if deferred else 'Not available'} · "
+                       f"mean occupancy {display_value(rolling.get('mean_occupancy'))} · "
+                       f"active signal dates {current.get('unique_active_signal_dates', 0)} · "
+                       f"age concentration {format_percent((current.get('largest_same_age_share') or 0) * 100) if current.get('largest_same_age_share') is not None else 'Not available'}.")
+            outcome_rows = []
+            for label, key in (("Entered", "entered_outcomes"), ("Deferred / not entered", "deferred_outcomes"),
+                               ("Expired after deferral", "expired_after_deferral_outcomes")):
+                outcome = rolling.get(key) or {}
+                outcome_rows.append({"Cohort": label, "Mature N": outcome.get("mature_n", 0),
+                    "Median H10 return %": outcome.get("median_close_return_pct"),
+                    "Median MFE %": outcome.get("median_mfe_pct"), "Median MAE %": outcome.get("median_mae_pct"),
+                    "+5 before -3": outcome.get("plus_5_before_minus_3_rate")})
+            st.dataframe(pd.DataFrame(outcome_rows), width="stretch", hide_index=True)
+            st.info("No promotion conclusion is available until sufficient prospective overlap matures.")
         with st.expander("Execution realism, concentration & common factor", expanded=False):
             _autopaper_observability(auto)
             execution = auto.get("execution_quality") or {}
