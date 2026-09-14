@@ -194,6 +194,8 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
             role_horizons = session.query(database.RoleOutcomeHorizon).filter(
                 database.RoleOutcomeHorizon.observation_id.in_(role_ids),
                 database.RoleOutcomeHorizon.horizon_sessions == 10).all() if role_ids else []
+            activation_amendment = session.query(database.AutoPaperActivationAmendment).filter_by(
+                status="COMPLETED").order_by(database.AutoPaperActivationAmendment.created_at.desc()).first()
         finally: session.close()
     except Exception as exc:
         base["health"] = {"status": "NOT AVAILABLE", "reason": type(exc).__name__}
@@ -228,6 +230,8 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
         payload = _json(order.payload); candidate = payload.get("candidate") or {}
         row = {"symbol": order.symbol, "opportunity_id": order.opportunity_id,
                "signal_date": candidate.get("signal_date"), "requested_session": order.requested_session.isoformat(),
+               "intended_execution_date": payload.get("intended_execution_date"),
+               "origin": payload.get("prospective_origin") or candidate.get("prospective_origin") or "PROSPECTIVE",
                "side": order.side, "quantity": order.quantity, "requested_capital": order.requested_capital,
                "status": order.status, "display_status": lifecycle_display(order_status=order.status, side=order.side),
                "next_action": "Next executable open" if order.status == "PENDING" else humanize_reason(order.status)}
@@ -273,6 +277,15 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
         "errors": health_payload.get("errors") or [], "accounts": health_payload.get("accounts") or {},
         "last_successful_run": successful_health.run_timestamp.isoformat() if successful_health else None,
         "reconciliation": "PASS" if health_row and not health_payload.get("errors") else "NOT AVAILABLE"}
+    if activation_amendment:
+        base["activation_amendment"] = {
+            "id": activation_amendment.amendment_id,
+            "signal_date": activation_amendment.amended_signal_date.isoformat(),
+            "first_execution_date": activation_amendment.first_execution_date.isoformat(),
+            "amended_config_hash": activation_amendment.amended_config_hash,
+            "methodology_hash": activation_amendment.methodology_hash,
+        }
+        base["config_hash"] = activation_amendment.amended_config_hash
     baseline_links = [x for x in links if x.account_id == BASELINE]
     completed = len(by_trades[BASELINE]); signal_dates = len({x.signal_date for x in baseline_links})
     first_signal = min((x.signal_date for x in baseline_links), default=None)

@@ -560,6 +560,23 @@ class AutoPaperCatastropheObservation(Base):
     updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class AutoPaperActivationAmendment(Base):
+    """Immutable one-time prospective activation-boundary provenance."""
+    __tablename__ = "autopaper_activation_amendments"
+    amendment_id = Column(String(80), primary_key=True)
+    status = Column(String(30), nullable=False, index=True)
+    previous_activation_timestamp = Column(DateTime(timezone=True), nullable=False)
+    amended_signal_date = Column(Date, nullable=False, index=True)
+    first_execution_date = Column(Date, nullable=False)
+    amendment_timestamp = Column(DateTime(timezone=True), nullable=False)
+    methodology_hash = Column(String(64), nullable=False)
+    old_config_hash = Column(String(64), nullable=False)
+    amended_config_hash = Column(String(64), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 class PositionMark(Base):
     __tablename__ = "position_marks"
     __table_args__ = (UniqueConstraint("trade_id", "mark_date", name="uq_position_mark_trade_date"),)

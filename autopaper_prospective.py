@@ -112,7 +112,7 @@ def _candidate(decision, market_date):
     if not math.isfinite(volume) or volume <= 0: missing.append("VOLUME")
     opportunity_id = str(decision.get("opportunity_id") or "").strip()
     if not opportunity_id: missing.append("OPPORTUNITY_ID")
-    return {
+    candidate = {
         "opportunity_id": opportunity_id, "symbol": str(decision.get("symbol") or "").upper(),
         "signal_date": signal_date, "strategy": str(decision.get("strategy") or "NOT_AVAILABLE"),
         "reference_price": entry, "atr_pct": atr / entry * 100 if entry > 0 else float("nan"),
@@ -120,6 +120,11 @@ def _candidate(decision, market_date):
         "missing": missing,
         "advisory_annotations": {key: decision.get(key) for key in ("path_risk", "role_evidence", "historical_analogs", "pb_asymmetry") if key in decision},
     }
+    if decision.get("prospective_origin"):
+        candidate["prospective_origin"] = str(decision["prospective_origin"])
+    if decision.get("intended_execution_date"):
+        candidate["intended_execution_date"] = str(decision["intended_execution_date"])[:10]
+    return candidate
 
 
 def _safe(value):
@@ -469,7 +474,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             if session.get(database.AutoPaperCounterfactualLink, link_id) is None:
                 session.add(database.AutoPaperCounterfactualLink(
                     link_id=link_id, account_id=account_id, opportunity_id=oid, signal_date=market_date,
-                    entered=False, terminal_reason=None, origin="PROSPECTIVE",
+                    entered=False, terminal_reason=None, origin=candidate.get("prospective_origin", "PROSPECTIVE"),
                     payload=_json({"outcome_source": "ROLE_D1", "horizons": [5,10,20],
                                    "methodology_hash": METHODOLOGY_HASH})))
             existing = session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, opportunity_id=oid).first()
@@ -530,14 +535,20 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             order_id = _hash([account_id, oid, market_date.isoformat(), "BUY"])
             payload = {"candidate": candidate, "execution": "NEXT_EXECUTABLE_OPEN",
                        "sizing_multiplier": multiplier, "methodology_hash": account.methodology_hash}
+            if candidate.get("intended_execution_date"):
+                payload["intended_execution_date"] = candidate["intended_execution_date"]
+                payload["prospective_origin"] = candidate.get("prospective_origin")
             if session.get(database.AutoPaperOrder, order_id) is None:
                 session.add(database.AutoPaperOrder(
                     order_id=order_id, account_id=account_id, opportunity_id=oid, symbol=item.symbol,
                     side="BUY", requested_session=market_date, order_timestamp=now, status="PENDING",
                     requested_capital=budget, payload=_json(payload), payload_hash=_hash(payload)))
-            _journal(session, account, market_date, now, "QUEUE", oid, "ORDER_SUBMITTED_T1",
-                     rank=active.index(item) + 1, sizing_multiplier=multiplier,
-                     requested_capital=budget, actual_allocated_capital=0.)
+            journal_details = {"rank": active.index(item) + 1, "sizing_multiplier": multiplier,
+                "requested_capital": budget, "actual_allocated_capital": 0.}
+            if candidate.get("prospective_origin"):
+                journal_details.update(prospective_origin=candidate["prospective_origin"],
+                    intended_execution_date=candidate.get("intended_execution_date"))
+            _journal(session, account, market_date, now, "QUEUE", oid, "ORDER_SUBMITTED_T1", **journal_details)
             virtual_cash -= budget; virtual_positions += 1; virtual_symbols.add(item.symbol)
             strategy_value[candidate["strategy"]] = strategy_value.get(candidate["strategy"], 0.) + budget
             date_commitment[candidate["signal_date"]] = date_commitment.get(candidate["signal_date"], 0.) + budget

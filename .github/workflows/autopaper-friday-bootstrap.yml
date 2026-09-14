@@ -1,0 +1,30 @@
+name: AutoPaper Friday Cohort Bootstrap
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: autopaper-friday-bootstrap-20260911
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Verify and bootstrap Friday cohort
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTOPAPER_PROSPECTIVE_ENABLED: "1"
+          AUTOPAPER_KILL_SWITCH: "0"
+        run: PYTHONPATH=. python scripts/run_autopaper_friday_bootstrap.py

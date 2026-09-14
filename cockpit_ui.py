@@ -496,6 +496,9 @@ def _autopaper_status(state):
     with st.expander("Locked methodology & technical details", expanded=False):
         st.caption(f"{state.get('version')} · Methodology {state.get('methodology_hash')} · Config {state.get('config_hash')}")
         st.caption(f"Activated {state.get('activation_timestamp')} · First eligible session {state.get('first_market_date')}")
+        amendment = state.get("activation_amendment") or {}
+        if amendment:
+            st.caption(f"Friday cohort amendment {amendment.get('id')} · Signal {amendment.get('signal_date')} · First execution {amendment.get('first_execution_date')}")
         st.caption("P0 freshness · C3 ATR sizing · H10 · T+1 · no stop, target, replacement, or broker routing")
 
 
