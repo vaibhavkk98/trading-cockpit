@@ -606,6 +606,86 @@ class AutoPaperRollingTelemetry(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class EdgeCaptureActivation(Base):
+    """Causal activation boundary shared by the three incremental Edge shadows."""
+    __tablename__ = "edge_capture_activation"
+    activation_id = Column(String(80), primary_key=True)
+    status = Column(String(30), nullable=False, index=True)
+    activation_mode = Column(String(40), nullable=False)
+    activation_timestamp = Column(DateTime(timezone=True), nullable=False)
+    activation_signal_date = Column(Date, nullable=True, index=True)
+    after_market_date = Column(Date, nullable=True)
+    provenance = Column(String(40), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class EdgeCaptureMatch(Base):
+    """Actual, non-fabricated account leg in a matched originating-signal group."""
+    __tablename__ = "edge_capture_matches"
+    leg_id = Column(String(64), primary_key=True)
+    edge_capture_match_id = Column(String(64), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    exit_policy = Column(String(60), nullable=False)
+    execution_date = Column(Date, nullable=True)
+    entry_price = Column(Float, nullable=True)
+    entry_size = Column(Float, nullable=True)
+    exit_date = Column(Date, nullable=True)
+    exit_price = Column(Float, nullable=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class EdgeCaptureThesisObservation(Base):
+    """Immutable completed-session thesis component observation."""
+    __tablename__ = "edge_capture_thesis_observations"
+    observation_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    position_id = Column(String(64), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    state = Column(String(30), nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class EdgeCaptureExitObservation(Base):
+    """Early-exit path followed causally to its original H20 counterfactual."""
+    __tablename__ = "edge_capture_exit_observations"
+    observation_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    position_id = Column(String(64), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    symbol = Column(String(32), nullable=False, index=True)
+    exit_type = Column(String(40), nullable=False, index=True)
+    trigger_date = Column(Date, nullable=False, index=True)
+    actual_exit_date = Column(Date, nullable=True)
+    status = Column(String(30), nullable=False, index=True)
+    sessions_observed = Column(Integer, nullable=False, default=0)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class EdgeCaptureTelemetry(Base):
+    """Decision-free portfolio/capacity observation for an Edge account and session."""
+    __tablename__ = "edge_capture_telemetry"
+    telemetry_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 class PositionMark(Base):
     __tablename__ = "position_marks"
     __table_args__ = (UniqueConstraint("trade_id", "mark_date", name="uq_position_mark_trade_date"),)

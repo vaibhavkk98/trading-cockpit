@@ -203,8 +203,11 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
         try:
             from autopaper_prospective import run_prospective_autopaper
             autopaper_runner = deps.get("autopaper_runner") or run_prospective_autopaper
+            autopaper_histories = dict(runtime_stock_histories)
+            if runtime_nifty500_history is not None:
+                autopaper_histories["NIFTY500"] = runtime_nifty500_history
             autopaper = autopaper_runner(
-                decisions, runtime_stock_histories, analysis_date, completed, run_id, source=source
+                decisions, autopaper_histories, analysis_date, completed, run_id, source=source
             )
         except Exception as exc:
             autopaper = {"status": "DEGRADED", "active": False, "paper_only": True,

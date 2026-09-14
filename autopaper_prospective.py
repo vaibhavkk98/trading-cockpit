@@ -70,6 +70,34 @@ ROLLING_METHODOLOGY_HASH = digest({"version": ROLLING_VERSION,
     "config_hash": ROLLING_CONFIG_HASH, "code_identity": "autopaper_prospective.py:rolling-v1"})
 ACCOUNT_CONFIGS = {**ACCOUNTS, ROLLING_ACCOUNT_ID: {
     "volatility_sizing": True, "date_cap": None, "authority": "SHADOW_ONLY", "rolling": True}}
+EDGE_VERSION = "AUTOPAPER_EDGE_CAPTURE_V1A"
+THESIS_RULE_VERSION = "EDGE_THESIS_FAILURE_V1"
+EDGE_ACCOUNT_CONFIGS = {
+    "SHADOW_EDGE_H20": {"policy": "E1_H20", "hold_sessions": 20, "catastrophe": False, "thesis": False},
+    "SHADOW_EDGE_H20_CATASTROPHE": {"policy": "E2_H20_CATASTROPHE", "hold_sessions": 20, "catastrophe": True, "thesis": False},
+    "SHADOW_EDGE_H20_THESIS": {"policy": "E3_H20_THESIS", "hold_sessions": 20, "catastrophe": False, "thesis": True},
+}
+EDGE_CONFIGS = {account_id: {
+    "version": EDGE_VERSION, "policy": cfg["policy"],
+    "upstream_methodology_hash": ROLLING_METHODOLOGY_HASH,
+    "capital": 1_000_000.0, "volatility_sizing": True,
+    "max_positions_hard": 10, "target_occupancy": 9,
+    "admission_rule": "2_BELOW_5__1_FROM_5_TO_8__0_AT_9",
+    "priority": "P0_FRESHNESS", "queue_expiry_sessions": CONFIG["queue_expiry_sessions"],
+    "hold_sessions": cfg["hold_sessions"], "catastrophe": cfg["catastrophe"],
+    "thesis_failure": cfg["thesis"], "thesis_rule_version": THESIS_RULE_VERSION if cfg["thesis"] else None,
+    "replacement": False, "ordinary_stop": None, "target": None,
+    "authority": "SHADOW_ONLY", "paper_only": True,
+} for account_id, cfg in EDGE_ACCOUNT_CONFIGS.items()}
+EDGE_CONFIG_HASHES = {key: digest(value) for key, value in EDGE_CONFIGS.items()}
+EDGE_METHODOLOGY_HASHES = {key: digest({"version": EDGE_VERSION, "account": key,
+    "config_hash": EDGE_CONFIG_HASHES[key], "code_identity": "autopaper_prospective.py:edge-v1a"})
+    for key in EDGE_ACCOUNT_CONFIGS}
+ACCOUNT_CONFIGS.update({account_id: {"volatility_sizing": True, "date_cap": None,
+    "authority": "SHADOW_ONLY", "rolling": True, **cfg} for account_id, cfg in EDGE_ACCOUNT_CONFIGS.items()})
+EDGE_REVIEW_GATE = {"calendar_days": 90, "completed_matched_groups": 60,
+    "unique_signal_dates": 30, "represented_strategies": 3, "capacity_divergence_events": 20,
+    "automatic_promotion": False}
 FUTURE_REVIEW_GATE = {
     "minimum_completed_baseline_trades": 100,
     "minimum_unique_signal_dates": 40,
@@ -241,8 +269,49 @@ def ensure_rolling_account(activation_timestamp, activation_market_date):
         session.close()
 
 
+def ensure_edge_accounts(activation_timestamp, activation_market_date):
+    """Create only the three isolated Edge Capture manifests/accounts."""
+    database._require_database()
+    timestamp = _utc(activation_timestamp)
+    session = database.SessionLocal()
+    try:
+        for account_id in EDGE_ACCOUNT_CONFIGS:
+            method_hash = EDGE_METHODOLOGY_HASHES[account_id]
+            config_hash = EDGE_CONFIG_HASHES[account_id]
+            manifest = session.get(database.AutoPaperManifest, method_hash)
+            if manifest is None:
+                session.add(database.AutoPaperManifest(
+                    methodology_hash=method_hash, version=f"{EDGE_VERSION}_{EDGE_ACCOUNT_CONFIGS[account_id]['policy']}",
+                    activation_timestamp=timestamp, activation_market_date=activation_market_date,
+                    config_payload=_json(EDGE_CONFIGS[account_id]), config_hash=config_hash,
+                    code_identity="autopaper_prospective.py:edge-v1a"))
+            elif manifest.config_hash != config_hash:
+                raise RuntimeError("EDGE_CAPTURE_MANIFEST_CONFLICT")
+            account = session.get(database.AutoPaperAccount, account_id)
+            if account is None:
+                session.add(database.AutoPaperAccount(
+                    account_id=account_id, methodology_hash=method_hash,
+                    initial_capital=CONFIG["capital"], cash=CONFIG["capital"], status="ACTIVE",
+                    state_version=0, created_at=timestamp, updated_at=timestamp))
+            elif account.methodology_hash != method_hash:
+                raise RuntimeError("EDGE_CAPTURE_ACCOUNT_CONFLICT")
+        session.commit()
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
 def _active_positions(session, account_id):
     return session.query(database.AutoPaperPosition).filter_by(account_id=account_id, status="OPEN").all()
+
+
+def _pending_exit_for_position(session, account_id, position_id):
+    for order in session.query(database.AutoPaperOrder).filter_by(
+            account_id=account_id, side="SELL", status="PENDING").all():
+        if json.loads(order.payload).get("position_id") == position_id:
+            return order
+    return None
 
 
 def _nav(account, positions):
@@ -263,8 +332,177 @@ def rolling_admission_budget(open_positions: int) -> int:
     return 2 if count < 5 else 1
 
 
+def _edge_match_id(opportunity_id: str, signal_date: str) -> str:
+    return _hash(["EDGE_CAPTURE_MATCH_V1", opportunity_id, signal_date])
+
+
+def _ensure_edge_match(session, account_id, candidate):
+    if account_id not in EDGE_ACCOUNT_CONFIGS:
+        return
+    match_id = _edge_match_id(candidate["opportunity_id"], candidate["signal_date"])
+    leg_id = _hash([match_id, account_id])
+    if session.get(database.EdgeCaptureMatch, leg_id) is None:
+        payload = {"edge_capture_match_id": match_id, "opportunity_id": candidate["opportunity_id"],
+            "signal_date": candidate["signal_date"], "account_id": account_id,
+            "exit_policy": EDGE_ACCOUNT_CONFIGS[account_id]["policy"],
+            "actual_entries_only": True, "methodology_hash": EDGE_METHODOLOGY_HASHES[account_id]}
+        session.add(database.EdgeCaptureMatch(
+            leg_id=leg_id, edge_capture_match_id=match_id, opportunity_id=candidate["opportunity_id"],
+            signal_date=dt.date.fromisoformat(candidate["signal_date"]), account_id=account_id,
+            exit_policy=EDGE_ACCOUNT_CONFIGS[account_id]["policy"], payload=_json(payload),
+            payload_hash=_hash(payload)))
+
+
+def _update_edge_match(session, account_id, opportunity_id, **values):
+    if account_id not in EDGE_ACCOUNT_CONFIGS:
+        return
+    row = session.query(database.EdgeCaptureMatch).filter_by(
+        account_id=account_id, opportunity_id=opportunity_id).first()
+    if row is None:
+        return
+    for key, value in values.items():
+        setattr(row, key, value)
+    payload = json.loads(row.payload); payload.update({key: value for key, value in values.items()})
+    row.payload = _json(payload); row.payload_hash = _hash(payload)
+
+
+def _causal_frame(histories, symbol, market_date):
+    frame = histories.get(yahoo_nse_symbol(symbol))
+    if frame is None: frame = histories.get(symbol)
+    if frame is None or frame.empty: return None
+    data = frame.copy(); data.columns = [str(x).lower().replace("adjusted_", "") for x in data.columns]
+    if not {"open", "high", "low", "close", "volume"}.issubset(data.columns): return None
+    data.index = pd.to_datetime(data.index).tz_localize(None).normalize(); data = data.sort_index()
+    data = data.loc[data.index <= pd.Timestamp(market_date)]
+    return data if len(data) else None
+
+
+def thesis_failure_components(histories, symbol, market_date):
+    """Frozen completed-session T/R/V state; missingness can only suppress exits."""
+    data = _causal_frame(histories, symbol, market_date)
+    components = {"T": "NOT_AVAILABLE", "R": "NOT_AVAILABLE", "V": "NOT_AVAILABLE"}
+    details = {}
+    if data is not None:
+        close = pd.to_numeric(data["close"], errors="coerce")
+        if len(close) >= 21:
+            ema = close.ewm(span=20, adjust=False, min_periods=20).mean()
+            if pd.notna(ema.iloc[-1]) and pd.notna(ema.iloc[-2]) and pd.notna(close.iloc[-1]):
+                components["T"] = bool(close.iloc[-1] < ema.iloc[-1] and ema.iloc[-1] < ema.iloc[-2])
+                details.update(close=float(close.iloc[-1]), ema20=float(ema.iloc[-1]), ema20_slope=float(ema.iloc[-1] - ema.iloc[-2]))
+        if len(data) >= 21:
+            volume = pd.to_numeric(data["volume"], errors="coerce")
+            previous_mean = float(volume.iloc[-21:-1].mean())
+            high, low, current = (float(data[x].iloc[-1]) for x in ("high", "low", "close"))
+            previous = float(close.iloc[-2]); day_range = high - low
+            if math.isfinite(previous_mean) and previous_mean > 0 and day_range > 0:
+                volume_ratio = float(volume.iloc[-1]) / previous_mean
+                close_location = (current - low) / day_range
+                components["V"] = bool(current < previous and volume_ratio >= 1.5 and close_location <= .35)
+                details.update(previous_close=previous, volume_ratio=volume_ratio, close_location=close_location)
+        benchmark = histories.get("NIFTY500")
+        if benchmark is not None and len(close) >= 6:
+            bench = benchmark.copy(); bench.columns = [str(x).lower().replace("adjusted_", "") for x in bench.columns]
+            if "close" in bench.columns:
+                bench.index = pd.to_datetime(bench.index).tz_localize(None).normalize(); bench = bench.sort_index()
+                bench = bench.loc[bench.index <= pd.Timestamp(market_date)]
+                if len(bench) >= 6:
+                    stock_return = (float(close.iloc[-1]) / float(close.iloc[-6]) - 1) * 100
+                    bench_close = pd.to_numeric(bench["close"], errors="coerce")
+                    benchmark_return = (float(bench_close.iloc[-1]) / float(bench_close.iloc[-6]) - 1) * 100
+                    relative = stock_return - benchmark_return
+                    if math.isfinite(relative):
+                        components["R"] = bool(relative <= -3.0)
+                        details.update(stock_return_5d=stock_return, nifty500_return_5d=benchmark_return,
+                                       relative_return_5d=relative)
+    available = sum(value != "NOT_AVAILABLE" for value in components.values())
+    active = sum(value is True for value in components.values())
+    state = "NOT_AVAILABLE" if available < 2 else ("TRUE" if active >= 2 else "FALSE")
+    return {"components": components, "available_components": available,
+            "active_components": active, "state": state, **details}
+
+
+def _observe_thesis_state(session, account, position, market_date, now, histories):
+    pp = json.loads(position.payload)
+    if position.age < 3:
+        result = {"state": "GRACE_PERIOD", "components": {"T": "NOT_AVAILABLE", "R": "NOT_AVAILABLE", "V": "NOT_AVAILABLE"},
+                  "available_components": 0, "active_components": 0}
+    else:
+        result = thesis_failure_components(histories, position.symbol, market_date)
+    previous_streak = int(pp.get("thesis_failure_streak") or 0)
+    streak = previous_streak + 1 if result["state"] == "TRUE" else 0
+    result.update({"position_age": position.age, "consecutive_failure_sessions": streak,
+                   "thesis_rule_version": THESIS_RULE_VERSION})
+    obs_id = _hash([account.account_id, position.position_id, market_date.isoformat(), THESIS_RULE_VERSION])
+    if session.get(database.EdgeCaptureThesisObservation, obs_id) is None:
+        session.add(database.EdgeCaptureThesisObservation(
+            observation_id=obs_id, account_id=account.account_id, position_id=position.position_id,
+            opportunity_id=position.opportunity_id, market_date=market_date, state=result["state"],
+            payload=_json(result), payload_hash=_hash(result)))
+    pp["thesis_state"] = result["state"]; pp["thesis_components"] = result["components"]
+    pp["thesis_failure_streak"] = streak
+    if result["state"] == "TRUE" and not pp.get("thesis_first_failure_date"):
+        pp["thesis_first_failure_date"] = market_date.isoformat()
+    position.payload = _json(pp)
+    return result
+
+
+def _record_edge_early_exit(session, account, position, market_date, exit_type, fill, trigger_payload):
+    if account.account_id not in EDGE_ACCOUNT_CONFIGS:
+        return
+    pp = json.loads(position.payload); horizon = int(pp.get("planned_hold_sessions") or 20)
+    trigger_date = dt.date.fromisoformat(str(trigger_payload.get("trigger_date") or market_date)[:10])
+    trigger_age = (trigger_payload.get("thesis") or {}).get("position_age")
+    if trigger_age is None and exit_type == "CATASTROPHE_EXIT":
+        catastrophe = session.query(database.AutoPaperCatastropheObservation).filter_by(
+            account_id=account.account_id, position_id=position.position_id).first()
+        if catastrophe is not None:
+            trigger_age = json.loads(catastrophe.payload).get("position_age_at_trigger")
+    trigger_age = int(position.age if trigger_age is None else trigger_age)
+    entry_cost = float(pp["entry_cost"]); actual_return = (fill["proceeds"] / entry_cost - 1) * 100
+    payload = {"exit_type": exit_type, "trigger_date": trigger_date.isoformat(),
+        "actual_exit_date": market_date.isoformat(), "actual_exit_price": fill["price"],
+        "actual_exit_net_return_pct": actual_return, "original_horizon": horizon,
+        "position_age_at_trigger": trigger_age, "horizon_counterfactual_net_return_pct": None,
+        "horizon_mfe_pct": None, "horizon_mae_pct": None, "post_exit_maximum_recovery_pct": None,
+        "post_exit_additional_downside_pct": None, "exit_regret_pct": None,
+        "trigger_evidence": trigger_payload.get("thesis") or trigger_payload}
+    observation_id = _hash([account.account_id, position.position_id, "EDGE_EARLY_EXIT"])
+    if session.get(database.EdgeCaptureExitObservation, observation_id) is None:
+        session.add(database.EdgeCaptureExitObservation(
+            observation_id=observation_id, account_id=account.account_id,
+            position_id=position.position_id, opportunity_id=position.opportunity_id,
+            symbol=position.symbol, exit_type=exit_type, trigger_date=trigger_date,
+            actual_exit_date=market_date, status="AWAITING_H20", sessions_observed=0,
+            payload=_json(payload), payload_hash=_hash(payload)))
+
+
+def _advance_edge_exit_observations(session, account_id, histories, market_date, execution):
+    rows = session.query(database.EdgeCaptureExitObservation).filter_by(
+        account_id=account_id, status="AWAITING_H20").all()
+    for row in rows:
+        if row.actual_exit_date is None or market_date <= row.actual_exit_date: continue
+        bar = _bar(histories, row.symbol, market_date)
+        if not execution.executable(bar): continue
+        payload = json.loads(row.payload); row.sessions_observed += 1
+        actual_exit = float(payload["actual_exit_price"])
+        payload["post_exit_maximum_recovery_pct"] = max(payload.get("post_exit_maximum_recovery_pct") or 0.,
+            (bar[1] / actual_exit - 1) * 100)
+        payload["post_exit_additional_downside_pct"] = min(payload.get("post_exit_additional_downside_pct") or 0.,
+            (bar[2] / actual_exit - 1) * 100)
+        entry = session.get(database.AutoPaperPosition, row.position_id).entry_price
+        payload["horizon_mfe_pct"] = max(payload.get("horizon_mfe_pct") or 0., (bar[1] / entry - 1) * 100)
+        payload["horizon_mae_pct"] = min(payload.get("horizon_mae_pct") or 0., (bar[2] / entry - 1) * 100)
+        remaining = max(0, int(payload["original_horizon"]) - int(payload["position_age_at_trigger"]))
+        if row.sessions_observed >= remaining:
+            counterfactual = (bar[0] * (1 - CONFIG["slippage"]) / entry - 1) * 100
+            payload["horizon_counterfactual_net_return_pct"] = counterfactual
+            payload["exit_regret_pct"] = counterfactual - float(payload["actual_exit_net_return_pct"])
+            row.status = "MATURE"
+        row.payload = _json(payload); row.payload_hash = _hash(payload)
+
+
 def _submit_catastrophe_order(session, account, position, market_date, now, bar, execution,
-                              previous_close=None, telemetry_attempts=None):
+                              previous_close=None, telemetry_attempts=None, hold_sessions=10):
     pp = json.loads(position.payload); threshold = float(pp["catastrophe_threshold"])
     if bar is None or len(bar) < 6 or not all(math.isfinite(x) for x in bar[:4]) or bar[2] > threshold:
         return False
@@ -288,9 +526,9 @@ def _submit_catastrophe_order(session, account, position, market_date, now, bar,
     observation = session.get(database.AutoPaperCatastropheObservation, observation_id)
     if observation is None:
         observation_payload = {**payload, "execution_delay": None, "actual_exit_price": None,
-            "net_catastrophe_return": None, "h10_counterfactual_return": None,
+            "net_catastrophe_return": None, f"h{hold_sessions}_counterfactual_return": None,
             "subsequent_mfe_pct": None, "subsequent_mae_pct": None,
-            "position_age_at_trigger": position.age}
+            "position_age_at_trigger": position.age, "counterfactual_horizon": hold_sessions}
         observation = database.AutoPaperCatastropheObservation(observation_id=observation_id,
             account_id=account.account_id, opportunity_id=position.opportunity_id,
             position_id=position.position_id, symbol=position.symbol, trigger_date=market_date,
@@ -329,6 +567,11 @@ def _submit_catastrophe_order(session, account, position, market_date, now, bar,
     op = json.loads(observation.payload); op.update({"execution_delay": 0,
         "actual_exit_price": fill["price"], "net_catastrophe_return": (fill["proceeds"] / entry_cost - 1) * 100})
     observation.status = "FILLED_AWAITING_H10"; observation.payload = _json(op); observation.payload_hash = _hash(op)
+    if account.account_id in EDGE_ACCOUNT_CONFIGS:
+        observation.status = "FILLED_AWAITING_H20"
+        _record_edge_early_exit(session, account, position, market_date, "CATASTROPHE_EXIT", fill, payload)
+        _update_edge_match(session, account.account_id, position.opportunity_id,
+            exit_date=market_date, exit_price=fill["price"])
     _journal(session, account, market_date, now, "EXIT", position.opportunity_id,
         "CATASTROPHE_EXIT", order_id=order_id, actual_allocated_capital=fill["proceeds"],
         **{key: value for key, value in payload.items() if key != "reason"})
@@ -337,9 +580,10 @@ def _submit_catastrophe_order(session, account, position, market_date, now, bar,
     return True
 
 
-def _advance_catastrophe_observations(session, histories, market_date, execution):
+def _advance_catastrophe_observations(session, histories, market_date, execution,
+                                      account_id="SHADOW_CATASTROPHE", hold_sessions=10):
     rows = session.query(database.AutoPaperCatastropheObservation).filter_by(
-        account_id="SHADOW_CATASTROPHE", status="FILLED_AWAITING_H10").all()
+        account_id=account_id, status=f"FILLED_AWAITING_H{hold_sessions}").all()
     for row in rows:
         bar = _bar(histories, row.symbol, market_date)
         if not execution.executable(bar) or market_date <= row.trigger_date:
@@ -350,11 +594,12 @@ def _advance_catastrophe_observations(session, histories, market_date, execution
             gain = (bar[1] / exit_price - 1) * 100; loss = (bar[2] / exit_price - 1) * 100
             payload["subsequent_mfe_pct"] = max(payload.get("subsequent_mfe_pct") or 0., gain)
             payload["subsequent_mae_pct"] = min(payload.get("subsequent_mae_pct") or 0., loss)
-        remaining = max(0, 10 - int(payload.get("position_age_at_trigger") or 0))
+        remaining = max(0, hold_sessions - int(payload.get("position_age_at_trigger") or 0))
         if row.sessions_after_trigger >= remaining:
             reference = bar[0]; entry_price = float(payload["entry_price"])
-            payload["h10_counterfactual_return"] = (reference * (1 - CONFIG["slippage"]) / entry_price - 1) * 100
-            payload["exit_regret_pct"] = payload["h10_counterfactual_return"] - float(payload.get("net_catastrophe_return") or 0)
+            key = f"h{hold_sessions}_counterfactual_return"
+            payload[key] = (reference * (1 - CONFIG["slippage"]) / entry_price - 1) * 100
+            payload["exit_regret_pct"] = payload[key] - float(payload.get("net_catastrophe_return") or 0)
             row.status = "MATURE"
         row.payload = _json(payload); row.payload_hash = _hash(payload)
 
@@ -375,9 +620,13 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             stats["idempotent"] = True
             return stats
         account_cfg = ACCOUNT_CONFIGS[account_id]
+        hold_sessions = int(account_cfg.get("hold_sessions") or CONFIG["hold_sessions"])
         now = timestamp
-        if account_id == "SHADOW_CATASTROPHE":
-            _advance_catastrophe_observations(session, histories, market_date, execution)
+        if account_cfg.get("catastrophe"):
+            _advance_catastrophe_observations(session, histories, market_date, execution,
+                                              account_id, hold_sessions)
+        if account_id in EDGE_ACCOUNT_CONFIGS:
+            _advance_edge_exit_observations(session, account_id, histories, market_date, execution)
         # Advance the persisted queue by one observed EOD session.
         queue = session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, status="ACTIVE").all()
         for item in queue:
@@ -434,8 +683,13 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                         op = json.loads(observation.payload); delay = max(0, (market_date - observation.trigger_date).days)
                         op.update({"execution_delay": delay, "actual_exit_price": fill["price"],
                             "net_catastrophe_return": (fill["proceeds"] / entry_cost - 1) * 100})
-                        observation.status = "FILLED_AWAITING_H10"; observation.payload = _json(op)
+                        observation.status = f"FILLED_AWAITING_H{hold_sessions}"; observation.payload = _json(op)
                         observation.payload_hash = _hash(op)
+                _update_edge_match(session, account_id, position.opportunity_id,
+                    exit_date=market_date, exit_price=fill["price"])
+                if exit_reason in {"THESIS_FAILURE_EXIT", "CATASTROPHE_EXIT"}:
+                    _record_edge_early_exit(session, account, position, market_date,
+                                            exit_reason, fill, payload)
                 stats["exits"] += 1
             else:
                 queue_item = session.query(database.AutoPaperQueueItem).filter_by(
@@ -460,8 +714,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 qpayload = json.loads(queue_item.payload)
                 ppayload = {"signal_date": qpayload["signal_date"], "strategy": qpayload["strategy"],
                     "entry_cost": fill["cost"], "entry_fee": fill["fee"], "entry_slippage": fill["slippage_cost"],
-                    "methodology_hash": account.methodology_hash, "planned_hold_sessions": 10}
-                if account_id == "SHADOW_CATASTROPHE":
+                    "methodology_hash": account.methodology_hash, "planned_hold_sessions": hold_sessions}
+                if account_cfg.get("catastrophe"):
                     entry_atr = float(qpayload["reference_price"]) * float(qpayload["atr_pct"]) / 100
                     threshold, downside = catastrophe_threshold(fill["price"], entry_atr)
                     ppayload.update({"entry_atr": float(qpayload["reference_price"]) * float(qpayload["atr_pct"]) / 100,
@@ -479,6 +733,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 queue_item.status = "ENTERED"
                 link = session.get(database.AutoPaperCounterfactualLink, _hash([account_id, order.opportunity_id]))
                 if link: link.entered = True; link.terminal_reason = "ENTERED"
+                _update_edge_match(session, account_id, order.opportunity_id,
+                    execution_date=market_date, entry_price=fill["price"], entry_size=fill["cost"])
                 _journal(session, account, market_date, now, "ENTER", order.opportunity_id, "ENTERED",
                          order_id=order.order_id, sizing_multiplier=json.loads(order.payload)["sizing_multiplier"],
                          requested_capital=order.requested_capital, actual_allocated_capital=fill["cost"],
@@ -487,13 +743,16 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 stats["new_entries"] += 1
         # Entry occurs at today's open, so today's completed bar is holding session 1.
         session.flush()
-        # Mark positions with completed-session OHLC and submit H10 exits for next open.
+        # Mark positions with completed-session OHLC and submit the account's
+        # frozen time/protection exit for the next executable open.
         for position in _active_positions(session, account_id):
             mark_context = bar_context(histories, position.symbol, market_date)
             bar = mark_context["bar"]
-            if account_id == "SHADOW_CATASTROPHE" and _submit_catastrophe_order(
+            existing_edge_exit = (_pending_exit_for_position(session, account_id, position.position_id)
+                                  if account_id in EDGE_ACCOUNT_CONFIGS else None)
+            if account_cfg.get("catastrophe") and existing_edge_exit is None and _submit_catastrophe_order(
                     session, account, position, market_date, now, bar, execution,
-                    mark_context["previous_close"], telemetry_attempts):
+                    mark_context["previous_close"], telemetry_attempts, hold_sessions):
                 if position.status == "CLOSED": stats["exits"] += 1
                 else: stats["failed_fills"] += 1
                 continue
@@ -504,10 +763,33 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             position.mfe_pct = max(position.mfe_pct, (bar[1] / position.entry_price - 1) * 100)
             position.mae_pct = min(position.mae_pct, (bar[2] / position.entry_price - 1) * 100)
             position.updated_at = now
-            if position.age >= CONFIG["hold_sessions"]:
+            if existing_edge_exit is not None:
+                position.planned_exit_state = "PENDING_NEXT_EXECUTABLE_OPEN"
+                _journal(session, account, market_date, now, "HOLD", position.opportunity_id,
+                         "EXIT_PENDING_NEXT_EXECUTABLE_OPEN", position_age=position.age,
+                         planned_exit_state=position.planned_exit_state,
+                         order_id=existing_edge_exit.order_id)
+                continue
+            thesis_triggered = False
+            if account_cfg.get("thesis"):
+                thesis = _observe_thesis_state(session, account, position, market_date, now, histories)
+                if thesis["state"] == "TRUE" and thesis["consecutive_failure_sessions"] >= 2:
+                    order_id = _hash([account_id, position.position_id, market_date.isoformat(), "THESIS_SELL"])
+                    if session.get(database.AutoPaperOrder, order_id) is None:
+                        payload = {"position_id": position.position_id, "reason": "THESIS_FAILURE_EXIT",
+                            "execution": "NEXT_EXECUTABLE_OPEN", "trigger_date": market_date.isoformat(),
+                            "thesis": thesis, "thesis_rule_version": THESIS_RULE_VERSION}
+                        session.add(database.AutoPaperOrder(
+                            order_id=order_id, account_id=account_id, opportunity_id=position.opportunity_id,
+                            symbol=position.symbol, side="SELL", requested_session=market_date,
+                            order_timestamp=now, status="PENDING", quantity=position.quantity,
+                            requested_capital=None, payload=_json(payload), payload_hash=_hash(payload)))
+                    position.planned_exit_state = "THESIS_FAILURE_PENDING_NEXT_OPEN"
+                    position.planned_exit_date = market_date; thesis_triggered = True
+            if not thesis_triggered and position.age >= hold_sessions:
                 order_id = _hash([account_id, position.position_id, market_date.isoformat(), "SELL"])
                 if session.get(database.AutoPaperOrder, order_id) is None:
-                    payload = {"position_id": position.position_id, "reason": "H10_TIME_EXIT",
+                    payload = {"position_id": position.position_id, "reason": f"H{hold_sessions}_TIME_EXIT",
                                "execution": "NEXT_EXECUTABLE_OPEN"}
                     session.add(database.AutoPaperOrder(
                         order_id=order_id, account_id=account_id, opportunity_id=position.opportunity_id,
@@ -517,12 +799,14 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 position.planned_exit_state = "SUBMITTED_NEXT_OPEN"
                 position.planned_exit_date = market_date
             _journal(session, account, market_date, now, "HOLD", position.opportunity_id,
-                     "H10_TIME_EXIT_SUBMITTED" if position.age >= 10 else "HOLD",
+                     ("THESIS_FAILURE_EXIT_SUBMITTED" if thesis_triggered else
+                      f"H{hold_sessions}_TIME_EXIT_SUBMITTED" if position.age >= hold_sessions else "HOLD"),
                      position_age=position.age, planned_exit_state=position.planned_exit_state)
         # Ingest exactly today's new qualified stream and create outcome links.
         for raw in decisions:
             candidate = _candidate(raw, market_date); oid = candidate["opportunity_id"]
             if not oid: continue
+            _ensure_edge_match(session, account_id, candidate)
             link_id = _hash([account_id, oid])
             if session.get(database.AutoPaperCounterfactualLink, link_id) is None:
                 session.add(database.AutoPaperCounterfactualLink(
@@ -640,7 +924,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 account_id=account_id, market_date=market_date, cash=account.cash, nav=nav,
                 open_positions=len(positions), state_fingerprint=fingerprint, payload=_json(snapshot_payload)))
         account.last_market_date = market_date; account.state_version += 1; account.updated_at = now
-        if rolling:
+        if account_id == ROLLING_ACCOUNT_ID:
             rolling_positions = _active_positions(session, account_id)
             active_queue = session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, status="ACTIVE").all()
             ages = [int(p.age) for p in rolling_positions]
@@ -680,6 +964,32 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             telemetry_id = _hash([ROLLING_VERSION, account_id, market_date.isoformat()])
             if session.get(database.AutoPaperRollingTelemetry, telemetry_id) is None:
                 session.add(database.AutoPaperRollingTelemetry(
+                    telemetry_id=telemetry_id, account_id=account_id, market_date=market_date,
+                    payload=_json(telemetry), payload_hash=_hash(telemetry)))
+        if account_id in EDGE_ACCOUNT_CONFIGS:
+            edge_positions = _active_positions(session, account_id)
+            today_decisions = session.query(database.AutoPaperDecision).filter_by(
+                account_id=account_id, market_date=market_date).all()
+            control_positions = len(_active_positions(session, ROLLING_ACCOUNT_ID)) if session.get(
+                database.AutoPaperAccount, ROLLING_ACCOUNT_ID) else None
+            blocked = sum(x.reason_code in {"NO_CAPACITY", "ROLLING_TARGET_OCCUPANCY"} for x in today_decisions)
+            capacity_divergence = bool(control_positions is not None and len(edge_positions) != control_positions)
+            telemetry = {"version": EDGE_VERSION, "account_id": account_id,
+                "policy": EDGE_ACCOUNT_CONFIGS[account_id]["policy"], "market_date": market_date.isoformat(),
+                "decision_authority": False, "open_positions": len(edge_positions), "cash": account.cash,
+                "nav": nav, "gross_exposure": sum(x.quantity * x.current_mark for x in edge_positions),
+                "cash_utilization": (nav - account.cash) / nav if nav else None,
+                "capital_days": sum(x.age * x.quantity * x.current_mark for x in edge_positions),
+                "pending_entries": session.query(database.AutoPaperOrder).filter_by(
+                    account_id=account_id, side="BUY", status="PENDING").count(),
+                "rolling_deferred": sum(x.reason_code == "ROLLING_DAILY_ADMISSION_LIMIT" for x in today_decisions),
+                "capacity_blocked": blocked, "control_open_positions": control_positions,
+                "capacity_divergence": capacity_divergence,
+                "blocked_while_control_below_target": blocked if control_positions is not None and control_positions < 9 else 0,
+                "hold_sessions": hold_sessions}
+            telemetry_id = _hash([EDGE_VERSION, account_id, market_date.isoformat()])
+            if session.get(database.EdgeCaptureTelemetry, telemetry_id) is None:
+                session.add(database.EdgeCaptureTelemetry(
                     telemetry_id=telemetry_id, account_id=account_id, market_date=market_date,
                     payload=_json(telemetry), payload_hash=_hash(telemetry)))
         session.commit()
@@ -749,6 +1059,40 @@ def _process_rolling_if_activated(decisions, histories, market_date, timestamp, 
     return result
 
 
+def _process_edge_if_activated(decisions, histories, market_date, timestamp, killed):
+    """Advance each Edge account independently after its causal activation boundary."""
+    session = database.SessionLocal()
+    try:
+        activation = session.query(database.EdgeCaptureActivation).order_by(
+            database.EdgeCaptureActivation.created_at.desc()).first()
+        if activation is None: return {}
+        if activation.status == "PENDING_NEXT_COHORT":
+            if activation.after_market_date is not None and market_date <= activation.after_market_date:
+                return {key: {"account_id": key, "status": "PENDING_NEXT_COHORT"} for key in EDGE_ACCOUNT_CONFIGS}
+            activation.status = "ACTIVE"; activation.activation_signal_date = market_date
+            activation.provenance = "EDGE_CAPTURE_PROSPECTIVE"
+            payload = json.loads(activation.payload); payload.update({"status": "ACTIVE",
+                "activation_signal_date": market_date.isoformat(), "provenance": activation.provenance})
+            activation.payload = _json(payload); activation.payload_hash = _hash(payload); session.commit()
+        signal_date, provenance, activated_at = (activation.activation_signal_date,
+            activation.provenance, activation.activation_timestamp)
+    except Exception:
+        session.rollback(); raise
+    finally: session.close()
+    if signal_date is None or market_date < signal_date: return {}
+    ensure_edge_accounts(activated_at, signal_date)
+    stream = [{**row, "prospective_origin": provenance} for row in ([] if killed else decisions)]
+    results = {}
+    for account_id in EDGE_ACCOUNT_CONFIGS:
+        try:
+            results[account_id] = _process_account(account_id, stream, histories, market_date, timestamp)
+            try: persist_risk_snapshot(account_id, market_date, histories, decisions)
+            except Exception as exc: results[account_id].setdefault("warnings", []).append(f"RISK_TELEMETRY:{type(exc).__name__}")
+        except Exception as exc:
+            results[account_id] = {"account_id": account_id, "status": "FAILED", "error": type(exc).__name__}
+    return results
+
+
 def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, run_id,
                               source="AUTOMATED_EOD"):
     """Advance baseline and shadows once. Never routes to a broker or manual portfolio."""
@@ -795,11 +1139,20 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
         results[ROLLING_ACCOUNT_ID] = {"account_id": ROLLING_ACCOUNT_ID,
             "status": "FAILED", "error": type(exc).__name__}
         observability_warnings.append(f"{ROLLING_ACCOUNT_ID}:{type(exc).__name__}")
+    try:
+        edge_results = _process_edge_if_activated(decisions, histories, market_date, timestamp, killed)
+        results.update(edge_results)
+        for account_id, value in edge_results.items():
+            if value.get("status") == "FAILED": observability_warnings.append(f"{account_id}:{value.get('error')}")
+    except Exception as exc:
+        observability_warnings.append(f"EDGE_CAPTURE:{type(exc).__name__}")
     health = {"run_id": f"AUTOPAPER-{run_id}", "run_timestamp": timestamp.isoformat(),
         "market_date": market_date.isoformat(), "qualified_opportunities": len(decisions),
         "kill_switch": killed, "paper_only": True, "accounts": results,
         "shadow_run_status": "HEALTHY" if all(k in results and results[k].get("status") != "FAILED" for k in ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE")) else "DEGRADED",
         "rolling_shadow_status": (results.get(ROLLING_ACCOUNT_ID) or {}).get("status", "NOT_ACTIVATED"),
+        "edge_capture_status": ("HEALTHY" if all((results.get(key) or {}).get("status") != "FAILED"
+            for key in EDGE_ACCOUNT_CONFIGS) else "DEGRADED"),
         "errors": errors, "warnings": [w for value in results.values() for w in value.get("warnings", [])] + observability_warnings,
         "status": "HEALTHY" if not errors else "DEGRADED"}
     session = database.SessionLocal()
@@ -853,7 +1206,7 @@ def prospective_evidence():
                     "median_mfe_pct": float(np.median([row["mfe_pct"] for row in rows])) if rows else None,
                     "median_mae_pct": float(np.median([row["mae_pct"] for row in rows])) if rows else None}
 
-        for account_id in (*ACCOUNTS, ROLLING_ACCOUNT_ID):
+        for account_id in (*ACCOUNTS, ROLLING_ACCOUNT_ID, *EDGE_ACCOUNT_CONFIGS):
             account = session.get(database.AutoPaperAccount, account_id)
             if account is None: continue
             trades = session.query(database.AutoPaperTrade).filter_by(account_id=account_id).all()
@@ -877,6 +1230,8 @@ def prospective_evidence():
             downside = returns[returns < 0]; downside_std = downside.std(ddof=1)
             entered_ids = {row.opportunity_id for row in links if row.entered}
             nonentered_ids = {row.opportunity_id for row in links if not row.entered}
+            capacity_blocked_ids = {row.opportunity_id for row in decisions if row.reason_code in {
+                "NO_CAPACITY", "ROLLING_TARGET_OCCUPANCY"}}
             strategy_counts = {}
             for payload in trade_payloads:
                 strategy = payload.get("strategy", "NOT_AVAILABLE")
@@ -905,6 +1260,7 @@ def prospective_evidence():
                 "plus_5_before_minus_3": outcome_summary(entered_ids)["plus_5_before_minus_3_rate"],
                 "entered_outcomes": outcome_summary(entered_ids),
                 "nonentered_outcomes": outcome_summary(nonentered_ids),
+                "capacity_blocked_outcomes": outcome_summary(capacity_blocked_ids),
                 "top_date_positive_share": positive[0]/gross_positive if gross_positive else None,
                 "top5_date_positive_share": sum(positive[:5])/gross_positive if gross_positive else None,
                 "capacity_constrained_decisions": sum(x.reason_code == "NO_CAPACITY" for x in decisions),

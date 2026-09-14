@@ -673,6 +673,7 @@ def _autopaper_shadows(state):
                 "Catastrophe threshold": x.get("catastrophe_threshold")} for x in catastrophe_positions]),
                 width="stretch", hide_index=True)
     _autopaper_rolling(state)
+    _autopaper_edge_capture(state)
 
 
 def _autopaper_rolling(state):
@@ -700,13 +701,50 @@ def _autopaper_rolling(state):
     st.caption(f"Activated {activation.get('activation_signal_date')} · {activation.get('provenance')} · methodology {activation.get('methodology_hash')}")
 
 
+def _autopaper_edge_capture(state):
+    edge = state.get("edge_capture") or {}; activation = edge.get("activation") or {}
+    render_section_header("Edge Capture", "Prospective exit-policy research · no baseline authority")
+    if activation.get("status") in {None, "NOT_ACTIVATED", "PENDING_NEXT_COHORT"}:
+        st.info(f"Edge Capture is awaiting a causally eligible cohort ({activation.get('status', 'NOT_ACTIVATED')}).")
+        return
+    rows = []
+    control = edge.get("control") or {}; control_metrics = control.get("metrics") or {}
+    rows.append({"Policy": "E0", "Exit philosophy": "Rolling + H10", "NAV": control_metrics.get("nav"),
+        "Return %": control_metrics.get("net_return_pct"), "Drawdown %": control_metrics.get("max_drawdown_pct"),
+        "Exposure %": control_metrics.get("invested_pct"), "Cash": control_metrics.get("cash"),
+        "Positions": control_metrics.get("open_positions"), "Completed": control_metrics.get("completed_trades"),
+        "Average hold": None, "Turnover %": control_metrics.get("turnover_pct"), "MFE capture": None})
+    for values in (edge.get("accounts") or {}).values():
+        metrics = values.get("metrics") or {}
+        rows.append({"Policy": values.get("policy"), "Exit philosophy": values.get("exit_philosophy"),
+            "NAV": metrics.get("nav"), "Return %": metrics.get("net_return_pct"),
+            "Drawdown %": metrics.get("max_drawdown_pct"), "Exposure %": metrics.get("invested_pct"),
+            "Cash": metrics.get("cash"), "Positions": metrics.get("open_positions"),
+            "Completed": metrics.get("completed_trades"), "Average hold": values.get("mean_hold"),
+            "Turnover %": metrics.get("turnover_pct"), "MFE capture": values.get("mfe_capture")})
+    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    edge_positions = []
+    for account_id, positions in (state.get("shadow_positions") or {}).items():
+        if not account_id.startswith("SHADOW_EDGE_"): continue
+        policy = (edge.get("accounts") or {}).get(account_id, {}).get("policy", account_id)
+        for position in positions:
+            edge_positions.append({"Policy": policy, "Symbol": position.get("symbol"),
+                "Hold": position.get("hold_label"), "Expected exit": position.get("planned_action"),
+                "Protection": position.get("protection_state")})
+    if edge_positions:
+        with st.expander("Edge Capture positions", expanded=False):
+            st.dataframe(pd.DataFrame(edge_positions), width="stretch", hide_index=True)
+    st.caption("Neutral evidence collection only. Longer holding periods may legitimately change future capacity and entries.")
+
+
 def _autopaper_health(state):
     health = state.get("health") or {}
     render_section_header("System health", "Persisted operational telemetry")
     rows = [{"Layer": "AutoPaper run", "Status": health.get("status")},
             {"Layer": "Data freshness", "Status": health.get("market_date") or "NOT YET RUN"},
             {"Layer": "Portfolio reconciliation", "Status": health.get("reconciliation") or "NOT AVAILABLE"}]
-    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING"):
+    for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING",
+                       "SHADOW_EDGE_H20", "SHADOW_EDGE_H20_CATASTROPHE", "SHADOW_EDGE_H20_THESIS"):
         payload = (health.get("accounts") or {}).get(account_id) or {}
         rows.append({"Layer": account_id, "Status": payload.get("status") or ("HEALTHY" if payload else "NOT AVAILABLE")})
     rows.append({"Layer": "ROLE linkage", "Status": state.get("role_linkage_status") or "NOT AVAILABLE"})
@@ -1290,6 +1328,25 @@ def _render_learning():
                     "+5 before -3": outcome.get("plus_5_before_minus_3_rate")})
             st.dataframe(pd.DataFrame(outcome_rows), width="stretch", hide_index=True)
             st.info("No promotion conclusion is available until sufficient prospective overlap matures.")
+        with st.expander("Edge Capture Overview", expanded=False):
+            _autopaper_edge_capture(auto)
+            edge = auto.get("edge_capture") or {}; accounts = edge.get("accounts") or {}
+            g1, g2, g3, g4 = st.columns(4)
+            with g1: render_metric_card("Matched groups", edge.get("matched_groups", 0), "Same originating signal")
+            with g2: render_metric_card("Completed groups", edge.get("completed_groups", 0), "Closed in 2+ policies")
+            with g3: render_metric_card("Signal dates", edge.get("unique_signal_dates", 0), "Prospective coverage")
+            with g4: render_metric_card("Capacity divergence", edge.get("capacity_divergence_events", 0), "Observed policy divergence")
+            comparison = []
+            for values in accounts.values():
+                metrics = values.get("metrics") or {}
+                comparison.append({"Policy": values.get("policy"), "Net expectancy %": metrics.get("average_trade_return_pct"),
+                    "MFE capture": values.get("mfe_capture"), "Max DD %": metrics.get("max_drawdown_pct"),
+                    "Capital-days": values.get("capital_days"), "Capacity blocked": values.get("capacity_blocked"),
+                    "Rolling deferred": values.get("rolling_deferred")})
+            if comparison: st.dataframe(pd.DataFrame(comparison), width="stretch", hide_index=True)
+            st.caption(f"Catastrophe exits {edge.get('catastrophe_exits', 0)} · thesis exits {edge.get('thesis_exits', 0)} · "
+                       f"mature early-exit regret observations {edge.get('mature_early_exits', 0)} · median regret {format_percent(edge.get('mean_exit_regret_pct'))}.")
+            st.info("The Edge Capture review gate is not a promotion decision. Wait for the later of the existing baseline gate and the separate Edge gate.")
         with st.expander("Execution realism, concentration & common factor", expanded=False):
             _autopaper_observability(auto)
             execution = auto.get("execution_quality") or {}
