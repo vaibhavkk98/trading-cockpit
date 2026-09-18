@@ -1,0 +1,147 @@
+{
+  "results": [
+    {
+      "suite": "test_pb_p1_shadow.py",
+      "exit_code": 0,
+      "seconds": 1.9568604580126703,
+      "summary": [
+        "Ran 15 tests in 1.019s",
+        "OK"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_pb_p1a_frozen_inference.py",
+      "exit_code": 0,
+      "seconds": 1.3297895409923512,
+      "summary": [
+        "Returning the number of logical cores instead. You can silence this warning by setting LOKY_MAX_CPU_COUNT to the number of cores you want to use.",
+        "Ran 10 tests in 0.902s",
+        "OK"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_autopaper_p1.py",
+      "exit_code": 0,
+      "seconds": 0.8954282090126071,
+      "summary": [
+        "AutoPaper-P1 focused tests: 20 passed"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_autopaper_p1_1.py",
+      "exit_code": 0,
+      "seconds": 2.23092779199942,
+      "summary": [
+        "AutoPaper-P1.1 focused tests: 34 passed"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_autopaper_p1_2.py",
+      "exit_code": 0,
+      "seconds": 0.7950235420139506,
+      "summary": [
+        "AutoPaper-P1.2 focused tests: 45 passed"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_autopaper_p1_3.py",
+      "exit_code": 0,
+      "seconds": 2.2459729999827687,
+      "summary": [
+        "AutoPaper-P1.3 focused tests: 53 passed"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_systematic_engine_v1a.py",
+      "exit_code": 0,
+      "seconds": 2.2567580420000013,
+      "summary": [
+        "Systematic Engine V1A focused tests: 50 passed"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_systematic_engine_v1b.py",
+      "exit_code": 0,
+      "seconds": 2.0011553750082385,
+      "summary": [
+        "Systematic Engine V1B focused tests: 56 passed"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_autopaper_ui1.py",
+      "exit_code": 0,
+      "seconds": 2.2213327909994405,
+      "summary": [
+        "AutoPaper-UI1 focused tests: 20 passed"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_streamlit_performance_cache.py",
+      "exit_code": 0,
+      "seconds": 1.765571041003568,
+      "summary": [
+        "Streamlit performance/cache tests: PASS (12/12 scenarios)"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_phase_1a_eod_automation.py",
+      "exit_code": 0,
+      "seconds": 1.9004127910011448,
+      "summary": [
+        "Phase 1A EOD automation tests: PASS"
+      ],
+      "failure_tail": []
+    },
+    {
+      "suite": "test_positive_price_qualification.py",
+      "exit_code": 1,
+      "seconds": 0.25315120798768476,
+      "summary": [],
+      "failure_tail": [
+        "",
+        "Traceback (most recent call last):",
+        "  File \"/Users/vaibhavkhandelwal/Library/CloudStorage/GoogleDrive-sirvaibhavkrishna@gmail.com/My Drive/Personal Projects/Trading Agent/scripts/test_positive_price_qualification.py\", line 16, in <module>",
+        "    import database  # noqa: E402",
+        "    ^^^^^^^^^^^^^^^",
+        "ModuleNotFoundError: No module named 'database'"
+      ]
+    },
+    {
+      "suite": "autopaper_baseline_fingerprint.py",
+      "exit_code": 0,
+      "seconds": 0.8741653329925612,
+      "summary": [
+        "b93e8c2dd1a99fba712f89a38ba3a5689595891a47375e5c4f20a31d567d3640"
+      ],
+      "failure_tail": []
+    }
+  ],
+  "pb_p1b": "No executable P1B test exists; mapping/disabled-state verified by test_pb_p1c_contract.py",
+  "focused_p1c": {
+    "passed": 10,
+    "failed": 0
+  },
+  "compile": "PASS: 3 files",
+  "diff_check": "PASS",
+  "qualification_rerun": {
+    "command": "PYTHONPATH=. ./venv/bin/python scripts/test_positive_price_qualification.py",
+    "passed": 7,
+    "failed": 0,
+    "initial_failure": "Missing PYTHONPATH in invocation; no code defect"
+  },
+  "final_counted_checks": {
+    "passed": 332,
+    "failed": 0,
+    "additional": "EOD automation suite and baseline fingerprint PASS"
+  }
+}

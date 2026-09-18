@@ -1,0 +1,22 @@
+{
+  "max_source_session": "2026-06-29 00:00:00",
+  "outcome_files_opened": false,
+  "autopaper_holdout_opened": false,
+  "archive_last_session": "2026-08-13 00:00:00",
+  "benchmark_last_session": "2026-08-13 00:00:00",
+  "prices": "causal forward split/bonus chain; available historical only",
+  "live_blockers": [
+    "Missing live exchange traded value",
+    "Missing full historical-liquid NSE eligibility/sample",
+    "Yahoo adjustment includes different actions; EWM history seed differs",
+    "Exact NSE India VIX values absent from PB live payload"
+  ],
+  "production_evidence": [
+    "screener.py: auto_adjust=True and runtime history exports",
+    "eod_pipeline.py: runtime stock/Nifty500 only",
+    "ha_data_foundation.py: forward split/bonus and eligibility",
+    "latent_state_vector.py: payload approximations"
+  ],
+  "source_sha256": "3bdef62f8bc677e3c96f2aac13ca1e27108f1ba8e49f44ee0709b8e781863941",
+  "decision_authority": false
+}

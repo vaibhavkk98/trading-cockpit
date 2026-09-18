@@ -1,0 +1,531 @@
+{
+  "schema_version": "PB_R2B_R3B_PRODUCTION_NATIVE_SPEC_V1",
+  "status": "IMPLEMENTATION_READY_NO_RETRAINING_EXECUTED",
+  "new_methodology_required": true,
+  "reuse_old_coefficients_or_thresholds": false,
+  "decision_authority": false,
+  "formula_binding": {
+    "reference_contract": "pb_feature_contract_v1.json",
+    "variable_preamble": [
+      "f = raw.sort_values('trade_date', kind='mergesort').reset_index(drop=True).copy()",
+      "close = pd.to_numeric(f.adjusted_close, errors='coerce')",
+      "opn = pd.to_numeric(f.adjusted_open, errors='coerce')",
+      "high = pd.to_numeric(f.adjusted_high, errors='coerce')",
+      "low = pd.to_numeric(f.adjusted_low, errors='coerce')",
+      "volume = pd.to_numeric(f.volume, errors='coerce')",
+      "traded = pd.to_numeric(f.traded_value_inr, errors='coerce')",
+      "ret = close.pct_change(fill_method=None)",
+      "prev = close.shift(1)",
+      "tr = pd.concat([high - low, (high - prev).abs(), (low - prev).abs()], axis=1).max(axis=1)",
+      "prior_volume20 = volume.shift(1).rolling(20, min_periods=15).mean()",
+      "prior_traded20 = traded.shift(1).rolling(20, min_periods=15).mean()",
+      "volume_ratio = _safe_div(volume, prior_volume20)",
+      "up_volume = volume.where(ret > 0, 0).rolling(20, min_periods=15).sum()",
+      "down_volume = volume.where(ret < 0, 0).rolling(20, min_periods=15).sum()"
+    ],
+    "override": "Bind adjusted_open/high/low/close to raw OHLC; bind traded_value_inr to raw close*volume. Resolve expressions in original-name order, then rename native_. Cross-section uses native qualified set.",
+    "native_symbol_mapping": "Use canonical_security_id and dated symbol_history.parquet, not symbol string alone"
+  },
+  "features": [
+    {
+      "original": "return_5d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_return_5d",
+      "formula": "(close / close.shift(5) - 1) * 100",
+      "lookback": 6,
+      "minimum_observations": 6,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "return_10d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_return_10d",
+      "formula": "(close / close.shift(10) - 1) * 100",
+      "lookback": 11,
+      "minimum_observations": 11,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "return_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_return_20d",
+      "formula": "(close / close.shift(20) - 1) * 100",
+      "lookback": 21,
+      "minimum_observations": 21,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "return_60d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_return_60d",
+      "formula": "(close / close.shift(60) - 1) * 100",
+      "lookback": 61,
+      "minimum_observations": 61,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "ema20_extension",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_ema20_extension",
+      "formula": "(close / close.ewm(span=20, adjust=False).mean() - 1) * 100",
+      "lookback": "full source history; EWM seed is first observation",
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "ema50_extension",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_ema50_extension",
+      "formula": "(close / close.ewm(span=50, adjust=False).mean() - 1) * 100",
+      "lookback": "full source history; EWM seed is first observation",
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "drawdown_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_drawdown_20d",
+      "formula": "(close / close.rolling(20, min_periods=20).max() - 1) * 100",
+      "lookback": 20,
+      "minimum_observations": 20,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "distance_high_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_distance_high_20d",
+      "formula": "(close / high.rolling(20, min_periods=20).max() - 1) * 100",
+      "lookback": 20,
+      "minimum_observations": 20,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "distance_high_60d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_distance_high_60d",
+      "formula": "(close / high.rolling(60, min_periods=60).max() - 1) * 100",
+      "lookback": 60,
+      "minimum_observations": 60,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "volume_ratio",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_volume_ratio",
+      "formula": "volume_ratio",
+      "lookback": 21,
+      "minimum_observations": 15,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "turnover_ratio",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_turnover_ratio",
+      "formula": "_safe_div(traded, prior_traded20)",
+      "lookback": 21,
+      "minimum_observations": 15,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "volume_persistence_5d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_volume_persistence_5d",
+      "formula": "volume_ratio.gt(1).rolling(5, min_periods=5).mean()",
+      "lookback": 25,
+      "minimum_observations": 5,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "up_down_volume_ratio_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_up_down_volume_ratio_20d",
+      "formula": "_safe_div(up_volume, down_volume)",
+      "lookback": 21,
+      "minimum_observations": 15,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "excess_5d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_excess_5d",
+      "formula": "data.return_5d - data.market_return_20d * 0.25",
+      "lookback": 61,
+      "minimum_observations": 61,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "excess_10d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_excess_10d",
+      "formula": "data.return_10d - data.market_return_20d * 0.5",
+      "lookback": 61,
+      "minimum_observations": 61,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "excess_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_excess_20d",
+      "formula": "data.return_20d - data.market_return_20d",
+      "lookback": 61,
+      "minimum_observations": 61,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "rs_percentile_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_rs_percentile_20d",
+      "formula": "data.groupby('trade_date')['excess_20d'].rank(pct=True, method='average') * 100",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "atr_pct",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_atr_pct",
+      "formula": "_safe_div(tr.rolling(14, min_periods=14).mean(), close) * 100",
+      "lookback": 15,
+      "minimum_observations": 14,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "realized_vol_5d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_realized_vol_5d",
+      "formula": "ret.rolling(5, min_periods=5).std(ddof=1) * np.sqrt(252) * 100",
+      "lookback": 6,
+      "minimum_observations": 5,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "realized_vol_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_realized_vol_20d",
+      "formula": "ret.rolling(20, min_periods=20).std(ddof=1) * np.sqrt(252) * 100",
+      "lookback": 21,
+      "minimum_observations": 20,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "realized_vol_ratio_5v20",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_realized_vol_ratio_5v20",
+      "formula": "_safe_div(state.realized_vol_5d, state.realized_vol_20d)",
+      "lookback": 21,
+      "minimum_observations": 20,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "range_expansion_ratio",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_range_expansion_ratio",
+      "formula": "_safe_div(tr, tr.shift(1).rolling(20, min_periods=15).mean())",
+      "lookback": 22,
+      "minimum_observations": 15,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "close_location_value",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_close_location_value",
+      "formula": "_safe_div(close - low, bar_range)",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "gap_return",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_gap_return",
+      "formula": "(opn / prev - 1) * 100",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "intraday_return",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_intraday_return",
+      "formula": "(close / opn - 1) * 100",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "upper_wick_ratio",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_upper_wick_ratio",
+      "formula": "_safe_div(high - pd.concat([opn, close], axis=1).max(axis=1), bar_range)",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "lower_wick_ratio",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_lower_wick_ratio",
+      "formula": "_safe_div(pd.concat([opn, close], axis=1).min(axis=1) - low, bar_range)",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "log_traded_value",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_log_traded_value",
+      "formula": "np.log1p(traded.clip(lower=0))",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "traded_value_ratio",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_traded_value_ratio",
+      "formula": "_safe_div(traded, prior_traded20)",
+      "lookback": 21,
+      "minimum_observations": 15,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "traded_value_percentile",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_traded_value_percentile",
+      "formula": "data.groupby('trade_date')['log_traded_value'].rank(pct=True, method='average') * 100",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "log_amihud_impact_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_log_amihud_impact_20d",
+      "formula": "np.log1p(_safe_div(ret.abs() * 100, traded).rolling(20, min_periods=15).mean() * 1000000000.0)",
+      "lookback": 21,
+      "minimum_observations": 15,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "market_return_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_market_return_20d",
+      "formula": "(close / close.shift(20) - 1) * 100",
+      "lookback": 21,
+      "minimum_observations": 21,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "market_trend_ema20",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_market_trend_ema20",
+      "formula": "(close / close.ewm(span=20, adjust=False).mean() - 1) * 100",
+      "lookback": "full source history; EWM seed is first observation",
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "market_realized_vol_20d",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_market_realized_vol_20d",
+      "formula": "close.pct_change(fill_method=None).rolling(20, min_periods=20).std(ddof=1) * np.sqrt(252) * 100",
+      "lookback": 21,
+      "minimum_observations": 21,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "market_breadth_ema20",
+      "disposition": "replaced by new explicit production-native feature",
+      "new_name": "native_market_breadth_ema20",
+      "formula": "data.groupby('trade_date')['ema20_extension'].transform(lambda s: float((s > 0).mean()) * 100)",
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    },
+    {
+      "original": "india_vix",
+      "disposition": "removed",
+      "new_name": null,
+      "formula": null,
+      "lookback": 1,
+      "minimum_observations": 1,
+      "source_override": "Use raw NSE EQ OHLCV; traded-value inputs explicitly replaced by raw close*raw volume; no adjustment; no inference from old LSV payloads.",
+      "cross_section_override": "All same-date current-contract qualified securities, unique canonical ID, evaluated before allocation; average ties pct*100; breadth >0 mean.",
+      "missingness": "pandas rolling min_periods; zero safe-div denominator => NaN; no ffill; vr.gt(1) treats NaN as false; preserve mask"
+    }
+  ],
+  "feature_count": 35,
+  "minimum_source_history": 120,
+  "raw_data_contract": {
+    "historical": "data/ha_d1/layers/01_raw_exchange_observations/*.parquet: raw NSE EQ OHLCV; join canonical identity from data/ha_d1/layers/02_security_identity_history using dated ISIN mapping",
+    "live": "Add immutable daily NSE bhavcopy EQ OHLCV snapshot ingestion using existing ha_data_foundation parser. Yahoo auto-adjusted bars are not admissible; fail closed when authoritative raw bar is absent.",
+    "identity": "ISIN canonical security ID, dated NSE symbol; exclude unresolved IDs",
+    "adjustment": "NONE; raw split-day jumps remain explicit; quarantine any security for 20 observed sessions after abs(raw close return)>=40%; apply identically historical/live",
+    "history_seed": "First archived observation, persisted state from then onward; do not truncate/reseed EWM at live activation",
+    "universe": "Reconstruct current frozen qualification on these exact raw bars for each T. No future membership. Rank over this entire qualified set before allocation; do not mix existing adjusted-bar qualified identities.",
+    "benchmark": "NSE Nifty 500 completed-session close, same archived/live source; no substitution; missing benchmark features NaN",
+    "timestamp": "as_of_session T and source publication/ingestion time <= decision timestamp; freeze payload and SHA; T+1 never read by feature code",
+    "volume": "raw shares, zeros preserved",
+    "traded_value_proxy": "raw close * raw shares explicitly named proxy, not exchange turnover",
+    "india_vix": "removed; do not replace with realized volatility"
+  },
+  "targets": {
+    "horizon": 10,
+    "reference": "raw close at T; next 10 NSE sessions; complete bars required",
+    "mfe": "100*(max(H[T+1:T+10])/C[T]-1)",
+    "mae": "100*(min(L[T+1:T+10])/C[T]-1)",
+    "forward_volatility": "std(simple close returns T+1..T+10,ddof=1)*sqrt(252)*100",
+    "success_5_before_3": "first high>=1.05*C[T] strictly before first low<=0.97*C[T]; same-session tie fails",
+    "adverse_first": "-3 reached and +5 not reached earlier; tie adverse; neither reached=>false",
+    "corporate_actions": "Exclude outcome windows crossing known split/bonus ex-dates; use outcomes only for label eligibility, never feature universe. Persist exclusions.",
+    "market_adjusted_direction": "removed"
+  },
+  "split_protocol": {
+    "base": "2016-2019; labels must end before 2020-01-01",
+    "calibration": "2020-2021; labels end before 2022-01-01",
+    "validation": "2022-2023; label-end purge at next boundary",
+    "historical_evaluation": "2024-2026 already examined by PB/Path Risk; disclosed reused evaluation, not globally untouched; annual base before Y-2, calibration Y-2..Y-1, labels end strictly before Y",
+    "embargo": "20 trading sessions before each partition boundary in addition to label-end purge; no random split",
+    "future_test": "Freeze before new prospective collection; minimum 12 months and 1000 matured qualified recommendations, >=3 strategies and >=100 sessions; no authority until separate review",
+    "autopaper": "Do not open/replay AutoPaper holdout or evaluate its policies"
+  },
+  "model_selection": {
+    "seed": 20260901,
+    "regression": "Ridge alpha=10, training medians, standard scaling, missing indicators; raw or log1p magnitude, max2 per target",
+    "classification": "L2 logistic C=1 liblinear, same preprocessing; constant prevalence baseline if single class",
+    "calibration": "none vs affine for regressions; none vs Platt for classification on calibration partition only",
+    "selection": "validation MAE (regression), Brier (classification), ties choose simpler; freeze once; no threshold search after evaluation",
+    "numerical": "finite deterministic inference artifact; no runtime fit; tolerance1e-10"
+  },
+  "evaluation": {
+    "regression": [
+      "MAE",
+      "RMSE",
+      "Spearman",
+      "calibration slope/intercept",
+      "train-defined quartile monotonicity",
+      "empirical interval coverage"
+    ],
+    "classification": [
+      "Brier vs calibration prevalence",
+      "ROC-AUC",
+      "PR-AUC",
+      "ECE 10 equal-count bins",
+      "calibration slope/intercept"
+    ],
+    "stability": [
+      "annual folds",
+      "strategy",
+      "year",
+      "symbol/date concentration",
+      "missingness groups"
+    ],
+    "baselines": [
+      "calibration median/prevalence",
+      "ATR-only Ridge/logistic",
+      "original frozen PB-R2 archived performance on common identities where possible; report different population/source explicitly"
+    ],
+    "promotion": "research GO only if beats unconditional MAE/Brier in >=2/3 annual folds with same-direction bucket differences in >=3 strategies; decision authority requires separately authorized prospective gate"
+  },
+  "pb_r3b": {
+    "formula": "new predicted_MFE/max(abs(new predicted_MAE),new causal_floor)",
+    "floor": "10th percentile abs(MAE prediction) in calibration predictions, lower bound1e-6; frozen before validation",
+    "buckets": "calibration ratio tertiles; LOW/MIDDLE/HIGH; freeze per annual artifact, never reuse PB-R3 thresholds",
+    "validation": "report realized MFE/MAE and success/adverse by bucket, N, missingness, fold/strategy stability; no gate/score/ranking"
+  },
+  "implementation_files": [
+    "pb_native_features.py",
+    "scripts/train_pb_r2b.py",
+    "pb_r2b_frozen_inference.py",
+    "scripts/test_pb_r2b.py"
+  ],
+  "required_tests": [
+    "raw source historical/live parity >=5000 rows",
+    "missing masks",
+    "same-date full qualified rank",
+    "future perturbation",
+    "corporate action quarantine",
+    "label barriers/ties/neither",
+    "purged splits",
+    "serialization and artifact hashes",
+    "no UI fit/provider calls",
+    "unchanged baseline fingerprint"
+  ],
+  "delivery": [
+    "new feature manifest and hashes",
+    "new calibration artifacts",
+    "new PB-R3B boundaries",
+    "comparison/coverage report",
+    "disabled shadow integration until acceptance"
+  ]
+}

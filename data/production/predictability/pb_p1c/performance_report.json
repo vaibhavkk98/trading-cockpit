@@ -1,0 +1,10 @@
+{
+  "archive_load_seconds": 0.1789416660030838,
+  "batch_seconds": 13.472183667006902,
+  "rows": 5603,
+  "securities": 1659,
+  "database_queries": 0,
+  "provider_calls": 0,
+  "ui_imported": false,
+  "live_eod_runtime": "NOT_CERTIFIED: exact raw source unavailable"
+}

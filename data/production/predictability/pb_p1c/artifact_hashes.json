@@ -1,0 +1,10 @@
+{
+  "causal_provenance_report.json": "d761ea4de9bf7c574859e2be404f9de38838c5b849f71f1a27f66f34a9ee2305",
+  "implementation_report.md": "9fffb6586d7fec502e1a19f566cb27f971b84a1a1e40f23a8c06b53390803171",
+  "parity_report.json": "c2a4fe20367ae78d5d58b5bf2622b23373e96c5f491b3d05afcb3c6e64c5b0ab",
+  "pb_feature_contract_v1.json": "671ca45ba436b58172ebaab2911a25681cf6665f5cc8bf962038b4bc1453ccc3",
+  "pb_r2b_production_native_spec.json": "d42a4cabd0d5f189ed7f4f0975bf3f0aae9248d19f3bb635f2245ddff6546b58",
+  "performance_report.json": "5a81edae74a5f91e54eef249ad6b7b594fc2b8abcfa4ee3f47fa410f6fc80bc2",
+  "production_mapping_manifest.json": "ac45debdf0f5d5cf48d858a1e40c7c39cd427c80e6c09d0fc5712d7cdfdf8ad2",
+  "regression_report.json": "941cbfcc19151b173badcc2c5515c2b708c23afef30f0c9d3ab1c3aa905f35e1"
+}
