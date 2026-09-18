@@ -749,6 +749,59 @@ class PortfolioRiskTelemetry(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class OpportunitySelectionActivation(Base):
+    """Causal activation boundary for the two isolated Phase-C shadows."""
+    __tablename__ = "opportunity_selection_activation"
+    activation_id = Column(String(80), primary_key=True)
+    status = Column(String(30), nullable=False, index=True)
+    activation_mode = Column(String(40), nullable=False)
+    activation_timestamp = Column(DateTime(timezone=True), nullable=False)
+    activation_signal_date = Column(Date, nullable=True, index=True)
+    after_market_date = Column(Date, nullable=True)
+    provenance = Column(String(60), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class OpportunitySelectionCandidateSnapshot(Base):
+    """Immutable Phase-C candidate row within one constrained/unconstrained event."""
+    __tablename__ = "opportunity_selection_candidate_snapshots"
+    __table_args__ = (UniqueConstraint("selection_event_id", "account_id", "opportunity_id",
+                                       name="uq_selection_event_account_opportunity"),)
+    snapshot_id = Column(String(64), primary_key=True)
+    selection_event_id = Column(String(64), nullable=False, index=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    policy = Column(String(12), nullable=False, index=True)
+    selection_rank = Column(Integer, nullable=False)
+    admitted = Column(Boolean, nullable=False, default=False)
+    constrained = Column(Boolean, nullable=False, default=False, index=True)
+    final_decision = Column(String(40), nullable=False)
+    reason_code = Column(String(60), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class OpportunitySelectionRandomOrdering(Base):
+    """Frozen fixed-seed R0 order for later outcome-only replay; never live authority."""
+    __tablename__ = "opportunity_selection_random_orderings"
+    __table_args__ = (UniqueConstraint("selection_event_id", "seed", "opportunity_id",
+                                       name="uq_selection_random_event_seed_opportunity"),)
+    ordering_id = Column(String(64), primary_key=True)
+    selection_event_id = Column(String(64), nullable=False, index=True)
+    seed = Column(Integer, nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    random_rank = Column(Integer, nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 class PositionMark(Base):
     __tablename__ = "position_marks"
     __table_args__ = (UniqueConstraint("trade_id", "mark_date", name="uq_position_mark_trade_date"),)

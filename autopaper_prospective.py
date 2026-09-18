@@ -20,6 +20,7 @@ from autopaper_observability import (
 )
 from provider_symbols import yahoo_nse_symbol
 import portfolio_risk_engine as portfolio_risk
+import opportunity_selection_engine as opportunity_selection
 
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 ACTIVATION_TIMESTAMP = dt.datetime(2026, 9, 13, 12, 21, 55, tzinfo=dt.timezone.utc)
@@ -133,6 +134,39 @@ PORTFOLIO_RISK_REVIEW_GATE = {"calendar_days": 90, "completed_b1_trades": 75,
     "completed_b2_trades": 75, "unique_signal_dates": 40, "risk_interventions": 30,
     "redundancy_interventions": 20, "completed_matched_groups": 60,
     "automatic_promotion": False}
+OPPORTUNITY_SELECTION_VERSION = opportunity_selection.VERSION
+OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS = {
+    "SHADOW_SELECT_QUALITY": {"policy": "C1"},
+    "SHADOW_SELECT_RISK_ADJ": {"policy": "C2"},
+}
+OPPORTUNITY_SELECTION_CONFIGS = {
+    account_id: {
+        "version": OPPORTUNITY_SELECTION_VERSION, "policy": cfg["policy"],
+        "control_account": "SHADOW_RISK_BUDGET", "downstream_risk_policy": "B1",
+        "capital": 1_000_000.0, "rolling_admission": "2_1_0", "hold_sessions": 10,
+        "execution": "T_PLUS_1", "replacement": False, "ordinary_stop": None, "target": None,
+        "feature_manifest_hash": opportunity_selection.FEATURE_MANIFEST_HASH,
+        "random_manifest_hash": opportunity_selection.RANDOM_MANIFEST_HASH,
+        "ranking_config_hash": (opportunity_selection.C1_CONFIG_HASH if cfg["policy"] == "C1"
+                                else opportunity_selection.C2_CONFIG_HASH),
+        "pb_authority": False, "role_authority": False, "ha_authority": False,
+        "market_regime_authority": False, "decision_authority": False,
+        "authority": "SHADOW_ONLY", "paper_only": True,
+    } for account_id, cfg in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS.items()
+}
+OPPORTUNITY_SELECTION_CONFIG_HASHES = {key: digest(value) for key, value in OPPORTUNITY_SELECTION_CONFIGS.items()}
+OPPORTUNITY_SELECTION_METHODOLOGY_HASHES = {
+    "SHADOW_SELECT_QUALITY": opportunity_selection.C1_METHODOLOGY_HASH,
+    "SHADOW_SELECT_RISK_ADJ": opportunity_selection.C2_METHODOLOGY_HASH,
+}
+ACCOUNT_CONFIGS.update({account_id: {"volatility_sizing": False, "date_cap": None,
+    "authority": "SHADOW_ONLY", "rolling": True, "hold_sessions": 10,
+    "portfolio_risk": True, "selection_policy": cfg["policy"], "redundancy": False}
+    for account_id, cfg in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS.items()})
+OPPORTUNITY_SELECTION_REVIEW_GATE = {"calendar_days": 90, "unique_signal_dates": 40,
+    "constrained_selection_events": 50, "competitive_events": 30,
+    "mature_comparisons": 100, "completed_matched_events": 60,
+    "random_seeds": 20, "automatic_promotion": False}
 FUTURE_REVIEW_GATE = {
     "minimum_completed_baseline_trades": 100,
     "minimum_unique_signal_dates": 40,
@@ -198,6 +232,8 @@ def _candidate(decision, market_date):
         "missing": missing,
         "advisory_annotations": {key: decision.get(key) for key in ("path_risk", "role_evidence", "historical_analogs", "pb_asymmetry") if key in decision},
     }
+    if isinstance(decision.get("selection_inputs"), Mapping):
+        candidate["selection_inputs"] = dict(decision["selection_inputs"])
     if decision.get("prospective_origin"):
         candidate["prospective_origin"] = str(decision["prospective_origin"])
     if decision.get("intended_execution_date"):
@@ -369,6 +405,101 @@ def ensure_portfolio_risk_accounts(activation_timestamp, activation_market_date)
         session.rollback(); raise
     finally:
         session.close()
+
+
+def ensure_opportunity_selection_accounts(activation_timestamp, activation_market_date):
+    """Create only the isolated Phase-C manifests/accounts."""
+    database._require_database(); timestamp = _utc(activation_timestamp)
+    session = database.SessionLocal()
+    try:
+        for account_id, config in OPPORTUNITY_SELECTION_CONFIGS.items():
+            method_hash = OPPORTUNITY_SELECTION_METHODOLOGY_HASHES[account_id]
+            config_hash = OPPORTUNITY_SELECTION_CONFIG_HASHES[account_id]
+            manifest = session.get(database.AutoPaperManifest, method_hash)
+            if manifest is None:
+                session.add(database.AutoPaperManifest(
+                    methodology_hash=method_hash,
+                    version=f"{OPPORTUNITY_SELECTION_VERSION}_{OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS[account_id]['policy']}",
+                    activation_timestamp=timestamp, activation_market_date=activation_market_date,
+                    config_payload=_json(config), config_hash=config_hash,
+                    code_identity="autopaper_prospective.py:opportunity-selection-v1c"))
+            elif manifest.config_hash != config_hash:
+                raise RuntimeError("OPPORTUNITY_SELECTION_MANIFEST_CONFLICT")
+            account = session.get(database.AutoPaperAccount, account_id)
+            if account is None:
+                session.add(database.AutoPaperAccount(
+                    account_id=account_id, methodology_hash=method_hash,
+                    initial_capital=CONFIG["capital"], cash=CONFIG["capital"], status="ACTIVE",
+                    state_version=0, created_at=timestamp, updated_at=timestamp))
+            elif account.methodology_hash != method_hash:
+                raise RuntimeError("OPPORTUNITY_SELECTION_ACCOUNT_CONFLICT")
+        session.commit()
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def _risk_methodology_hash(account_id):
+    if account_id in OPPORTUNITY_SELECTION_METHODOLOGY_HASHES:
+        return OPPORTUNITY_SELECTION_METHODOLOGY_HASHES[account_id]
+    return PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id]
+
+
+def _persist_selection_event(session, account_id, market_date, rows, admission_budget, risk_intervention):
+    rows = [row for row in rows if bool(row["candidate"].get("ranking_eligible", True))]
+    if account_id not in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS or not rows:
+        return {"constrained": False, "selection_event_id": None}
+    event_id = opportunity_selection.selection_event_id(market_date, [row["candidate"]["opportunity_id"] for row in rows])
+    constrained = len(rows) > admission_budget or bool(risk_intervention)
+    for row in rows:
+        candidate = row["candidate"]; policy = OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS[account_id]["policy"]
+        payload = {"selection_event_id": event_id, "account_id": account_id, "policy": policy,
+            "market_date": market_date.isoformat(), "opportunity_id": candidate["opportunity_id"],
+            "symbol": candidate["symbol"], "strategy": candidate["strategy"],
+            "signal_date": candidate["signal_date"], "p0_freshness_order": row["p0_order"],
+            **(candidate.get("selection_inputs") or {}),
+            "feature_percentiles": candidate.get("feature_percentiles"),
+            "quality_score": candidate.get("quality_score"),
+            "quality_feature_coverage": candidate.get("quality_feature_coverage"),
+            "risk_percentile": candidate.get("risk_percentile"),
+            "risk_adjusted_quality": candidate.get("risk_adjusted_quality"),
+            "selection_rank": candidate.get("selection_rank"), "admitted": row["admitted"],
+            "final_decision": row["final_decision"], "reason_code": row["reason_code"],
+            "constrained": constrained, "admission_budget": admission_budget,
+            "decision_authority": False, "pb_authority": False,
+            "feature_manifest_hash": opportunity_selection.FEATURE_MANIFEST_HASH,
+            "methodology_hash": OPPORTUNITY_SELECTION_METHODOLOGY_HASHES[account_id]}
+        snapshot_id = _hash([OPPORTUNITY_SELECTION_VERSION, event_id, account_id, candidate["opportunity_id"]])
+        payload_hash = _hash(payload); existing = session.get(database.OpportunitySelectionCandidateSnapshot, snapshot_id)
+        if existing is None:
+            session.add(database.OpportunitySelectionCandidateSnapshot(
+                snapshot_id=snapshot_id, selection_event_id=event_id, account_id=account_id,
+                opportunity_id=candidate["opportunity_id"], signal_date=dt.date.fromisoformat(candidate["signal_date"]),
+                market_date=market_date, policy=policy, selection_rank=int(candidate["selection_rank"]),
+                admitted=bool(row["admitted"]), constrained=constrained,
+                final_decision=row["final_decision"], reason_code=row["reason_code"],
+                payload=_json(payload), payload_hash=payload_hash))
+        elif existing.payload_hash != payload_hash:
+            raise RuntimeError("OPPORTUNITY_SELECTION_SNAPSHOT_IMMUTABILITY_CONFLICT")
+    if constrained:
+        for seed, ordering in opportunity_selection.random_orderings(event_id,
+                [row["candidate"]["opportunity_id"] for row in rows]).items():
+            for rank, opportunity_id in enumerate(ordering, 1):
+                payload = {"selection_event_id": event_id, "seed": seed, "opportunity_id": opportunity_id,
+                    "random_rank": rank, "algorithm_version": opportunity_selection.RANDOM_MANIFEST["version"],
+                    "random_manifest_hash": opportunity_selection.RANDOM_MANIFEST_HASH,
+                    "live_authority": False}
+                ordering_id = _hash([event_id, seed, opportunity_id])
+                existing = session.get(database.OpportunitySelectionRandomOrdering, ordering_id)
+                if existing is None:
+                    session.add(database.OpportunitySelectionRandomOrdering(
+                        ordering_id=ordering_id, selection_event_id=event_id, seed=seed,
+                        opportunity_id=opportunity_id, random_rank=rank,
+                        payload=_json(payload), payload_hash=_hash(payload)))
+                elif existing.payload_hash != _hash(payload):
+                    raise RuntimeError("OPPORTUNITY_SELECTION_RANDOM_IMMUTABILITY_CONFLICT")
+    return {"constrained": constrained, "selection_event_id": event_id}
 
 
 def _portfolio_risk_match_id(opportunity_id, signal_date):
@@ -920,6 +1051,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
         for raw in decisions:
             candidate = _candidate(raw, market_date); oid = candidate["opportunity_id"]
             if not oid: continue
+            if account_id in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS and not isinstance(candidate.get("selection_inputs"), Mapping):
+                candidate["selection_inputs"] = opportunity_selection.extract_candidate_features(candidate, histories)
             _ensure_edge_match(session, account_id, candidate)
             _ensure_portfolio_risk_match(session, account_id, candidate)
             link_id = _hash([account_id, oid])
@@ -945,7 +1078,30 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 _journal(session, account, market_date, now, "EXPIRE", item.opportunity_id, "EXPIRED")
         # P0 freshness only; advisory fields never enter this decision path.
         active = session.query(database.AutoPaperQueueItem).filter_by(account_id=account_id, status="ACTIVE").all()
-        active.sort(key=lambda x: (-x.signal_date.toordinal(), x.opportunity_id))
+        p0_order = {item.opportunity_id: rank for rank, item in enumerate(sorted(
+            active, key=lambda x: (-x.signal_date.toordinal(), x.opportunity_id)), 1)}
+        if account_id in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS:
+            policy = OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS[account_id]["policy"]
+            open_symbols = {position.symbol for position in _active_positions(session, account_id)}
+            candidate_rows = []
+            for item in active:
+                candidate = json.loads(item.payload)
+                inputs = candidate.get("selection_inputs") or {}
+                candidate["ranking_eligible"] = bool(
+                    not candidate.get("missing") and
+                    item.symbol not in open_symbols and
+                    float(candidate.get("traded_value") or 0.) >= CONFIG["minimum_traded_value"] and
+                    inputs.get("eligible") is True)
+                candidate_rows.append(candidate)
+            ranked = opportunity_selection.score_candidate_set(
+                candidate_rows, policy)
+            item_by_id = {item.opportunity_id: item for item in active}
+            active = []
+            for candidate in ranked:
+                item = item_by_id[candidate["opportunity_id"]]
+                item.payload = _json(candidate); item.updated_at = now; active.append(item)
+        else:
+            active.sort(key=lambda x: (-x.signal_date.toordinal(), x.opportunity_id))
         positions = _active_positions(session, account_id)
         rolling = bool(account_cfg.get("rolling"))
         admission_start_positions = len(positions)
@@ -967,6 +1123,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             sector_heat[row["sector"]] = sector_heat.get(row["sector"], 0.) + float(row["risk_rupees"])
             signal_heat[row["signal_date"]] = signal_heat.get(row["signal_date"], 0.) + float(row["risk_rupees"])
         risk_deferred = risk_downsized = redundancy_deferred = 0
+        selection_rows = []
         for item in active:
             candidate = json.loads(item.payload); oid = item.opportunity_id
             reason = None
@@ -1041,7 +1198,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 final_effective_risk = final_raw_risk * corr_multiplier
                 downsized = budget > 0 and budget + .01 < min(ordinary_cap, raw_allocation)
                 risk_snapshot = {"version": PORTFOLIO_RISK_VERSION,
-                    "methodology_hash": PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id],
+                    "methodology_hash": _risk_methodology_hash(account_id),
                     "account_id": account_id, "opportunity_id": oid, "market_date": market_date.isoformat(),
                     "account_nav": current_nav, "cash": virtual_cash, "open_positions": virtual_positions,
                     "current_heat_rupees": virtual_heat,
@@ -1094,7 +1251,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             if risk_mode and risk_snapshot is None:
                 snapshot_id = _hash([PORTFOLIO_RISK_VERSION, account_id, oid, market_date.isoformat()])
                 risk_snapshot = {"version": PORTFOLIO_RISK_VERSION,
-                    "methodology_hash": PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id],
+                    "methodology_hash": _risk_methodology_hash(account_id),
                     "account_id": account_id, "opportunity_id": oid, "market_date": market_date.isoformat(),
                     "account_nav": current_nav, "cash": virtual_cash, "open_positions": virtual_positions,
                     "current_heat_rupees": virtual_heat,
@@ -1119,12 +1276,16 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 if link: link.terminal_reason = reason
                 _journal(session, account, market_date, now, "REJECT", oid, reason,
                          rank=active.index(item) + 1, sizing_multiplier=multiplier)
+                selection_rows.append({"candidate": candidate, "p0_order": p0_order.get(oid),
+                    "admitted": False, "final_decision": "REJECT", "reason_code": reason})
                 continue
             if budget <= 0:
                 if reason in {"ROLLING_DAILY_ADMISSION_LIMIT", "ROLLING_TARGET_OCCUPANCY"}:
                     rolling_deferred += 1
                 _journal(session, account, market_date, now, "QUEUE", oid, reason or "LOWER_PRIORITY",
                          rank=active.index(item) + 1, sizing_multiplier=multiplier)
+                selection_rows.append({"candidate": candidate, "p0_order": p0_order.get(oid),
+                    "admitted": False, "final_decision": "DEFER", "reason_code": reason or "LOWER_PRIORITY"})
                 continue
             order_id = _hash([account_id, oid, market_date.isoformat(), "BUY"])
             payload = {"candidate": candidate, "execution": "NEXT_EXECUTABLE_OPEN",
@@ -1150,6 +1311,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 journal_details.update(prospective_origin=candidate["prospective_origin"],
                     intended_execution_date=candidate.get("intended_execution_date"))
             _journal(session, account, market_date, now, "QUEUE", oid, "ORDER_SUBMITTED_T1", **journal_details)
+            selection_rows.append({"candidate": candidate, "p0_order": p0_order.get(oid),
+                "admitted": True, "final_decision": "ADMIT", "reason_code": "ORDER_SUBMITTED_T1"})
             virtual_cash -= budget; virtual_positions += 1; virtual_symbols.add(item.symbol)
             if rolling: rolling_used += 1
             strategy_value[candidate["strategy"]] = strategy_value.get(candidate["strategy"], 0.) + budget
@@ -1164,6 +1327,10 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 risk_rows.append(risk_row); virtual_heat += candidate["effective_risk_rupees"]
                 sector_heat[candidate["sector"]] = sector_heat.get(candidate["sector"], 0.) + candidate["effective_risk_rupees"]
                 signal_heat[candidate["signal_date"]] = signal_heat.get(candidate["signal_date"], 0.) + candidate["effective_risk_rupees"]
+        selection_event = _persist_selection_event(
+            session, account_id, market_date, selection_rows, rolling_budget,
+            any(row["reason_code"] in {"PORTFOLIO_RISK_BUDGET", "MIN_EXECUTABLE_SIZE_EXCEEDS_RISK"}
+                for row in selection_rows))
         positions = _active_positions(session, account_id); nav = _nav(account, positions)
         if len(positions) > CONFIG["max_positions"]:
             raise RuntimeError("AUTOPAPER_HARD_CAPACITY_BREACH")
@@ -1269,7 +1436,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 session.add(database.EdgeCaptureTelemetry(
                     telemetry_id=telemetry_id, account_id=account_id, market_date=market_date,
                     payload=_json(telemetry), payload_hash=_hash(telemetry)))
-        if account_id in PORTFOLIO_RISK_ACCOUNT_CONFIGS:
+        if account_id in PORTFOLIO_RISK_ACCOUNT_CONFIGS or account_id in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS:
             current_state = portfolio_risk.portfolio_heat_state(_active_positions(session, account_id), nav)
             prior_rows = session.query(database.PortfolioRiskTelemetry).filter_by(account_id=account_id).all()
             prior_payloads = [json.loads(row.payload) for row in prior_rows]
@@ -1291,8 +1458,9 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             weighted_corr_values = [float(row["weighted_avg_corr"]) for row in current_state["positions"]
                 if row.get("weighted_avg_corr") not in {None, "NOT_AVAILABLE"}]
             telemetry = {"version": PORTFOLIO_RISK_VERSION, "account_id": account_id,
-                "policy": PORTFOLIO_RISK_ACCOUNT_CONFIGS[account_id]["policy"],
-                "methodology_hash": PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id],
+                "policy": (PORTFOLIO_RISK_ACCOUNT_CONFIGS.get(account_id) or
+                           OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS[account_id])["policy"],
+                "methodology_hash": _risk_methodology_hash(account_id),
                 "market_date": market_date.isoformat(), "decision_authority": False,
                 "nav": nav, "cash": account.cash,
                 "gross_exposure": sum(position.quantity * position.current_mark for position in positions),
@@ -1352,6 +1520,12 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 remaining_heat_pct=max(0., nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat) / nav * 100 if nav else None,
                 risk_deferred=risk_deferred, downsized=risk_downsized,
                 redundancy_deferred=redundancy_deferred)
+        if account_id in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS:
+            stats.update(selection_policy=OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS[account_id]["policy"],
+                selection_event_id=selection_event["selection_event_id"],
+                constrained_selection_event=selection_event["constrained"],
+                feature_coverage_failures=sum((row["candidate"].get("quality_feature_coverage") or 0) < 3
+                                              for row in selection_rows))
         return stats
     except Exception:
         session.rollback(); raise
@@ -1519,6 +1693,87 @@ def _process_portfolio_risk_if_activated(decisions, histories, market_date, time
     return results
 
 
+def ensure_opportunity_selection_activation(market_date, timestamp):
+    """Freeze Phase-C at the first not-yet-consumed B1 cohort, otherwise next cohort."""
+    session = database.SessionLocal()
+    try:
+        activation = session.get(database.OpportunitySelectionActivation, "OPPORTUNITY_SELECTION_V1C_ACTIVATION")
+        if activation is not None:
+            return json.loads(activation.payload)
+        phase_b = session.query(database.PortfolioRiskActivation).order_by(
+            database.PortfolioRiskActivation.created_at.desc()).first()
+        if phase_b is None or phase_b.status not in {"ACTIVE", "PENDING_NEXT_COHORT"}:
+            return {"status": "WAITING_FOR_B1", "decision_authority": False}
+        b1 = session.get(database.AutoPaperAccount, "SHADOW_RISK_BUDGET")
+        consumed = bool(b1 and b1.last_market_date and b1.last_market_date >= market_date)
+        mode = "NEXT_FINALIZED_COHORT" if consumed else "SAME_B1_COHORT"
+        status = "PENDING_NEXT_COHORT" if consumed else "ACTIVE"
+        signal_date = None if consumed else market_date
+        after_date = b1.last_market_date if consumed else None
+        payload = {"activation_id": "OPPORTUNITY_SELECTION_V1C_ACTIVATION", "status": status,
+            "activation_mode": mode, "activation_timestamp": timestamp.isoformat(),
+            "activation_signal_date": signal_date.isoformat() if signal_date else None,
+            "after_market_date": after_date.isoformat() if after_date else None,
+            "provenance": "OPPORTUNITY_SELECTION_PROSPECTIVE",
+            "control": {"account_id": "SHADOW_RISK_BUDGET", "policy": "C0", "selection": "P0_FRESHNESS"},
+            "methodology_hashes": OPPORTUNITY_SELECTION_METHODOLOGY_HASHES,
+            "config_hashes": OPPORTUNITY_SELECTION_CONFIG_HASHES,
+            "feature_manifest_hash": opportunity_selection.FEATURE_MANIFEST_HASH,
+            "random_manifest_hash": opportunity_selection.RANDOM_MANIFEST_HASH,
+            "historical_backfill": False, "decision_authority": False}
+        session.add(database.OpportunitySelectionActivation(
+            activation_id=payload["activation_id"], status=status, activation_mode=mode,
+            activation_timestamp=timestamp, activation_signal_date=signal_date,
+            after_market_date=after_date, provenance=payload["provenance"],
+            payload=_json(payload), payload_hash=_hash(payload)))
+        session.commit(); return payload
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def _process_opportunity_selection_if_activated(decisions, histories, market_date, timestamp, killed):
+    """Advance C1/C2 independently; a failure cannot interrupt existing accounts."""
+    session = database.SessionLocal()
+    try:
+        activation = session.get(database.OpportunitySelectionActivation, "OPPORTUNITY_SELECTION_V1C_ACTIVATION")
+        if activation is None:
+            return {}
+        if activation.status == "PENDING_NEXT_COHORT":
+            if activation.after_market_date is not None and market_date <= activation.after_market_date:
+                return {key: {"account_id": key, "status": "PENDING_NEXT_COHORT"}
+                        for key in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS}
+            activation.status = "ACTIVE"; activation.activation_signal_date = market_date
+            payload = json.loads(activation.payload); payload.update({"status": "ACTIVE",
+                "activation_signal_date": market_date.isoformat(), "provenance": activation.provenance})
+            activation.payload = _json(payload); activation.payload_hash = _hash(payload); session.commit()
+        signal_date, provenance, activated_at = activation.activation_signal_date, activation.provenance, activation.activation_timestamp
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+    if signal_date is None or market_date < signal_date:
+        return {}
+    ensure_opportunity_selection_accounts(activated_at, signal_date)
+    stream = []
+    for row in ([] if killed else decisions):
+        candidate = _candidate(row, market_date)
+        stream.append({**row, "prospective_origin": provenance,
+            "selection_inputs": opportunity_selection.extract_candidate_features(candidate, histories)})
+    results = {}
+    for account_id in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS:
+        try:
+            results[account_id] = _process_account(account_id, stream, histories, market_date, timestamp)
+            try:
+                persist_risk_snapshot(account_id, market_date, histories, decisions)
+            except Exception as exc:
+                results[account_id].setdefault("warnings", []).append(f"RISK_TELEMETRY:{type(exc).__name__}")
+        except Exception as exc:
+            results[account_id] = {"account_id": account_id, "status": "FAILED", "error": type(exc).__name__}
+    return results
+
+
 def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, run_id,
                               source="AUTOMATED_EOD"):
     """Advance baseline and shadows once. Never routes to a broker or manual portfolio."""
@@ -1534,6 +1789,10 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
         return {"status": "PRE_ACTIVATION", "active": False, "paper_only": True, "historical_backfill": False}
     _manifest_and_accounts()
     results, errors, observability_warnings = {}, [], []
+    try:
+        ensure_opportunity_selection_activation(market_date, timestamp)
+    except Exception as exc:
+        observability_warnings.append(f"OPPORTUNITY_SELECTION_ACTIVATION:{type(exc).__name__}")
     metadata_session = database.SessionLocal()
     try:
         capture_sector_metadata(metadata_session, decisions, timestamp)
@@ -1582,6 +1841,15 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
     except Exception as exc:
         # Phase-B research is isolated from baseline, rolling and Phase A.
         observability_warnings.append(f"PORTFOLIO_RISK:{type(exc).__name__}")
+    try:
+        selection_results = _process_opportunity_selection_if_activated(
+            decisions, histories, market_date, timestamp, killed)
+        results.update(selection_results)
+        for account_id, value in selection_results.items():
+            if value.get("status") == "FAILED":
+                observability_warnings.append(f"{account_id}:{value.get('error')}")
+    except Exception as exc:
+        observability_warnings.append(f"OPPORTUNITY_SELECTION:{type(exc).__name__}")
     health = {"run_id": f"AUTOPAPER-{run_id}", "run_timestamp": timestamp.isoformat(),
         "market_date": market_date.isoformat(), "qualified_opportunities": len(decisions),
         "kill_switch": killed, "paper_only": True, "accounts": results,
@@ -1591,6 +1859,8 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
             for key in EDGE_ACCOUNT_CONFIGS) else "DEGRADED"),
         "portfolio_risk_status": ("HEALTHY" if all((results.get(key) or {}).get("status") != "FAILED"
             for key in PORTFOLIO_RISK_ACCOUNT_CONFIGS) else "DEGRADED"),
+        "opportunity_selection_status": ("HEALTHY" if all((results.get(key) or {}).get("status") != "FAILED"
+            for key in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS) else "DEGRADED"),
         "errors": errors, "warnings": [w for value in results.values() for w in value.get("warnings", [])] + observability_warnings,
         "status": "HEALTHY" if not errors else "DEGRADED"}
     session = database.SessionLocal()

@@ -367,6 +367,22 @@ def _render_opportunities(decisions):
         "Entry": st.column_config.NumberColumn(format="₹%.2f"),
         "Volume ratio": st.column_config.NumberColumn(format="%.2fx"),
     })
+    selection_details = (auto_state.get("opportunity_selection") or {}).get("opportunity_details") or {}
+    with st.expander("Phase C selection details", expanded=False):
+        details = []
+        for row in ordered_decisions(decisions):
+            evidence = selection_details.get(str(row.get("opportunity_id"))) or {}
+            for policy in ("C1", "C2"):
+                item = evidence.get(policy) or {}
+                details.append({"Symbol": canonical_route_symbol(row.get("symbol")), "Policy": policy,
+                    "Quality": item.get("quality_score"), "Risk percentile": item.get("risk_percentile"),
+                    "Risk-adjusted quality": item.get("risk_adjusted_quality"),
+                    "Selection rank": item.get("rank"), "State": item.get("state", "NOT AVAILABLE")})
+        if any(item.get("Selection rank") is not None for item in details):
+            st.dataframe(pd.DataFrame(details), width="stretch", hide_index=True)
+        else:
+            st.caption("Phase C has not yet processed a causally eligible cohort. No scores are reconstructed retrospectively.")
+        st.caption("Selection rank is transparent prospective research evidence—not confidence or predicted return.")
 
 
 def _portfolio_overview(summary):
@@ -675,6 +691,38 @@ def _autopaper_shadows(state):
     _autopaper_rolling(state)
     _autopaper_edge_capture(state)
     _autopaper_portfolio_risk(state)
+    _autopaper_opportunity_selection(state)
+
+
+def _autopaper_opportunity_selection(state):
+    selection = state.get("opportunity_selection") or {}; activation = selection.get("activation") or {}
+    render_section_header("Opportunity Selection Engine", "Research shadows · ordering only · no production authority")
+    if activation.get("status") in {None, "NOT_ACTIVATED", "PENDING_NEXT_COHORT"}:
+        st.info(f"Phase C is awaiting a causally eligible finalized cohort ({activation.get('status', 'NOT_ACTIVATED')}).")
+        return
+    rows = []
+    control = selection.get("control") or {}; metrics = control.get("metrics") or {}
+    rows.append({"Policy": "C0", "Selection": "P0 freshness", "NAV": metrics.get("nav"),
+        "Return %": metrics.get("net_return_pct"), "Positions": metrics.get("open_positions"),
+        "Cash": metrics.get("cash"), "Completed": metrics.get("completed_trades"),
+        "Constrained events": selection.get("constrained_events")})
+    for values in (selection.get("accounts") or {}).values():
+        metrics = values.get("metrics") or {}; latest = values.get("latest") or []
+        top = latest[0] if latest else {}
+        rows.append({"Policy": values.get("policy"), "Selection": values.get("selection"),
+            "NAV": metrics.get("nav"), "Return %": metrics.get("net_return_pct"),
+            "Positions": metrics.get("open_positions"), "Cash": metrics.get("cash"),
+            "Completed": metrics.get("completed_trades"), "Constrained events": values.get("constrained_events"),
+            "Latest selection score": (top.get("quality_score") if values.get("policy") == "C1"
+                                       else top.get("risk_adjusted_quality")),
+            "Latest rank": top.get("selection_rank")})
+    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    st.caption("C1 ranks four transparent production-native features. C2 applies the frozen equal-weight direct-risk adjustment. Scores are selection ranks—not confidence or predicted return.")
+    gate = selection.get("review_gate") or {}
+    if gate:
+        with st.expander("Phase C review gate", expanded=False):
+            st.dataframe(pd.DataFrame([{"Measure": key.replace("_", " ").title(), **value}
+                for key, value in gate.items()]), width="stretch", hide_index=True)
 
 
 def _autopaper_rolling(state):
@@ -803,7 +851,8 @@ def _autopaper_health(state):
             {"Layer": "Portfolio reconciliation", "Status": health.get("reconciliation") or "NOT AVAILABLE"}]
     for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING",
                        "SHADOW_EDGE_H20", "SHADOW_EDGE_H20_CATASTROPHE", "SHADOW_EDGE_H20_THESIS",
-                       "SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED"):
+                       "SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED",
+                       "SHADOW_SELECT_QUALITY", "SHADOW_SELECT_RISK_ADJ"):
         payload = (health.get("accounts") or {}).get(account_id) or {}
         rows.append({"Layer": account_id, "Status": payload.get("status") or ("HEALTHY" if payload else "NOT AVAILABLE")})
     rows.append({"Layer": "ROLE linkage", "Status": state.get("role_linkage_status") or "NOT AVAILABLE"})
@@ -1429,6 +1478,19 @@ def _render_learning():
             st.caption(f"Risk interventions {risk.get('risk_interventions', 0)} · redundancy interventions {risk.get('redundancy_interventions', 0)} · "
                 f"matched opportunities {risk.get('matched_groups', 0)} · completed matched groups {risk.get('completed_matched_groups', 0)}.")
             st.info("No Phase-B promotion conclusion is available before every frozen review-gate minimum is met.")
+        with st.expander("Selection evidence", expanded=False):
+            _autopaper_opportunity_selection(auto)
+            selection = auto.get("opportunity_selection") or {}
+            evidence_rows = []
+            for values in (selection.get("accounts") or {}).values():
+                evidence_rows.append({"Policy": values.get("policy"),
+                    "Constrained events": values.get("constrained_events"),
+                    "Mature comparisons": values.get("mature_comparisons"),
+                    "Selected vs rejected H10 lift": values.get("selection_lift_h10"),
+                    "Event rank IC": values.get("rank_ic")})
+            if evidence_rows:
+                st.dataframe(pd.DataFrame(evidence_rows), width="stretch", hide_index=True)
+            st.caption(f"Random benchmark: {selection.get('random_seed_count', 0)} / 20 frozen seeds. Neutral until the prospective review gate matures.")
         with st.expander("Execution realism, concentration & common factor", expanded=False):
             _autopaper_observability(auto)
             execution = auto.get("execution_quality") or {}
