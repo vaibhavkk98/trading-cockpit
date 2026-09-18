@@ -1,0 +1,16 @@
+{
+  "authorized_range.json": "92f3a1380bb27db21cca6793335db5ba41a4bebbfdf620a1296d38ad7c2179d9",
+  "candidate_event_metadata.json": "5e702bff4e3181fe051d61468a00091ed7ab70fe21a69ddc6dc6745a48f7cfe5",
+  "candidate_events.parquet": "8d5ec14c4822dc9541e8f5265c33af3464feb5933f14d9513e0f5eb340ecb965",
+  "concentration_analysis.json": "7c6ae767a4c564764b1f9e54352f2f8231e8185ab94748f5e4992d6208cb9e97",
+  "feature_diagnostics.csv": "a25ee4c577dd2959287a6151434e0b3203ced643737e17c906431d25d9714a4a",
+  "final_report.md": "4136d7fd65d16e811ef358a546934d0a8271f7c69d3f20547e30ef0080088656",
+  "frozen_methodology_manifest.json": "b70fb6480236d399fd4869c60c29fb0fbb5d49208fe5fc88da1ff23722f619c5",
+  "opportunity_cost.csv": "dff70e060f011c9fa6c32c49de4ede60f5f4fb9df280c973b000f5cb40efe8ec",
+  "portfolio_results.csv": "0fd9676530c01dd2eabd176d9fd9b207c0228a4bc7f3d82ed7419f82ab7fa4b5",
+  "random_distribution.json": "66c9144bb4b4f57700776a2c46b119c987d3eb400b13c57cb0af2a559cf922d4",
+  "results.json": "ba62b30e65e9e95d5070fc4c2c747101a69cd2b6bdbffa67c8c2c9d53fc53a24",
+  "selection_diagnostics.json": "a81cfd741b1ea232003a9063b971291e51c3b10a397148658e3ab053d9fe11f6",
+  "selection_regret.csv": "e34ae8abaf6c5290790d96f29d14ad2407caf7c27d9e7d697aa694bece1a5870",
+  "stability_analysis.csv": "151c560940257e15ec250be4dc9f8f5baa32bbcd3763a4489bde7b8f950f9937"
+}

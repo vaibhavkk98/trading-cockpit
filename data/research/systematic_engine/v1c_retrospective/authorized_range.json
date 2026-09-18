@@ -1,0 +1,11 @@
+{
+  "holdout_opened": false,
+  "holdout_start": "2024-02-16",
+  "opportunities": 43614,
+  "outcome_end": "2024-02-15",
+  "securities": 1558,
+  "signal_dates": 1753,
+  "signal_end": "2024-01-16",
+  "signal_start": "2016-10-25",
+  "split_hash": "987b175caef64d1c28be248e5e8611c8edcec71be4a10b80a2cf4d81daef3a7a"
+}

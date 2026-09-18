@@ -1,0 +1,17 @@
+feature,target,n,spearman
+relative_demand_20d_pct,h10_net_return_pct,82477,-0.05487738661593313
+relative_demand_20d_pct,mfe_pct,82477,0.0925362596319586
+relative_demand_20d_pct,mae_pct,82477,-0.2134197456552359
+relative_demand_20d_pct,plus_5_before_minus_3,82477,-0.03515740676403252
+volume_ratio_20d,h10_net_return_pct,82477,-0.018434882570746262
+volume_ratio_20d,mfe_pct,82477,0.0456885241307618
+volume_ratio_20d,mae_pct,82477,-0.0708240044736604
+volume_ratio_20d,plus_5_before_minus_3,82477,-0.016927883345823902
+close_location_value,h10_net_return_pct,82474,-0.004536377550239956
+close_location_value,mfe_pct,82474,0.023220195906569378
+close_location_value,mae_pct,82474,-0.025091148625117587
+close_location_value,plus_5_before_minus_3,82474,-0.002502243136802488
+ema20_extension_pct,h10_net_return_pct,82477,-0.04495532872964965
+ema20_extension_pct,mfe_pct,82477,0.14852752014175888
+ema20_extension_pct,mae_pct,82477,-0.2527126290662554
+ema20_extension_pct,plus_5_before_minus_3,82477,-0.03666888488271469

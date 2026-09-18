@@ -1,0 +1,23 @@
+{
+  "C0": {
+    "top_10_signal_date_profit_share": 0.0812044322060182,
+    "top_1_signal_date_profit_share": 0.015347087881344557,
+    "top_5_signal_date_profit_share": 0.047778093112258585,
+    "top_sector_profit_share": 0.6196384948303295,
+    "top_strategy_profit_share": 0.5347972212754328
+  },
+  "C1": {
+    "top_10_signal_date_profit_share": 0.1513993818207947,
+    "top_1_signal_date_profit_share": 0.0334854556157926,
+    "top_5_signal_date_profit_share": 0.1011607651058386,
+    "top_sector_profit_share": 0.697815326845856,
+    "top_strategy_profit_share": 0.9003602903846644
+  },
+  "C2": {
+    "top_10_signal_date_profit_share": 0.11655917775802659,
+    "top_1_signal_date_profit_share": 0.01469631821596656,
+    "top_5_signal_date_profit_share": 0.06431115650396832,
+    "top_sector_profit_share": 0.6867072321675473,
+    "top_strategy_profit_share": 0.806468409171815
+  }
+}
