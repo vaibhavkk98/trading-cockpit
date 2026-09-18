@@ -1288,6 +1288,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             sector_values = current_state["sector_heat"]
             signal_values = current_state["signal_date_heat"]
             corr_values = [float(row.get("correlation_multiplier") or 1.) for row in current_state["positions"]]
+            weighted_corr_values = [float(row["weighted_avg_corr"]) for row in current_state["positions"]
+                if row.get("weighted_avg_corr") not in {None, "NOT_AVAILABLE"}]
             telemetry = {"version": PORTFOLIO_RISK_VERSION, "account_id": account_id,
                 "policy": PORTFOLIO_RISK_ACCOUNT_CONFIGS[account_id]["policy"],
                 "methodology_hash": PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id],
@@ -1308,6 +1310,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 "largest_signal_date_heat_share": max(signal_values.values()) / (nav * portfolio_risk.NORMAL_HEAT_LIMIT)
                     if signal_values and nav else None,
                 "average_position_correlation_multiplier": float(np.mean(corr_values)) if corr_values else None,
+                "weighted_average_portfolio_correlation": (float(np.mean(weighted_corr_values))
+                    if weighted_corr_values else None),
                 "risk_deferred_today": sum(row.final_decision == "DEFER" and
                     row.reason_code in risk_reason_codes for row in today_risk_decisions),
                 "downsized_today": sum(row.final_decision == "ADMIT_DOWNSIZED" for row in today_risk_decisions),

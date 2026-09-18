@@ -134,6 +134,7 @@ def frozen_position_risk(position) -> dict[str, Any]:
             "signal_date": payload.get("signal_date") or "NOT_AVAILABLE",
             "market_value": market_value, "risk_proxy_pct": proxy if math.isfinite(proxy) else "NOT_AVAILABLE",
             "raw_risk_rupees": raw, "correlation_multiplier": multiplier,
+            "weighted_avg_corr": payload.get("weighted_avg_corr", "NOT_AVAILABLE"),
             "risk_rupees": raw * multiplier}
 
 

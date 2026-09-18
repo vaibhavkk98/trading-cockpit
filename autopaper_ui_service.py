@@ -464,9 +464,21 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
         "SIGNAL_DATE_RISK_CONCENTRATION", "CORRELATION_RISK_BUDGET"} for row in portfolio_risk_decisions)
     risk_dates = {row.market_date for row in portfolio_risk_decisions}
     activation_risk_payload = _json(portfolio_risk_activation.payload) if portfolio_risk_activation else {}
+    control_metrics = dict(base["accounts"].get("SHADOW_ROLLING") or {})
+    control_risk = 0.
+    for position in by_positions["SHADOW_ROLLING"]:
+        if position.status != "OPEN":
+            continue
+        payload = _json(position.payload)
+        try:
+            control_risk += position.quantity * position.current_mark * float(payload["atr_pct"]) / 100
+        except (KeyError, TypeError, ValueError):
+            pass
+    if control_metrics.get("nav"):
+        control_metrics["portfolio_heat_pct"] = control_risk / control_metrics["nav"] * 100
     base["portfolio_risk"] = {"activation": activation_risk_payload or {"status": "NOT_ACTIVATED"},
         "control": {"policy": "B0", "meaning": "Rolling + C3 control",
-            "metrics": base["accounts"].get("SHADOW_ROLLING")},
+            "metrics": control_metrics},
         "accounts": risk_accounts, "matched_groups": len(groups),
         "completed_matched_groups": sum(len(completed[key]) >= 3 for key in groups),
         "unique_signal_dates": len(risk_dates), "risk_interventions": risk_interventions,

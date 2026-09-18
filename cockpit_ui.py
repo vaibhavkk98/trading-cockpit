@@ -748,7 +748,7 @@ def _autopaper_portfolio_risk(state):
     control = risk.get("control") or {}; control_metrics = control.get("metrics") or {}
     rows.append({"Policy": "B0", "Meaning": "Rolling + C3 control", "NAV": control_metrics.get("nav"),
         "Cash": control_metrics.get("cash"), "Exposure %": control_metrics.get("invested_pct"),
-        "Positions": control_metrics.get("open_positions"), "Portfolio heat %": None,
+        "Positions": control_metrics.get("open_positions"), "Portfolio heat %": control_metrics.get("portfolio_heat_pct"),
         "Remaining heat %": None, "Max drawdown %": control_metrics.get("max_drawdown_pct"),
         "Completed": control_metrics.get("completed_trades"), "Turnover %": control_metrics.get("turnover_pct"),
         "Risk deferred": None})
@@ -770,6 +770,7 @@ def _autopaper_portfolio_risk(state):
                 f"{float(latest.get('committed_heat_pct') or 0):.2f}% / 3.60% target", "Hard ceiling: 4.00%")
             st.caption(f"Largest sector heat share: {format_percent((latest.get('largest_sector_heat_share') or 0) * 100) if latest.get('largest_sector_heat_share') is not None else 'Not available'} · "
                 f"largest signal-date heat share: {format_percent((latest.get('largest_signal_date_heat_share') or 0) * 100) if latest.get('largest_signal_date_heat_share') is not None else 'Not available'} · "
+                f"weighted average portfolio correlation: {display_value(latest.get('weighted_average_portfolio_correlation'))} · "
                 f"average correlation multiplier: {display_value(latest.get('average_position_correlation_multiplier'))}.")
     position_rows = []
     for account_id in ("SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED"):
@@ -1411,7 +1412,7 @@ def _render_learning():
             b0 = (risk.get("control") or {}).get("metrics") or {}
             comparison = [{"Policy": "B0", "Return %": b0.get("net_return_pct"),
                 "Drawdown %": b0.get("max_drawdown_pct"), "Exposure %": b0.get("invested_pct"),
-                "Heat %": None, "Cash utilization %": 100 - b0.get("cash", 0) / b0.get("nav", 1) * 100 if b0.get("nav") else None,
+                "Heat %": b0.get("portfolio_heat_pct"), "Cash utilization %": 100 - b0.get("cash", 0) / b0.get("nav", 1) * 100 if b0.get("nav") else None,
                 "Trades": b0.get("completed_trades"), "Sector heat share": None,
                 "Date heat share": None, "Correlation": None}]
             for values in accounts.values():
@@ -1423,7 +1424,7 @@ def _render_learning():
                     "Trades": metrics.get("completed_trades"),
                     "Sector heat share": latest.get("largest_sector_heat_share"),
                     "Date heat share": latest.get("largest_signal_date_heat_share"),
-                    "Correlation": latest.get("average_position_correlation_multiplier")})
+                    "Correlation": latest.get("weighted_average_portfolio_correlation")})
             st.dataframe(pd.DataFrame(comparison), width="stretch", hide_index=True)
             st.caption(f"Risk interventions {risk.get('risk_interventions', 0)} · redundancy interventions {risk.get('redundancy_interventions', 0)} · "
                 f"matched opportunities {risk.get('matched_groups', 0)} · completed matched groups {risk.get('completed_matched_groups', 0)}.")
