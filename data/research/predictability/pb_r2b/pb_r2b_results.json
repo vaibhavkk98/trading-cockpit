@@ -1,0 +1,296 @@
+{
+  "activation": {
+    "activation_date": null,
+    "decision_authority": false,
+    "prospective_only": true,
+    "status": "INACTIVE",
+    "verdict": "NO-GO \u2014 PRODUCTION-NATIVE PB DOES NOT RETAIN SUFFICIENT PREDICTIVE VALUE"
+  },
+  "autopaper_holdout_opened": false,
+  "baseline_fingerprint_expected": "b93e8c2dd1a99fba712f89a38ba3a5689595891a47375e5c4f20a31d567d3640",
+  "chronological_splits": {
+    "autopaper": "Do not open/replay AutoPaper holdout or evaluate its policies",
+    "base": "2016-2019; labels must end before 2020-01-01",
+    "calibration": "2020-2021; labels end before 2022-01-01",
+    "embargo": "20 trading sessions before each partition boundary in addition to label-end purge; no random split",
+    "future_test": "Freeze before new prospective collection; minimum 12 months and 1000 matured qualified recommendations, >=3 strategies and >=100 sessions; no authority until separate review",
+    "historical_evaluation": "2024-2026 already examined by PB/Path Risk; disclosed reused evaluation, not globally untouched; annual base before Y-2, calibration Y-2..Y-1, labels end strictly before Y",
+    "validation": "2022-2023; label-end purge at next boundary"
+  },
+  "dataset": {
+    "auto_paper_holdout_opened": false,
+    "build_seconds": 97.49357833398972,
+    "builder_version": "PB_NATIVE_FEATURES_V1",
+    "date_max": "2026-08-13",
+    "date_min": "2016-10-25",
+    "feature_count": 35,
+    "positive_price_gate_all": true,
+    "rows": 61901,
+    "securities": 1976,
+    "sessions": 2384,
+    "source_contract": "immutable NSE EQ bhavcopy raw OHLCV"
+  },
+  "hashes": {},
+  "old_artifacts_mutated": false,
+  "pb_r2b_10d": [
+    {
+      "annual_fold_wins": 3,
+      "baseline_brier": 0.24403375202773125,
+      "baseline_mae": null,
+      "brier": 0.2390051460739888,
+      "evidence": "CALIBRATED_LOW_STRENGTH",
+      "horizon": 10,
+      "improvement_pct": 2.0606190381283938,
+      "mae": null,
+      "n": 18481,
+      "pr_auc": 0.6341371509904736,
+      "rmse": null,
+      "roc_auc": 0.5759958561752161,
+      "spearman": null,
+      "target": "adverse_first"
+    },
+    {
+      "annual_fold_wins": 3,
+      "baseline_brier": null,
+      "baseline_mae": 18.68779848548427,
+      "brier": null,
+      "evidence": "WELL_CALIBRATED",
+      "horizon": 10,
+      "improvement_pct": 14.167068078162856,
+      "mae": 16.040285351735825,
+      "n": 18481,
+      "pr_auc": null,
+      "rmse": 25.116921126633482,
+      "roc_auc": null,
+      "spearman": 0.5555889294989081,
+      "target": "forward_volatility"
+    },
+    {
+      "annual_fold_wins": 2,
+      "baseline_brier": null,
+      "baseline_mae": 4.3814564567470775,
+      "brier": null,
+      "evidence": "CALIBRATED_LOW_STRENGTH",
+      "horizon": 10,
+      "improvement_pct": 4.343595266741334,
+      "mae": 4.191143721477479,
+      "n": 18481,
+      "pr_auc": null,
+      "rmse": 5.917879620707602,
+      "roc_auc": null,
+      "spearman": 0.27087441761222936,
+      "target": "mae"
+    },
+    {
+      "annual_fold_wins": 0,
+      "baseline_brier": null,
+      "baseline_mae": 5.9293387071556065,
+      "brier": null,
+      "evidence": "ORDINAL_ONLY",
+      "horizon": 10,
+      "improvement_pct": -6.338795483211353,
+      "mae": 6.3051873613090885,
+      "n": 18481,
+      "pr_auc": null,
+      "rmse": 9.013882924276464,
+      "roc_auc": null,
+      "spearman": 0.2998576314485942,
+      "target": "mfe"
+    },
+    {
+      "annual_fold_wins": 3,
+      "baseline_brier": 0.23301590668709637,
+      "baseline_mae": null,
+      "brier": 0.23283701806353474,
+      "evidence": "CALIBRATED_LOW_STRENGTH",
+      "horizon": 10,
+      "improvement_pct": 0.07677099220606177,
+      "mae": null,
+      "n": 18481,
+      "pr_auc": 0.3950537662366318,
+      "rmse": null,
+      "roc_auc": 0.5441132662984007,
+      "spearman": null,
+      "target": "success_5_before_3"
+    }
+  ],
+  "pb_r3b": {
+    "boundaries": [
+      1.3987472682505686,
+      1.7124061940939441
+    ],
+    "causal_floor": 3.9597305835686685,
+    "formula": "predicted_MFE_10D/max(abs(predicted_MAE_10D),causal_floor)",
+    "ordered": true,
+    "stable_strategies": 4
+  },
+  "production_native_contract": "PB_R2B_FEATURE_MANIFEST_V1",
+  "selected_models": {
+    "10/adverse_first": {
+      "calibrator": "platt",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_brier": 0.24722166629995354,
+        "brier": 0.2443609465155689,
+        "improvement_pct": 1.1571476833724381,
+        "pr_auc": 0.6068500883307346,
+        "roc_auc": 0.5629873762142675
+      }
+    },
+    "10/forward_volatility": {
+      "calibrator": "none",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_mae": 17.7235898021631,
+        "improvement_pct": 16.563776864975107,
+        "mae": 14.787893934869322,
+        "rmse": 21.559059609000244,
+        "spearman": 0.5175058965771268
+      }
+    },
+    "10/mae": {
+      "calibrator": "affine",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_mae": 4.070358963484719,
+        "improvement_pct": 1.0329614844893964,
+        "mae": 4.02831372311146,
+        "rmse": 5.381513431546653,
+        "spearman": 0.27237001402124617
+      }
+    },
+    "10/mfe": {
+      "calibrator": "none",
+      "transform": "raw",
+      "validation_metrics": {
+        "baseline_mae": 5.975777327242734,
+        "improvement_pct": 0.7602916765514568,
+        "mae": 5.9303439896144585,
+        "rmse": 8.96995693871591,
+        "spearman": 0.21444719887118993
+      }
+    },
+    "10/success_5_before_3": {
+      "calibrator": "platt",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_brier": 0.2394804685060376,
+        "brier": 0.23907520030094004,
+        "improvement_pct": 0.16922808261808078,
+        "pr_auc": 0.41110878253848554,
+        "roc_auc": 0.5226499621230691
+      }
+    },
+    "20/adverse_first": {
+      "calibrator": "platt",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_brier": 0.24431871206664163,
+        "brier": 0.24276109552226316,
+        "improvement_pct": 0.6375346903243363,
+        "pr_auc": 0.6154135161057592,
+        "roc_auc": 0.5470711238234572
+      }
+    },
+    "20/forward_volatility": {
+      "calibrator": "none",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_mae": 15.293466328606373,
+        "improvement_pct": 20.66944937465472,
+        "mae": 12.132391048185212,
+        "rmse": 17.585624783785537,
+        "spearman": 0.5722709502995114
+      }
+    },
+    "20/mae": {
+      "calibrator": "affine",
+      "transform": "raw",
+      "validation_metrics": {
+        "baseline_mae": 5.3789878354478144,
+        "improvement_pct": 0.7900006938596679,
+        "mae": 5.33649379422515,
+        "rmse": 6.993248825397858,
+        "spearman": 0.2484472363063997
+      }
+    },
+    "20/mfe": {
+      "calibrator": "none",
+      "transform": "raw",
+      "validation_metrics": {
+        "baseline_mae": 8.548520721527417,
+        "improvement_pct": 1.6278309460603477,
+        "mae": 8.409365255792013,
+        "rmse": 12.778368461138713,
+        "spearman": 0.19257848662366406
+      }
+    },
+    "20/success_5_before_3": {
+      "calibrator": "platt",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_brier": 0.24260192957275364,
+        "brier": 0.24184946166346477,
+        "improvement_pct": 0.310165673708385,
+        "pr_auc": 0.4346505810523352,
+        "roc_auc": 0.532895817641518
+      }
+    },
+    "5/adverse_first": {
+      "calibrator": "none",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_brier": 0.25081079176198434,
+        "brier": 0.24249334665768596,
+        "improvement_pct": 3.316222976637908,
+        "pr_auc": 0.5890340980045937,
+        "roc_auc": 0.5991473539026966
+      }
+    },
+    "5/forward_volatility": {
+      "calibrator": "none",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_mae": 20.670540901467685,
+        "improvement_pct": 12.460881644601047,
+        "mae": 18.094809264436947,
+        "rmse": 28.107052551463138,
+        "spearman": 0.4581796101920599
+      }
+    },
+    "5/mae": {
+      "calibrator": "none",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_mae": 3.048088541040577,
+        "improvement_pct": 2.476941069964718,
+        "mae": 2.9725891841186547,
+        "rmse": 4.116622952253825,
+        "spearman": 0.27762881706915965
+      }
+    },
+    "5/mfe": {
+      "calibrator": "none",
+      "transform": "raw",
+      "validation_metrics": {
+        "baseline_mae": 4.227077797072362,
+        "improvement_pct": 0.4998778344247375,
+        "mae": 4.205947572120908,
+        "rmse": 6.457654161915245,
+        "spearman": 0.2448223564546611
+      }
+    },
+    "5/success_5_before_3": {
+      "calibrator": "platt",
+      "transform": "signed_log1p",
+      "validation_metrics": {
+        "baseline_brier": 0.22594196607972394,
+        "brier": 0.223478673338758,
+        "improvement_pct": 1.0902324980640192,
+        "pr_auc": 0.3735488645804993,
+        "roc_auc": 0.5510086128751288
+      }
+    }
+  },
+  "verdict": "NO-GO \u2014 PRODUCTION-NATIVE PB DOES NOT RETAIN SUFFICIENT PREDICTIVE VALUE"
+}

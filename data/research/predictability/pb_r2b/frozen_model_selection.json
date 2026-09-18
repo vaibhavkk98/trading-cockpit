@@ -1,0 +1,167 @@
+{
+  "10/adverse_first": {
+    "calibrator": "platt",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_brier": 0.24722166629995354,
+      "brier": 0.2443609465155689,
+      "improvement_pct": 1.1571476833724381,
+      "pr_auc": 0.6068500883307346,
+      "roc_auc": 0.5629873762142675
+    }
+  },
+  "10/forward_volatility": {
+    "calibrator": "none",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_mae": 17.7235898021631,
+      "improvement_pct": 16.563776864975107,
+      "mae": 14.787893934869322,
+      "rmse": 21.559059609000244,
+      "spearman": 0.5175058965771268
+    }
+  },
+  "10/mae": {
+    "calibrator": "affine",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_mae": 4.070358963484719,
+      "improvement_pct": 1.0329614844893964,
+      "mae": 4.02831372311146,
+      "rmse": 5.381513431546653,
+      "spearman": 0.27237001402124617
+    }
+  },
+  "10/mfe": {
+    "calibrator": "none",
+    "transform": "raw",
+    "validation_metrics": {
+      "baseline_mae": 5.975777327242734,
+      "improvement_pct": 0.7602916765514568,
+      "mae": 5.9303439896144585,
+      "rmse": 8.96995693871591,
+      "spearman": 0.21444719887118993
+    }
+  },
+  "10/success_5_before_3": {
+    "calibrator": "platt",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_brier": 0.2394804685060376,
+      "brier": 0.23907520030094004,
+      "improvement_pct": 0.16922808261808078,
+      "pr_auc": 0.41110878253848554,
+      "roc_auc": 0.5226499621230691
+    }
+  },
+  "20/adverse_first": {
+    "calibrator": "platt",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_brier": 0.24431871206664163,
+      "brier": 0.24276109552226316,
+      "improvement_pct": 0.6375346903243363,
+      "pr_auc": 0.6154135161057592,
+      "roc_auc": 0.5470711238234572
+    }
+  },
+  "20/forward_volatility": {
+    "calibrator": "none",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_mae": 15.293466328606373,
+      "improvement_pct": 20.66944937465472,
+      "mae": 12.132391048185212,
+      "rmse": 17.585624783785537,
+      "spearman": 0.5722709502995114
+    }
+  },
+  "20/mae": {
+    "calibrator": "affine",
+    "transform": "raw",
+    "validation_metrics": {
+      "baseline_mae": 5.3789878354478144,
+      "improvement_pct": 0.7900006938596679,
+      "mae": 5.33649379422515,
+      "rmse": 6.993248825397858,
+      "spearman": 0.2484472363063997
+    }
+  },
+  "20/mfe": {
+    "calibrator": "none",
+    "transform": "raw",
+    "validation_metrics": {
+      "baseline_mae": 8.548520721527417,
+      "improvement_pct": 1.6278309460603477,
+      "mae": 8.409365255792013,
+      "rmse": 12.778368461138713,
+      "spearman": 0.19257848662366406
+    }
+  },
+  "20/success_5_before_3": {
+    "calibrator": "platt",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_brier": 0.24260192957275364,
+      "brier": 0.24184946166346477,
+      "improvement_pct": 0.310165673708385,
+      "pr_auc": 0.4346505810523352,
+      "roc_auc": 0.532895817641518
+    }
+  },
+  "5/adverse_first": {
+    "calibrator": "none",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_brier": 0.25081079176198434,
+      "brier": 0.24249334665768596,
+      "improvement_pct": 3.316222976637908,
+      "pr_auc": 0.5890340980045937,
+      "roc_auc": 0.5991473539026966
+    }
+  },
+  "5/forward_volatility": {
+    "calibrator": "none",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_mae": 20.670540901467685,
+      "improvement_pct": 12.460881644601047,
+      "mae": 18.094809264436947,
+      "rmse": 28.107052551463138,
+      "spearman": 0.4581796101920599
+    }
+  },
+  "5/mae": {
+    "calibrator": "none",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_mae": 3.048088541040577,
+      "improvement_pct": 2.476941069964718,
+      "mae": 2.9725891841186547,
+      "rmse": 4.116622952253825,
+      "spearman": 0.27762881706915965
+    }
+  },
+  "5/mfe": {
+    "calibrator": "none",
+    "transform": "raw",
+    "validation_metrics": {
+      "baseline_mae": 4.227077797072362,
+      "improvement_pct": 0.4998778344247375,
+      "mae": 4.205947572120908,
+      "rmse": 6.457654161915245,
+      "spearman": 0.2448223564546611
+    }
+  },
+  "5/success_5_before_3": {
+    "calibrator": "platt",
+    "transform": "signed_log1p",
+    "validation_metrics": {
+      "baseline_brier": 0.22594196607972394,
+      "brier": 0.223478673338758,
+      "improvement_pct": 1.0902324980640192,
+      "pr_auc": 0.3735488645804993,
+      "roc_auc": 0.5510086128751288
+    }
+  }
+}

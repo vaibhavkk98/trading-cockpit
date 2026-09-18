@@ -1,0 +1,16 @@
+{
+  "annual_locked_metrics.csv": "b854cbc1fe26f47b49159264e02779f0cf4c8b501bde3d74dd1ba972d2ee21e5",
+  "dataset_metadata.json": "c4acc6fb23f7dce56d536382afe301c86ae368f4386fd9e5eb487e67f5a0616f",
+  "frozen_model_selection.json": "4f085658f4bdbdc7a0d85637235b469f6dd808cada78aeafefd8e516f4c9e2ee",
+  "implementation_report.md": "1022eb1de32f88396b95c817802f6b135688bc4bb0a7ab92050c41cf38b73208",
+  "locked_evaluation_summary.csv": "6d1de544cf0f45d3f01adfa1d333157b591dbe9a467a7f40a07bb40a20f57059",
+  "original_pb_r2_comparison.csv": "1ae653c5d0519e55e635fc9b3b541c87f1557e8de8c496d88d45075b6036648f",
+  "pb_r2b_results.json": "7004cf6ff2ce737946addb9a79eb3224cec0598d4dd516d448a0725f074efd43",
+  "pb_r3b_bucket_results.csv": "8dc8c2c2fdcc11059a3782ee617bc7f4660363cfcad586cfe48ebf608955a19a",
+  "pb_r3b_configuration.json": "659393e5b31527495f82f5948c3cf8a238728496653eb422e2cf744b1c3fd531",
+  "pb_r3b_strategy_stability.csv": "84c2195cc7cdad60968c105a621371b98b2a0e3cb37d777168600c6563f1e762",
+  "production_native_feature_manifest.json": "52281b6c198bb863b8358454270f6e3bd1ffd2ccc5cc71e8cdee7952de2e22cb",
+  "prospective_activation.json": "3b8d1d4b6016a9fe16989eaf5468abeeef1bb3df616f5ec35be53c8eeee2ebd7",
+  "strategy_stability.csv": "bcb0deac11be727e7fa3abe299442104e19943693fa048161dea005f77ac3821",
+  "validation_model_grid.csv": "fa51f0b14ad7fa43c2797f974bc615e8c77ee829231e608d1fa72dc1fffa9ead"
+}

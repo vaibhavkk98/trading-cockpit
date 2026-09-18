@@ -1,0 +1,13 @@
+{
+  "auto_paper_holdout_opened": false,
+  "build_seconds": 97.49357833398972,
+  "builder_version": "PB_NATIVE_FEATURES_V1",
+  "date_max": "2026-08-13",
+  "date_min": "2016-10-25",
+  "feature_count": 35,
+  "positive_price_gate_all": true,
+  "rows": 61901,
+  "securities": 1976,
+  "sessions": 2384,
+  "source_contract": "immutable NSE EQ bhavcopy raw OHLCV"
+}

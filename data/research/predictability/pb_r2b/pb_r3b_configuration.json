@@ -1,0 +1,10 @@
+{
+  "boundaries": [
+    1.3987472682505686,
+    1.7124061940939441
+  ],
+  "causal_floor": 3.9597305835686685,
+  "formula": "predicted_MFE_10D/max(abs(predicted_MAE_10D),causal_floor)",
+  "ordered": true,
+  "stable_strategies": 4
+}
