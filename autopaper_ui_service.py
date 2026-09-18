@@ -16,6 +16,7 @@ BASELINE = "BASELINE_C3"
 SHADOWS = ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING")
 EDGE_ACCOUNTS = ("SHADOW_EDGE_H20", "SHADOW_EDGE_H20_CATASTROPHE", "SHADOW_EDGE_H20_THESIS")
 RISK_ACCOUNTS = ("SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED")
+SELECTION_ACCOUNTS = ("SHADOW_SELECT_QUALITY", "SHADOW_SELECT_RISK_ADJ")
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 METHODOLOGY_HASH = "3ed64bac9138d36cc1c582c78803215e0142cd12bf8c9db3c50bfc05e3f43d79"
 CONFIG_HASH = "86ed4f1153186874330f62e0c8bb4ad80aef7972a20188952af3697aced1d9c2"
@@ -237,6 +238,12 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
             portfolio_risk_matches = session.query(database.PortfolioRiskMatch).all()
             portfolio_risk_telemetry = session.query(database.PortfolioRiskTelemetry).order_by(
                 database.PortfolioRiskTelemetry.market_date.asc()).all()
+            selection_activation = session.query(database.OpportunitySelectionActivation).order_by(
+                database.OpportunitySelectionActivation.created_at.desc()).first()
+            selection_snapshots = session.query(database.OpportunitySelectionCandidateSnapshot).order_by(
+                database.OpportunitySelectionCandidateSnapshot.market_date.desc(),
+                database.OpportunitySelectionCandidateSnapshot.selection_rank.asc()).all()
+            selection_random = session.query(database.OpportunitySelectionRandomOrdering).all()
         finally: session.close()
     except Exception as exc:
         base["health"] = {"status": "NOT AVAILABLE", "reason": type(exc).__name__}
@@ -247,7 +254,7 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
     for row in all_orders: by_orders[row.account_id].append(row)
     for row in all_trades: by_trades[row.account_id].append(row)
     for row in all_snapshots: by_snapshots[row.account_id].append(row)
-    for account_id in (BASELINE, *SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS):
+    for account_id in (BASELINE, *SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS, *SELECTION_ACCOUNTS):
         account = accounts.get(account_id); positions = [p for p in by_positions[account_id] if p.status == "OPEN"]
         base["accounts"][account_id] = _account_metrics(account, positions, by_trades[account_id], by_snapshots[account_id]) if account else None
         base["snapshots"][account_id] = [{"date": x.market_date.isoformat(), "nav": x.nav, "cash": x.cash} for x in by_snapshots[account_id]]
@@ -259,7 +266,7 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
     nav = (base["accounts"].get(BASELINE) or {}).get("nav")
     base["positions"] = [_position_row(row, order_by_opportunity.get(row.opportunity_id), entry_decisions.get(row.opportunity_id), nav, metadata.get(row.opportunity_id))
                          for row in by_positions[BASELINE] if row.status == "OPEN"]
-    for account_id in (*SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS):
+    for account_id in (*SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS, *SELECTION_ACCOUNTS):
         shadow_orders = {row.opportunity_id: row for row in reversed(by_orders[account_id]) if row.side == "BUY"}
         shadow_decisions = {row.opportunity_id: row for row in reversed(decisions) if row.account_id == account_id and row.action == "ENTER"}
         shadow_nav = (base["accounts"].get(account_id) or {}).get("nav")
@@ -495,6 +502,69 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
                 "remaining_normal_heat_rupees", "sector", "sector_heat_share_of_normal_budget",
                 "signal_date_heat_share_of_normal_budget", "weighted_avg_corr",
                 "correlation_multiplier"}}} for row in portfolio_risk_decisions[:100]]}
+    from opportunity_selection_engine import selection_attribution
+    horizon_by_observation = {row.observation_id: _json(row.payload) for row in role_horizons}
+    outcome_by_opportunity = {row.opportunity_id: horizon_by_observation[row.id]
+                              for row in role_observations if row.id in horizon_by_observation}
+    selection_accounts = {}
+    latest_selection_date = max((row.market_date for row in selection_snapshots), default=None)
+    opportunity_details = {}
+    for account_id in SELECTION_ACCOUNTS:
+        snapshots = [row for row in selection_snapshots if row.account_id == account_id]
+        payloads = [{**_json(row.payload), "admitted": row.admitted,
+                     "outcome": outcome_by_opportunity.get(row.opportunity_id)} for row in snapshots]
+        score_field = "quality_score" if account_id == "SHADOW_SELECT_QUALITY" else "risk_adjusted_quality"
+        constrained_events = {row.selection_event_id for row in snapshots if row.constrained}
+        mature = [row for row in payloads if isinstance(row.get("outcome"), dict)]
+        by_event = defaultdict(list)
+        for row in mature:
+            if row.get("constrained"): by_event[row["selection_event_id"]].append(row)
+        event_analytics = [selection_attribution(rows, score_field) for rows in by_event.values()]
+        def avg(path, default=None):
+            values = [item.get(path) for item in event_analytics if _finite(item.get(path)) is not None]
+            return sum(values) / len(values) if values else default
+        latest = [row for row in payloads if str(row.get("market_date")) == str(latest_selection_date)]
+        selection_accounts[account_id] = {
+            "policy": "C1" if account_id.endswith("QUALITY") else "C2",
+            "selection": "Transparent quality" if account_id.endswith("QUALITY") else "Risk-adjusted quality",
+            "metrics": base["accounts"].get(account_id), "constrained_events": len(constrained_events),
+            "mature_comparisons": len(mature), "latest": latest,
+            "rank_ic": avg("event_rank_ic"),
+            "selection_lift_h10": (sum(float(item["selection_lift"]["h10_net_return_pct"])
+                for item in event_analytics if _finite(item["selection_lift"].get("h10_net_return_pct")) is not None) /
+                sum(_finite(item["selection_lift"].get("h10_net_return_pct")) is not None for item in event_analytics)
+                if any(_finite(item["selection_lift"].get("h10_net_return_pct")) is not None for item in event_analytics) else None),
+            "event_analytics": event_analytics,
+        }
+        for row in latest:
+            opportunity_details.setdefault(row["opportunity_id"], {})[selection_accounts[account_id]["policy"]] = {
+                "quality_score": row.get("quality_score"), "risk_percentile": row.get("risk_percentile"),
+                "risk_adjusted_quality": row.get("risk_adjusted_quality"), "rank": row.get("selection_rank"),
+                "state": "SELECTED" if row.get("admitted") else "DEFERRED",
+                "reason": humanize_reason(row.get("reason_code")), "label": "Selection rank"}
+    selection_dates = {row.market_date for row in selection_snapshots if row.constrained}
+    first_selection_date = min((row.market_date for row in selection_snapshots), default=None)
+    calendar_days = (dt.date.today() - first_selection_date).days + 1 if first_selection_date else 0
+    constrained_event_ids = {row.selection_event_id for row in selection_snapshots if row.constrained}
+    competitive_ids = {event_id for event_id in constrained_event_ids if sum(
+        row.selection_event_id == event_id and row.account_id == "SHADOW_SELECT_QUALITY"
+        for row in selection_snapshots) >= 3}
+    base["opportunity_selection"] = {
+        "activation": _json(selection_activation.payload) if selection_activation else {"status": "NOT_ACTIVATED"},
+        "control": {"policy": "C0", "selection": "P0 freshness",
+                    "metrics": base["accounts"].get("SHADOW_RISK_BUDGET")},
+        "accounts": selection_accounts, "opportunity_details": opportunity_details,
+        "constrained_events": len(constrained_event_ids), "competitive_events": len(competitive_ids),
+        "unique_signal_dates": len(selection_dates), "mature_comparisons": sum(
+            values["mature_comparisons"] for values in selection_accounts.values()),
+        "random_seed_count": len({row.seed for row in selection_random}),
+        "review_gate": {"calendar_days": {"value": calendar_days, "target": 90},
+            "unique_signal_dates": {"value": len(selection_dates), "target": 40},
+            "constrained_selection_events": {"value": len(constrained_event_ids), "target": 50},
+            "competitive_events": {"value": len(competitive_ids), "target": 30},
+            "mature_comparisons": {"value": sum(v["mature_comparisons"] for v in selection_accounts.values()), "target": 100},
+            "random_seeds": {"value": len({row.seed for row in selection_random}), "target": 20}},
+    }
     latest_rolling_by_opportunity = {}
     for row in rolling_decisions:
         if row.opportunity_id not in latest_rolling_by_opportunity:

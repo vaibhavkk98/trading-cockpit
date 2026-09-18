@@ -1,0 +1,13 @@
+{
+  "version": "selection_feature_manifest_v1",
+  "causal_cutoff": "completed signal session T; never reads T+1",
+  "candidate_universe": "active qualified candidates competing in the same admission event",
+  "percentile": "midrank=(count(lower)+0.5*count(equal))/N; range [0,1]",
+  "minimum_quality_coverage": 3,
+  "features": {
+    "relative_demand_20d_pct": {"family": "Relative Demand", "direction": "HIGHER_BETTER", "lookback": 20, "formula": "100*(Close[T]/Close[T-20]-1) - 100*(NIFTY500[T]/NIFTY500[T-20]-1)", "source": "latent_state_vector.build_causal_vector.relative_demand.stock_vs_nifty500_return_20d_pct", "missing": "NOT_AVAILABLE if either series lacks 21 completed observations", "rationale": "direct medium-horizon demand versus the frozen NIFTY 500 benchmark"},
+    "volume_ratio_20d": {"family": "Participation", "direction": "HIGHER_BETTER", "lookback": 20, "formula": "Volume[T] / mean(Volume[T-20:T-1])", "source": "latent_state_vector.build_causal_vector.participation.volume_ratio_20d", "missing": "NOT_AVAILABLE if the prior-volume mean is unavailable or non-positive", "rationale": "canonical contemporaneous participation measure"},
+    "close_location_value": {"family": "Price Response", "direction": "HIGHER_BETTER", "lookback": 1, "formula": "((Close-Low)-(High-Close))/(High-Low) on T", "source": "latent_state_vector.build_causal_vector.price_response.close_location_value", "missing": "NOT_AVAILABLE for a zero/invalid session range", "rationale": "direct close strength within the completed-session range"},
+    "ema20_extension_pct": {"family": "Trend", "direction": "HIGHER_BETTER", "lookback": 20, "formula": "100*(Close[T]/EMA20[T]-1), pandas EWM span=20 adjust=False min_periods=20", "source": "latent_state_vector.build_causal_vector.price_state.ema20_extension_pct", "missing": "NOT_AVAILABLE without 20 valid completed closes", "rationale": "direct canonical medium-horizon trend measure; not a composite or proxy"}
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "version": "SYSTEMATIC_ENGINE_V1C_OPPORTUNITY_SELECTION_V1",
+  "accounts": {
+    "SHADOW_SELECT_QUALITY": {"policy": "C1", "selection": "transparent quality", "downstream_risk_policy": "B1", "decision_authority": false},
+    "SHADOW_SELECT_RISK_ADJ": {"policy": "C2", "selection": "risk-adjusted quality", "downstream_risk_policy": "B1", "decision_authority": false}
+  },
+  "c1_formula": "mean(available feature midrank percentiles), minimum 3 of 4",
+  "c2_formula": "0.5*quality_score + 0.5*(1-risk_percentile)",
+  "risk_proxy": "max(ATR%, RV20_daily%) with ATR required and RV20 ATR fallback",
+  "rolling_admission": "2 below 5 positions; 1 from 5 through 8; 0 at 9",
+  "lifecycle": {"hold_sessions": 10, "execution": "T_PLUS_1", "replacement": false, "ordinary_stop": null, "target": null},
+  "feature_manifest_hash": "4131cb801cce743146e26b0dae66f08ab93b53fc7a57952868f6b8448f6bb4c1",
+  "c1_methodology_hash": "8cf389689f461eb0769ecc64311929f61a9402aaca91191fac9738ab57ff8497",
+  "c2_methodology_hash": "f087fb4cbd127a41f13739ad8cbee6aa28adcdf454c4ea30dce0ea9c0e19da38",
+  "random_control": {"manifest_hash": "2f05b0c8b888f6fe8dbbdf59c0b4f589d09be5fac78d3382ed076765b7292a22", "seeds": [104729, 130363, 155921, 181081, 205019, 230003, 256019, 280001, 305023, 330017, 355009, 380041, 405031, 430007, 455003, 480017, 505027, 530017, 555029, 580031], "live_authority": false},
+  "review_gate": {"calendar_days": 90, "unique_signal_dates": 40, "constrained_selection_events": 50, "competitive_events": 30, "mature_comparisons": 100, "completed_matched_events": 60},
+  "automatic_promotion": false
+}
