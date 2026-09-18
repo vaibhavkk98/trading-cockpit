@@ -19,6 +19,7 @@ from autopaper_observability import (
     bar_context, capture_sector_metadata, persist_risk_snapshot, record_execution_attempt,
 )
 from provider_symbols import yahoo_nse_symbol
+import portfolio_risk_engine as portfolio_risk
 
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 ACTIVATION_TIMESTAMP = dt.datetime(2026, 9, 13, 12, 21, 55, tzinfo=dt.timezone.utc)
@@ -97,6 +98,40 @@ ACCOUNT_CONFIGS.update({account_id: {"volatility_sizing": True, "date_cap": None
     "authority": "SHADOW_ONLY", "rolling": True, **cfg} for account_id, cfg in EDGE_ACCOUNT_CONFIGS.items()})
 EDGE_REVIEW_GATE = {"calendar_days": 90, "completed_matched_groups": 60,
     "unique_signal_dates": 30, "represented_strategies": 3, "capacity_divergence_events": 20,
+    "automatic_promotion": False}
+PORTFOLIO_RISK_VERSION = portfolio_risk.VERSION
+PORTFOLIO_RISK_ACCOUNT_CONFIGS = {
+    "SHADOW_RISK_BUDGET": {"policy": "B1", "redundancy": False},
+    "SHADOW_RISK_DIVERSIFIED": {"policy": "B2", "redundancy": True},
+}
+PORTFOLIO_RISK_CONFIGS = {account_id: {
+    "version": PORTFOLIO_RISK_VERSION, "policy": cfg["policy"],
+    "control_methodology_hash": ROLLING_METHODOLOGY_HASH,
+    "capital": 1_000_000.0, "rolling_admission": "2_1_0", "priority": "P0_FRESHNESS",
+    "hold_sessions": 10, "execution": "T_PLUS_1", "replacement": False,
+    "ordinary_stop": None, "target": None, "target_position_risk": portfolio_risk.TARGET_POSITION_RISK,
+    "normal_heat_limit": portfolio_risk.NORMAL_HEAT_LIMIT, "hard_heat_limit": portfolio_risk.HARD_HEAT_LIMIT,
+    "risk_proxy": "MAX_ATR_PCT_RV20_DAILY_PCT", "rv20_window": portfolio_risk.RV20_WINDOW,
+    "rv20_min_returns": portfolio_risk.RV20_MIN_RETURNS,
+    "redundancy": cfg["redundancy"],
+    "maximum_sector_heat_share": portfolio_risk.MAX_SECTOR_HEAT_SHARE if cfg["redundancy"] else None,
+    "maximum_signal_date_heat_share": portfolio_risk.MAX_SIGNAL_DATE_HEAT_SHARE if cfg["redundancy"] else None,
+    "correlation_window": portfolio_risk.CORRELATION_WINDOW if cfg["redundancy"] else None,
+    "correlation_min_overlap": portfolio_risk.CORRELATION_MIN_OVERLAP if cfg["redundancy"] else None,
+    "correlation_multiplier": "1+0.5*MAX(0,weighted_avg_corr);CAP_1.5" if cfg["redundancy"] else None,
+    "pb_r2_authority": False, "path_risk_authority": False, "market_regime_authority": False,
+    "authority": "SHADOW_ONLY", "paper_only": True,
+} for account_id, cfg in PORTFOLIO_RISK_ACCOUNT_CONFIGS.items()}
+PORTFOLIO_RISK_CONFIG_HASHES = {key: digest(value) for key, value in PORTFOLIO_RISK_CONFIGS.items()}
+PORTFOLIO_RISK_METHODOLOGY_HASHES = {key: digest({"version": PORTFOLIO_RISK_VERSION,
+    "account": key, "config_hash": PORTFOLIO_RISK_CONFIG_HASHES[key],
+    "code_identity": "autopaper_prospective.py:portfolio-risk-v1b"}) for key in PORTFOLIO_RISK_ACCOUNT_CONFIGS}
+ACCOUNT_CONFIGS.update({account_id: {"volatility_sizing": False, "date_cap": None,
+    "authority": "SHADOW_ONLY", "rolling": True, "hold_sessions": 10,
+    "portfolio_risk": True, **cfg} for account_id, cfg in PORTFOLIO_RISK_ACCOUNT_CONFIGS.items()})
+PORTFOLIO_RISK_REVIEW_GATE = {"calendar_days": 90, "completed_b1_trades": 75,
+    "completed_b2_trades": 75, "unique_signal_dates": 40, "risk_interventions": 30,
+    "redundancy_interventions": 20, "completed_matched_groups": 60,
     "automatic_promotion": False}
 FUTURE_REVIEW_GATE = {
     "minimum_completed_baseline_trades": 100,
@@ -300,6 +335,75 @@ def ensure_edge_accounts(activation_timestamp, activation_market_date):
         session.rollback(); raise
     finally:
         session.close()
+
+
+def ensure_portfolio_risk_accounts(activation_timestamp, activation_market_date):
+    """Create only the isolated Phase-B manifests/accounts."""
+    database._require_database()
+    timestamp = _utc(activation_timestamp)
+    session = database.SessionLocal()
+    try:
+        for account_id, config in PORTFOLIO_RISK_CONFIGS.items():
+            method_hash = PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id]
+            config_hash = PORTFOLIO_RISK_CONFIG_HASHES[account_id]
+            manifest = session.get(database.AutoPaperManifest, method_hash)
+            if manifest is None:
+                session.add(database.AutoPaperManifest(
+                    methodology_hash=method_hash,
+                    version=f"{PORTFOLIO_RISK_VERSION}_{PORTFOLIO_RISK_ACCOUNT_CONFIGS[account_id]['policy']}",
+                    activation_timestamp=timestamp, activation_market_date=activation_market_date,
+                    config_payload=_json(config), config_hash=config_hash,
+                    code_identity="autopaper_prospective.py:portfolio-risk-v1b"))
+            elif manifest.config_hash != config_hash:
+                raise RuntimeError("PORTFOLIO_RISK_MANIFEST_CONFLICT")
+            account = session.get(database.AutoPaperAccount, account_id)
+            if account is None:
+                session.add(database.AutoPaperAccount(
+                    account_id=account_id, methodology_hash=method_hash,
+                    initial_capital=CONFIG["capital"], cash=CONFIG["capital"], status="ACTIVE",
+                    state_version=0, created_at=timestamp, updated_at=timestamp))
+            elif account.methodology_hash != method_hash:
+                raise RuntimeError("PORTFOLIO_RISK_ACCOUNT_CONFLICT")
+        session.commit()
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def _portfolio_risk_match_id(opportunity_id, signal_date):
+    return _hash(["PORTFOLIO_RISK_MATCH_V1", opportunity_id, str(signal_date)])
+
+
+def _ensure_portfolio_risk_match(session, account_id, candidate):
+    if account_id not in PORTFOLIO_RISK_ACCOUNT_CONFIGS:
+        return
+    match_id = _portfolio_risk_match_id(candidate["opportunity_id"], candidate["signal_date"])
+    leg_id = _hash([match_id, account_id])
+    if session.get(database.PortfolioRiskMatch, leg_id) is None:
+        payload = {"match_id": match_id, "opportunity_id": candidate["opportunity_id"],
+            "signal_date": candidate["signal_date"], "account_id": account_id,
+            "policy": PORTFOLIO_RISK_ACCOUNT_CONFIGS[account_id]["policy"],
+            "methodology_hash": PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id],
+            "actual_entries_only": True}
+        session.add(database.PortfolioRiskMatch(
+            leg_id=leg_id, match_id=match_id, opportunity_id=candidate["opportunity_id"],
+            signal_date=dt.date.fromisoformat(candidate["signal_date"]), account_id=account_id,
+            policy=PORTFOLIO_RISK_ACCOUNT_CONFIGS[account_id]["policy"], considered=True,
+            entered=False, payload=_json(payload), payload_hash=_hash(payload)))
+
+
+def _update_portfolio_risk_match(session, account_id, opportunity_id, **values):
+    if account_id not in PORTFOLIO_RISK_ACCOUNT_CONFIGS:
+        return
+    row = session.query(database.PortfolioRiskMatch).filter_by(
+        account_id=account_id, opportunity_id=opportunity_id).first()
+    if row is None:
+        return
+    for key, value in values.items():
+        setattr(row, key, value)
+    payload = json.loads(row.payload); payload.update(values)
+    row.payload = _json(payload); row.payload_hash = _hash(payload)
 
 
 def _active_positions(session, account_id):
@@ -687,6 +791,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                         observation.payload_hash = _hash(op)
                 _update_edge_match(session, account_id, position.opportunity_id,
                     exit_date=market_date, exit_price=fill["price"])
+                _update_portfolio_risk_match(session, account_id, position.opportunity_id,
+                    exit_date=market_date, realized_return_pct=(fill["proceeds"] / entry_cost - 1) * 100)
                 if exit_reason in {"THESIS_FAILURE_EXIT", "CATASTROPHE_EXIT"}:
                     _record_edge_early_exit(session, account, position, market_date,
                                             exit_reason, fill, payload)
@@ -715,6 +821,11 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 ppayload = {"signal_date": qpayload["signal_date"], "strategy": qpayload["strategy"],
                     "entry_cost": fill["cost"], "entry_fee": fill["fee"], "entry_slippage": fill["slippage_cost"],
                     "methodology_hash": account.methodology_hash, "planned_hold_sessions": hold_sessions}
+                if account_cfg.get("portfolio_risk"):
+                    ppayload.update({key: qpayload.get(key) for key in (
+                        "atr_pct", "rv20_pct", "risk_proxy_pct", "risk_proxy_coverage", "sector",
+                        "target_risk_rupees", "correlation_multiplier", "weighted_avg_corr",
+                        "raw_risk_rupees", "effective_risk_rupees", "risk_decision_snapshot_id")})
                 if account_cfg.get("catastrophe"):
                     entry_atr = float(qpayload["reference_price"]) * float(qpayload["atr_pct"]) / 100
                     threshold, downside = catastrophe_threshold(fill["price"], entry_atr)
@@ -735,6 +846,9 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 if link: link.entered = True; link.terminal_reason = "ENTERED"
                 _update_edge_match(session, account_id, order.opportunity_id,
                     execution_date=market_date, entry_price=fill["price"], entry_size=fill["cost"])
+                _update_portfolio_risk_match(session, account_id, order.opportunity_id,
+                    entered=True, allocation=fill["cost"], entry_date=market_date,
+                    entry_price=fill["price"])
                 _journal(session, account, market_date, now, "ENTER", order.opportunity_id, "ENTERED",
                          order_id=order.order_id, sizing_multiplier=json.loads(order.payload)["sizing_multiplier"],
                          requested_capital=order.requested_capital, actual_allocated_capital=fill["cost"],
@@ -807,6 +921,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             candidate = _candidate(raw, market_date); oid = candidate["opportunity_id"]
             if not oid: continue
             _ensure_edge_match(session, account_id, candidate)
+            _ensure_portfolio_risk_match(session, account_id, candidate)
             link_id = _hash([account_id, oid])
             if session.get(database.AutoPaperCounterfactualLink, link_id) is None:
                 session.add(database.AutoPaperCounterfactualLink(
@@ -844,6 +959,14 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
         for p in positions:
             pp = json.loads(p.payload); strategy_value[pp["strategy"]] = strategy_value.get(pp["strategy"], 0.) + p.quantity * p.current_mark
             date_commitment[pp["signal_date"]] = date_commitment.get(pp["signal_date"], 0.) + pp["entry_cost"]
+        risk_mode = bool(account_cfg.get("portfolio_risk"))
+        risk_rows = [portfolio_risk.frozen_position_risk(position) for position in positions] if risk_mode else []
+        virtual_heat = sum(float(row["risk_rupees"]) for row in risk_rows)
+        sector_heat, signal_heat = {}, {}
+        for row in risk_rows:
+            sector_heat[row["sector"]] = sector_heat.get(row["sector"], 0.) + float(row["risk_rupees"])
+            signal_heat[row["signal_date"]] = signal_heat.get(row["signal_date"], 0.) + float(row["risk_rupees"])
+        risk_deferred = risk_downsized = redundancy_deferred = 0
         for item in active:
             candidate = json.loads(item.payload); oid = item.opportunity_id
             reason = None
@@ -856,17 +979,140 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             elif rolling and rolling_used >= rolling_budget:
                 reason = "ROLLING_DAILY_ADMISSION_LIMIT"
             multiplier = 1.
-            if account_cfg["volatility_sizing"] and not reason:
-                multiplier = max(.5, min(1., 4. / candidate["atr_pct"])) if candidate["atr_pct"] > 0 else 0.
+            risk_snapshot = None
+            # Preserve the frozen C3/Phase-A volatility sizing contract.  The
+            # Phase-B accounts replace this multiplier with explicit risk
+            # budgeting below; all pre-existing accounts retain it verbatim.
+            if not risk_mode and account_cfg.get("volatility_sizing") and not reason:
+                multiplier = max(.5, min(1., 4. / float(candidate["atr_pct"])))
+            if risk_mode and not reason:
+                rv = portfolio_risk.realized_volatility_20(histories, candidate["symbol"], market_date)
+                proxy = portfolio_risk.candidate_risk_proxy(candidate.get("atr_pct"), rv["rv20_pct"])
+                metadata = session.get(database.AutoPaperOpportunityMetadata, oid)
+                sector = metadata.sector if metadata else candidate.get("sector") or "UNKNOWN"
+                if not proxy["eligible"]:
+                    reason = "DATA_UNAVAILABLE"
+                else:
+                    candidate.update({"rv20_pct": rv["rv20_pct"], "rv20_valid_returns": rv["valid_returns"],
+                        "risk_proxy_pct": proxy["risk_proxy_pct"],
+                        "risk_proxy_coverage": proxy["risk_proxy_coverage"], "sector": sector})
             strategy_room = current_nav * CONFIG["max_strategy_weight"] - strategy_value.get(candidate["strategy"], 0.)
-            budget = min(current_nav * CONFIG["max_stock_weight"],
-                         virtual_cash - current_nav * CONFIG["reserve"], strategy_room,
-                         candidate["traded_value"] * CONFIG["participation_limit"]) * multiplier if not reason else 0.
+            ordinary_cap = min(current_nav * CONFIG["max_stock_weight"],
+                virtual_cash - current_nav * CONFIG["reserve"], strategy_room,
+                candidate["traded_value"] * CONFIG["participation_limit"]) if not reason else 0.
+            budget = ordinary_cap * multiplier
+            if risk_mode and not reason:
+                risk_fraction = float(candidate["risk_proxy_pct"]) / 100
+                target_risk = current_nav * portfolio_risk.TARGET_POSITION_RISK
+                raw_allocation = target_risk / risk_fraction
+                correlation = ({"weighted_avg_corr": "NOT_AVAILABLE", "correlation_state": "NOT_AVAILABLE",
+                    "correlation_multiplier": 1., "observations": []})
+                if account_cfg.get("redundancy"):
+                    correlation = portfolio_risk.weighted_average_correlation(
+                        histories, candidate["symbol"], risk_rows, market_date)
+                corr_multiplier = float(correlation["correlation_multiplier"])
+                normal_remaining = max(0., current_nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat)
+                heat_allocation_cap = normal_remaining / (risk_fraction * corr_multiplier)
+                budget = min(ordinary_cap, raw_allocation, heat_allocation_cap)
+                cap_reason = ("CORRELATION_RISK_BUDGET" if corr_multiplier > 1. and
+                    heat_allocation_cap < float(candidate["reference_price"]) <= normal_remaining / risk_fraction else None)
+                if account_cfg.get("redundancy"):
+                    # Concentration is measured against the frozen normal heat
+                    # capacity, avoiding an impossible 100%-share startup state.
+                    concentration_cap = current_nav * portfolio_risk.NORMAL_HEAT_LIMIT * portfolio_risk.MAX_SECTOR_HEAT_SHARE
+                    sector_room = max(0., concentration_cap - sector_heat.get(candidate["sector"], 0.))
+                    date_room = max(0., concentration_cap - signal_heat.get(candidate["signal_date"], 0.))
+                    sector_cap = sector_room / (risk_fraction * corr_multiplier)
+                    date_cap = date_room / (risk_fraction * corr_multiplier)
+                    if sector_cap < budget: cap_reason = "SECTOR_RISK_CONCENTRATION"
+                    budget = min(budget, sector_cap)
+                    if date_cap < budget: cap_reason = "SIGNAL_DATE_RISK_CONCENTRATION"
+                    budget = min(budget, date_cap)
+                minimum_allocation = float(candidate["reference_price"])
+                if budget < minimum_allocation:
+                    if virtual_heat + minimum_allocation * risk_fraction * corr_multiplier > current_nav * portfolio_risk.HARD_HEAT_LIMIT:
+                        reason = "PORTFOLIO_RISK_BUDGET"
+                    elif cap_reason:
+                        reason = cap_reason
+                    else:
+                        reason = "MIN_EXECUTABLE_SIZE_EXCEEDS_RISK"
+                    budget = 0.
+                final_raw_risk = budget * risk_fraction
+                final_effective_risk = final_raw_risk * corr_multiplier
+                downsized = budget > 0 and budget + .01 < min(ordinary_cap, raw_allocation)
+                risk_snapshot = {"version": PORTFOLIO_RISK_VERSION,
+                    "methodology_hash": PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id],
+                    "account_id": account_id, "opportunity_id": oid, "market_date": market_date.isoformat(),
+                    "account_nav": current_nav, "cash": virtual_cash, "open_positions": virtual_positions,
+                    "current_heat_rupees": virtual_heat,
+                    "current_heat_pct": virtual_heat / current_nav * 100 if current_nav else None,
+                    "remaining_normal_heat_rupees": normal_remaining,
+                    "atr_pct": candidate.get("atr_pct"), "rv20_pct": rv["rv20_pct"],
+                    "risk_proxy_pct": candidate["risk_proxy_pct"],
+                    "risk_proxy_coverage": candidate["risk_proxy_coverage"],
+                    "target_risk_rupees": target_risk, "raw_risk_budget_allocation": raw_allocation,
+                    "requested_allocation": ordinary_cap, "final_allocation": budget,
+                    "candidate_raw_risk": final_raw_risk, "candidate_effective_risk": final_effective_risk,
+                    "sector": candidate["sector"],
+                    "sector_heat_share_of_normal_budget": ((sector_heat.get(candidate["sector"], 0.) + final_effective_risk) /
+                        (current_nav * portfolio_risk.NORMAL_HEAT_LIMIT)) if current_nav else None,
+                    "signal_date_heat_share_of_normal_budget": ((signal_heat.get(candidate["signal_date"], 0.) + final_effective_risk) /
+                        (current_nav * portfolio_risk.NORMAL_HEAT_LIMIT)) if current_nav else None,
+                    "weighted_avg_corr": correlation["weighted_avg_corr"],
+                    "correlation_state": correlation["correlation_state"],
+                    "correlation_multiplier": corr_multiplier, "final_decision": "DEFER" if reason else (
+                        "ADMIT_DOWNSIZED" if downsized else "ADMIT"), "reason": reason or (
+                        "RISK_BUDGET_DOWNSIZE" if downsized else "ORDER_SUBMITTED_T1"),
+                    "decision_authority": False, "path_risk_authority": False,
+                    "pb_r2_authority": False, "market_regime_authority": False}
+                snapshot_id = _hash([PORTFOLIO_RISK_VERSION, account_id, oid, market_date.isoformat()])
+                candidate.update({"target_risk_rupees": target_risk,
+                    "correlation_multiplier": corr_multiplier, "weighted_avg_corr": correlation["weighted_avg_corr"],
+                    "raw_risk_rupees": final_raw_risk, "effective_risk_rupees": final_effective_risk,
+                    "risk_decision_snapshot_id": snapshot_id})
+                existing_snapshot = session.get(database.PortfolioRiskDecisionSnapshot, snapshot_id)
+                if existing_snapshot is None:
+                    session.add(database.PortfolioRiskDecisionSnapshot(
+                        snapshot_id=snapshot_id, account_id=account_id, opportunity_id=oid,
+                        market_date=market_date, final_decision=risk_snapshot["final_decision"],
+                        reason_code=risk_snapshot["reason"], payload=_json(risk_snapshot),
+                        payload_hash=_hash(risk_snapshot)))
+                elif existing_snapshot.payload_hash != _hash(risk_snapshot):
+                    raise RuntimeError("PORTFOLIO_RISK_DECISION_IMMUTABILITY_CONFLICT")
+                item.payload = _json(candidate); item.updated_at = now
+                if reason:
+                    risk_deferred += 1
+                    if reason in {"SECTOR_RISK_CONCENTRATION", "SIGNAL_DATE_RISK_CONCENTRATION", "CORRELATION_RISK_BUDGET"}:
+                        redundancy_deferred += 1
+                elif downsized:
+                    risk_downsized += 1
             if account_cfg["date_cap"] is not None and budget > 0:
                 room = current_nav * account_cfg["date_cap"] - date_commitment.get(candidate["signal_date"], 0.)
                 budget = min(budget, max(0., room))
             if budget <= 0 and not reason:
                 reason = "INSUFFICIENT_CASH" if virtual_cash - current_nav * CONFIG["reserve"] <= 0 else "NO_CAPACITY"
+            if risk_mode and risk_snapshot is None:
+                snapshot_id = _hash([PORTFOLIO_RISK_VERSION, account_id, oid, market_date.isoformat()])
+                risk_snapshot = {"version": PORTFOLIO_RISK_VERSION,
+                    "methodology_hash": PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id],
+                    "account_id": account_id, "opportunity_id": oid, "market_date": market_date.isoformat(),
+                    "account_nav": current_nav, "cash": virtual_cash, "open_positions": virtual_positions,
+                    "current_heat_rupees": virtual_heat,
+                    "remaining_normal_heat_rupees": max(0., current_nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat),
+                    "risk_proxy_pct": "NOT_EVALUATED", "risk_proxy_coverage": "NOT_EVALUATED",
+                    "target_risk_rupees": current_nav * portfolio_risk.TARGET_POSITION_RISK,
+                    "requested_allocation": ordinary_cap, "final_allocation": 0.,
+                    "weighted_avg_corr": "NOT_EVALUATED", "correlation_multiplier": "NOT_EVALUATED",
+                    "sector": candidate.get("sector") or "UNKNOWN", "final_decision": "DEFER" if reason not in {
+                        "DATA_UNAVAILABLE", "LIQUIDITY_FAIL", "POSITION_ALREADY_EXISTS"} else "REJECT",
+                    "reason": reason or "NO_CAPACITY", "decision_authority": False,
+                    "path_risk_authority": False, "pb_r2_authority": False, "market_regime_authority": False}
+                if session.get(database.PortfolioRiskDecisionSnapshot, snapshot_id) is None:
+                    session.add(database.PortfolioRiskDecisionSnapshot(
+                        snapshot_id=snapshot_id, account_id=account_id, opportunity_id=oid,
+                        market_date=market_date, final_decision=risk_snapshot["final_decision"],
+                        reason_code=risk_snapshot["reason"], payload=_json(risk_snapshot),
+                        payload_hash=_hash(risk_snapshot)))
             if reason in ("DATA_UNAVAILABLE", "LIQUIDITY_FAIL", "POSITION_ALREADY_EXISTS"):
                 item.status = "REJECTED"; item.updated_at = now
                 link = session.get(database.AutoPaperCounterfactualLink, _hash([account_id, oid]))
@@ -893,6 +1139,13 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                     requested_capital=budget, payload=_json(payload), payload_hash=_hash(payload)))
             journal_details = {"rank": active.index(item) + 1, "sizing_multiplier": multiplier,
                 "requested_capital": budget, "actual_allocated_capital": 0.}
+            if risk_snapshot:
+                journal_details.update(risk_decision_snapshot_id=candidate["risk_decision_snapshot_id"],
+                    risk_proxy_pct=candidate["risk_proxy_pct"],
+                    risk_proxy_coverage=candidate["risk_proxy_coverage"],
+                    target_risk_rupees=candidate["target_risk_rupees"],
+                    resulting_portfolio_heat_pct=(virtual_heat + candidate["effective_risk_rupees"]) /
+                        current_nav * 100 if current_nav else None)
             if candidate.get("prospective_origin"):
                 journal_details.update(prospective_origin=candidate["prospective_origin"],
                     intended_execution_date=candidate.get("intended_execution_date"))
@@ -901,6 +1154,16 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             if rolling: rolling_used += 1
             strategy_value[candidate["strategy"]] = strategy_value.get(candidate["strategy"], 0.) + budget
             date_commitment[candidate["signal_date"]] = date_commitment.get(candidate["signal_date"], 0.) + budget
+            if risk_mode:
+                risk_row = {"symbol": candidate["symbol"], "sector": candidate["sector"],
+                    "signal_date": candidate["signal_date"], "market_value": budget,
+                    "risk_proxy_pct": candidate["risk_proxy_pct"],
+                    "raw_risk_rupees": candidate["raw_risk_rupees"],
+                    "correlation_multiplier": candidate["correlation_multiplier"],
+                    "risk_rupees": candidate["effective_risk_rupees"]}
+                risk_rows.append(risk_row); virtual_heat += candidate["effective_risk_rupees"]
+                sector_heat[candidate["sector"]] = sector_heat.get(candidate["sector"], 0.) + candidate["effective_risk_rupees"]
+                signal_heat[candidate["signal_date"]] = signal_heat.get(candidate["signal_date"], 0.) + candidate["effective_risk_rupees"]
         positions = _active_positions(session, account_id); nav = _nav(account, positions)
         if len(positions) > CONFIG["max_positions"]:
             raise RuntimeError("AUTOPAPER_HARD_CAPACITY_BREACH")
@@ -908,6 +1171,12 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
             raise RuntimeError("AUTOPAPER_ROLLING_TARGET_BREACH")
         if account.cash < -1e-7 or abs(nav - (account.cash + sum(p.quantity * p.current_mark for p in positions))) > .01:
             raise RuntimeError("AUTOPAPER_PORTFOLIO_RECONCILIATION_FAILED")
+        if risk_mode:
+            # The hard ceiling applies to admission-time frozen risk. Market
+            # marks may move heat above it later; that is telemetry, never a
+            # forced exit. A new commitment may not cross it.
+            if virtual_heat > nav * portfolio_risk.HARD_HEAT_LIMIT + .01:
+                raise RuntimeError("PORTFOLIO_RISK_HARD_HEAT_BREACH")
         snapshot_payload = {"methodology_hash": account.methodology_hash, "account": account_id,
             "cash": account.cash, "nav": nav, "open_positions": len(positions),
             "pending_orders": session.query(database.AutoPaperOrder).filter_by(account_id=account_id, status="PENDING").count()}
@@ -917,6 +1186,14 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 "admission_start_positions": admission_start_positions,
                 "admission_budget": rolling_budget, "admission_used": rolling_used,
                 "rolling_deferred": rolling_deferred})
+        if risk_mode:
+            snapshot_payload.update({"portfolio_heat_pct": virtual_heat / nav * 100 if nav else None,
+                "normal_heat_limit_pct": portfolio_risk.NORMAL_HEAT_LIMIT * 100,
+                "hard_heat_limit_pct": portfolio_risk.HARD_HEAT_LIMIT * 100,
+                "remaining_normal_heat_pct": max(0., nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat) /
+                    nav * 100 if nav else None,
+                "risk_deferred": risk_deferred, "risk_downsized": risk_downsized,
+                "redundancy_deferred": redundancy_deferred})
         fingerprint = _hash(snapshot_payload)
         if not session.query(database.AutoPaperPortfolioSnapshot).filter_by(
                 account_id=account_id, market_date=market_date, state_fingerprint=fingerprint).first():
@@ -992,6 +1269,58 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 session.add(database.EdgeCaptureTelemetry(
                     telemetry_id=telemetry_id, account_id=account_id, market_date=market_date,
                     payload=_json(telemetry), payload_hash=_hash(telemetry)))
+        if account_id in PORTFOLIO_RISK_ACCOUNT_CONFIGS:
+            current_state = portfolio_risk.portfolio_heat_state(_active_positions(session, account_id), nav)
+            prior_rows = session.query(database.PortfolioRiskTelemetry).filter_by(account_id=account_id).all()
+            prior_payloads = [json.loads(row.payload) for row in prior_rows]
+            today_risk_decisions = session.query(database.PortfolioRiskDecisionSnapshot).filter_by(
+                account_id=account_id, market_date=market_date).all()
+            all_risk_decisions = session.query(database.PortfolioRiskDecisionSnapshot).filter_by(
+                account_id=account_id).all()
+            risk_reason_codes = {"PORTFOLIO_RISK_BUDGET", "MIN_EXECUTABLE_SIZE_EXCEEDS_RISK",
+                "CORRELATION_RISK_BUDGET", "SECTOR_RISK_CONCENTRATION",
+                "SIGNAL_DATE_RISK_CONCENTRATION"}
+            deferred_ids = {row.opportunity_id for row in all_risk_decisions
+                if row.final_decision == "DEFER" and row.reason_code in risk_reason_codes}
+            links = session.query(database.AutoPaperCounterfactualLink).filter_by(account_id=account_id).all()
+            entered_ids = {row.opportunity_id for row in links if row.entered}
+            expired_ids = {row.opportunity_id for row in links if row.terminal_reason == "EXPIRED"}
+            sector_values = current_state["sector_heat"]
+            signal_values = current_state["signal_date_heat"]
+            corr_values = [float(row.get("correlation_multiplier") or 1.) for row in current_state["positions"]]
+            telemetry = {"version": PORTFOLIO_RISK_VERSION, "account_id": account_id,
+                "policy": PORTFOLIO_RISK_ACCOUNT_CONFIGS[account_id]["policy"],
+                "methodology_hash": PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id],
+                "market_date": market_date.isoformat(), "decision_authority": False,
+                "nav": nav, "cash": account.cash,
+                "gross_exposure": sum(position.quantity * position.current_mark for position in positions),
+                "cash_utilization": (nav - account.cash) / nav if nav else None,
+                "open_positions": len(positions), "portfolio_heat_pct": current_state["portfolio_heat_pct"],
+                "committed_heat_pct": virtual_heat / nav * 100 if nav else None,
+                "remaining_normal_heat_pct": max(0., nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat) /
+                    nav * 100 if nav else None,
+                "normal_heat_limit_pct": portfolio_risk.NORMAL_HEAT_LIMIT * 100,
+                "hard_heat_limit_pct": portfolio_risk.HARD_HEAT_LIMIT * 100,
+                "peak_heat_pct": max([float(p.get("portfolio_heat_pct") or 0) for p in prior_payloads] +
+                    [float(current_state["portfolio_heat_pct"] or 0)]),
+                "largest_sector_heat_share": max(sector_values.values()) / (nav * portfolio_risk.NORMAL_HEAT_LIMIT)
+                    if sector_values and nav else None,
+                "largest_signal_date_heat_share": max(signal_values.values()) / (nav * portfolio_risk.NORMAL_HEAT_LIMIT)
+                    if signal_values and nav else None,
+                "average_position_correlation_multiplier": float(np.mean(corr_values)) if corr_values else None,
+                "risk_deferred_today": sum(row.final_decision == "DEFER" and
+                    row.reason_code in risk_reason_codes for row in today_risk_decisions),
+                "downsized_today": sum(row.final_decision == "ADMIT_DOWNSIZED" for row in today_risk_decisions),
+                "redundancy_deferred_today": sum(row.reason_code in {"SECTOR_RISK_CONCENTRATION",
+                    "SIGNAL_DATE_RISK_CONCENTRATION", "CORRELATION_RISK_BUDGET"} for row in today_risk_decisions),
+                "risk_deferred_then_entered": len(deferred_ids & entered_ids),
+                "risk_deferred_then_expired": len(deferred_ids & expired_ids),
+                "capital_days": sum(position.age * position.quantity * position.current_mark for position in positions)}
+            telemetry_id = _hash([PORTFOLIO_RISK_VERSION, account_id, market_date.isoformat()])
+            if session.get(database.PortfolioRiskTelemetry, telemetry_id) is None:
+                session.add(database.PortfolioRiskTelemetry(
+                    telemetry_id=telemetry_id, account_id=account_id, market_date=market_date,
+                    payload=_json(telemetry), payload_hash=_hash(telemetry)))
         session.commit()
         if telemetry_attempts:
             telemetry_session = database.SessionLocal()
@@ -1014,6 +1343,11 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
         if rolling:
             stats.update(admission_budget=rolling_budget, admission_used=rolling_used,
                          rolling_deferred=rolling_deferred, target_occupancy=9, hard_capacity=10)
+        if risk_mode:
+            stats.update(portfolio_heat_pct=virtual_heat / nav * 100 if nav else None,
+                remaining_heat_pct=max(0., nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat) / nav * 100 if nav else None,
+                risk_deferred=risk_deferred, downsized=risk_downsized,
+                redundancy_deferred=redundancy_deferred)
         return stats
     except Exception:
         session.rollback(); raise
@@ -1093,6 +1427,94 @@ def _process_edge_if_activated(decisions, histories, market_date, timestamp, kil
     return results
 
 
+def _sync_portfolio_risk_control_matches(decisions, market_date):
+    """Record the existing B0 control as attribution only; never changes B0."""
+    session = database.SessionLocal()
+    try:
+        for raw in decisions:
+            candidate = _candidate(raw, market_date)
+            if not candidate["opportunity_id"]:
+                continue
+            match_id = _portfolio_risk_match_id(candidate["opportunity_id"], candidate["signal_date"])
+            leg_id = _hash([match_id, ROLLING_ACCOUNT_ID])
+            row = session.get(database.PortfolioRiskMatch, leg_id)
+            if row is None:
+                payload = {"match_id": match_id, "opportunity_id": candidate["opportunity_id"],
+                    "signal_date": candidate["signal_date"], "account_id": ROLLING_ACCOUNT_ID,
+                    "policy": "B0", "methodology_hash": ROLLING_METHODOLOGY_HASH,
+                    "attribution_only": True}
+                row = database.PortfolioRiskMatch(
+                    leg_id=leg_id, match_id=match_id, opportunity_id=candidate["opportunity_id"],
+                    signal_date=dt.date.fromisoformat(candidate["signal_date"]), account_id=ROLLING_ACCOUNT_ID,
+                    policy="B0", considered=True, entered=False, payload=_json(payload), payload_hash=_hash(payload))
+                session.add(row)
+            position = session.query(database.AutoPaperPosition).filter_by(
+                account_id=ROLLING_ACCOUNT_ID, opportunity_id=candidate["opportunity_id"]).first()
+            trade = session.query(database.AutoPaperTrade).filter_by(
+                account_id=ROLLING_ACCOUNT_ID, opportunity_id=candidate["opportunity_id"]).first()
+            if position:
+                row.entered = True; row.allocation = json.loads(position.payload).get("entry_cost")
+                row.entry_date = position.entry_date; row.entry_price = position.entry_price
+            if trade:
+                row.entered = True; row.exit_date = trade.exit_date
+                row.realized_return_pct = trade.realized_return_pct
+            values = json.loads(row.payload); values.update({"entered": row.entered,
+                "allocation": row.allocation, "entry_date": row.entry_date,
+                "entry_price": row.entry_price, "exit_date": row.exit_date,
+                "realized_return_pct": row.realized_return_pct})
+            row.payload = _json(values); row.payload_hash = _hash(values)
+        session.commit()
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def _process_portfolio_risk_if_activated(decisions, histories, market_date, timestamp, killed):
+    """Advance B1/B2 independently after the persisted causal boundary."""
+    session = database.SessionLocal()
+    try:
+        activation = session.query(database.PortfolioRiskActivation).order_by(
+            database.PortfolioRiskActivation.created_at.desc()).first()
+        if activation is None:
+            return {}
+        if activation.status == "PENDING_NEXT_COHORT":
+            if activation.after_market_date is not None and market_date <= activation.after_market_date:
+                return {key: {"account_id": key, "status": "PENDING_NEXT_COHORT"}
+                        for key in PORTFOLIO_RISK_ACCOUNT_CONFIGS}
+            activation.status = "ACTIVE"; activation.activation_signal_date = market_date
+            activation.provenance = "PORTFOLIO_RISK_PROSPECTIVE"
+            payload = json.loads(activation.payload); payload.update({"status": "ACTIVE",
+                "activation_signal_date": market_date.isoformat(), "provenance": activation.provenance})
+            activation.payload = _json(payload); activation.payload_hash = _hash(payload); session.commit()
+        signal_date, provenance, activated_at = (activation.activation_signal_date,
+            activation.provenance, activation.activation_timestamp)
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+    if signal_date is None or market_date < signal_date:
+        return {}
+    ensure_portfolio_risk_accounts(activated_at, signal_date)
+    stream = [{**row, "prospective_origin": provenance} for row in ([] if killed else decisions)]
+    results = {}
+    try:
+        _sync_portfolio_risk_control_matches(stream, market_date)
+    except Exception:
+        # Matching is attribution-only and may not affect any execution path.
+        pass
+    for account_id in PORTFOLIO_RISK_ACCOUNT_CONFIGS:
+        try:
+            results[account_id] = _process_account(account_id, stream, histories, market_date, timestamp)
+            try:
+                persist_risk_snapshot(account_id, market_date, histories, decisions)
+            except Exception as exc:
+                results[account_id].setdefault("warnings", []).append(f"RISK_TELEMETRY:{type(exc).__name__}")
+        except Exception as exc:
+            results[account_id] = {"account_id": account_id, "status": "FAILED", "error": type(exc).__name__}
+    return results
+
+
 def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, run_id,
                               source="AUTOMATED_EOD"):
     """Advance baseline and shadows once. Never routes to a broker or manual portfolio."""
@@ -1146,6 +1568,16 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
             if value.get("status") == "FAILED": observability_warnings.append(f"{account_id}:{value.get('error')}")
     except Exception as exc:
         observability_warnings.append(f"EDGE_CAPTURE:{type(exc).__name__}")
+    try:
+        risk_results = _process_portfolio_risk_if_activated(
+            decisions, histories, market_date, timestamp, killed)
+        results.update(risk_results)
+        for account_id, value in risk_results.items():
+            if value.get("status") == "FAILED":
+                observability_warnings.append(f"{account_id}:{value.get('error')}")
+    except Exception as exc:
+        # Phase-B research is isolated from baseline, rolling and Phase A.
+        observability_warnings.append(f"PORTFOLIO_RISK:{type(exc).__name__}")
     health = {"run_id": f"AUTOPAPER-{run_id}", "run_timestamp": timestamp.isoformat(),
         "market_date": market_date.isoformat(), "qualified_opportunities": len(decisions),
         "kill_switch": killed, "paper_only": True, "accounts": results,
@@ -1153,6 +1585,8 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
         "rolling_shadow_status": (results.get(ROLLING_ACCOUNT_ID) or {}).get("status", "NOT_ACTIVATED"),
         "edge_capture_status": ("HEALTHY" if all((results.get(key) or {}).get("status") != "FAILED"
             for key in EDGE_ACCOUNT_CONFIGS) else "DEGRADED"),
+        "portfolio_risk_status": ("HEALTHY" if all((results.get(key) or {}).get("status") != "FAILED"
+            for key in PORTFOLIO_RISK_ACCOUNT_CONFIGS) else "DEGRADED"),
         "errors": errors, "warnings": [w for value in results.values() for w in value.get("warnings", [])] + observability_warnings,
         "status": "HEALTHY" if not errors else "DEGRADED"}
     session = database.SessionLocal()

@@ -686,6 +686,69 @@ class EdgeCaptureTelemetry(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class PortfolioRiskActivation(Base):
+    """Causal activation boundary shared by the isolated Phase-B accounts."""
+    __tablename__ = "portfolio_risk_activation"
+    activation_id = Column(String(80), primary_key=True)
+    status = Column(String(30), nullable=False, index=True)
+    activation_mode = Column(String(40), nullable=False)
+    activation_timestamp = Column(DateTime(timezone=True), nullable=False)
+    activation_signal_date = Column(Date, nullable=True, index=True)
+    after_market_date = Column(Date, nullable=True)
+    provenance = Column(String(60), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PortfolioRiskDecisionSnapshot(Base):
+    """Immutable admission-time portfolio-risk evidence for one account/candidate/session."""
+    __tablename__ = "portfolio_risk_decision_snapshots"
+    snapshot_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    final_decision = Column(String(40), nullable=False, index=True)
+    reason_code = Column(String(60), nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PortfolioRiskMatch(Base):
+    """Actual B0/B1/B2 leg in a matched originating-opportunity comparison."""
+    __tablename__ = "portfolio_risk_matches"
+    leg_id = Column(String(64), primary_key=True)
+    match_id = Column(String(64), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    policy = Column(String(30), nullable=False)
+    considered = Column(Boolean, nullable=False, default=True)
+    entered = Column(Boolean, nullable=False, default=False)
+    allocation = Column(Float, nullable=True)
+    entry_date = Column(Date, nullable=True)
+    entry_price = Column(Float, nullable=True)
+    exit_date = Column(Date, nullable=True)
+    realized_return_pct = Column(Float, nullable=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PortfolioRiskTelemetry(Base):
+    """Immutable Phase-B heat, concentration and efficiency observation."""
+    __tablename__ = "portfolio_risk_telemetry"
+    telemetry_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 class PositionMark(Base):
     __tablename__ = "position_marks"
     __table_args__ = (UniqueConstraint("trade_id", "mark_date", name="uq_position_mark_trade_date"),)

@@ -15,6 +15,7 @@ import database
 BASELINE = "BASELINE_C3"
 SHADOWS = ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING")
 EDGE_ACCOUNTS = ("SHADOW_EDGE_H20", "SHADOW_EDGE_H20_CATASTROPHE", "SHADOW_EDGE_H20_THESIS")
+RISK_ACCOUNTS = ("SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED")
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 METHODOLOGY_HASH = "3ed64bac9138d36cc1c582c78803215e0142cd12bf8c9db3c50bfc05e3f43d79"
 CONFIG_HASH = "86ed4f1153186874330f62e0c8bb4ad80aef7972a20188952af3697aced1d9c2"
@@ -39,6 +40,12 @@ REASON_TEXT = {
     "POSITION_ALREADY_EXISTS": "The baseline already owns this stock.",
     "ROLLING_DAILY_ADMISSION_LIMIT": "Daily rolling-admission budget has been reached; opportunity remains queued while valid.",
     "ROLLING_TARGET_OCCUPANCY": "Rolling portfolio has reached its normal 9-position target; one slot is intentionally reserved for future opportunities.",
+    "PORTFOLIO_RISK_BUDGET": "Available portfolio risk budget is insufficient for this position.",
+    "SECTOR_RISK_CONCENTRATION": "The frozen 35% sector heat allowance is currently exhausted.",
+    "SIGNAL_DATE_RISK_CONCENTRATION": "The frozen 35% same-signal-date heat allowance is currently exhausted.",
+    "CORRELATION_RISK_BUDGET": "Correlation-adjusted risk exceeds the remaining portfolio heat budget.",
+    "MIN_EXECUTABLE_SIZE_EXCEEDS_RISK": "One whole share would exceed the remaining risk budget.",
+    "RISK_BUDGET_DOWNSIZE": "Position was downsized to fit the frozen portfolio risk budget.",
 }
 
 
@@ -136,6 +143,11 @@ def _position_row(position, buy_order, entry_decision, nav, metadata=None) -> di
         "advisory": candidate.get("advisory_annotations") or {},
         "sector": metadata.sector if metadata else "NOT_AVAILABLE",
         "catastrophe_threshold": pp.get("catastrophe_threshold"),
+        "rv20_pct": pp.get("rv20_pct"), "risk_proxy_pct": pp.get("risk_proxy_pct"),
+        "risk_proxy_coverage": pp.get("risk_proxy_coverage"),
+        "risk_contribution": (market_value * float(pp.get("risk_proxy_pct")) / 100 *
+            float(pp.get("correlation_multiplier") or 1.)) if pp.get("risk_proxy_pct") not in {None, "NOT_AVAILABLE"} else None,
+        "correlation_multiplier": pp.get("correlation_multiplier"),
     }
 
 
@@ -218,6 +230,13 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
             edge_exits = session.query(database.EdgeCaptureExitObservation).all()
             edge_telemetry = session.query(database.EdgeCaptureTelemetry).order_by(
                 database.EdgeCaptureTelemetry.market_date.asc()).all()
+            portfolio_risk_activation = session.query(database.PortfolioRiskActivation).order_by(
+                database.PortfolioRiskActivation.created_at.desc()).first()
+            portfolio_risk_decisions = session.query(database.PortfolioRiskDecisionSnapshot).order_by(
+                database.PortfolioRiskDecisionSnapshot.market_date.desc()).all()
+            portfolio_risk_matches = session.query(database.PortfolioRiskMatch).all()
+            portfolio_risk_telemetry = session.query(database.PortfolioRiskTelemetry).order_by(
+                database.PortfolioRiskTelemetry.market_date.asc()).all()
         finally: session.close()
     except Exception as exc:
         base["health"] = {"status": "NOT AVAILABLE", "reason": type(exc).__name__}
@@ -228,7 +247,7 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
     for row in all_orders: by_orders[row.account_id].append(row)
     for row in all_trades: by_trades[row.account_id].append(row)
     for row in all_snapshots: by_snapshots[row.account_id].append(row)
-    for account_id in (BASELINE, *SHADOWS, *EDGE_ACCOUNTS):
+    for account_id in (BASELINE, *SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS):
         account = accounts.get(account_id); positions = [p for p in by_positions[account_id] if p.status == "OPEN"]
         base["accounts"][account_id] = _account_metrics(account, positions, by_trades[account_id], by_snapshots[account_id]) if account else None
         base["snapshots"][account_id] = [{"date": x.market_date.isoformat(), "nav": x.nav, "cash": x.cash} for x in by_snapshots[account_id]]
@@ -240,7 +259,7 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
     nav = (base["accounts"].get(BASELINE) or {}).get("nav")
     base["positions"] = [_position_row(row, order_by_opportunity.get(row.opportunity_id), entry_decisions.get(row.opportunity_id), nav, metadata.get(row.opportunity_id))
                          for row in by_positions[BASELINE] if row.status == "OPEN"]
-    for account_id in (*SHADOWS, *EDGE_ACCOUNTS):
+    for account_id in (*SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS):
         shadow_orders = {row.opportunity_id: row for row in reversed(by_orders[account_id]) if row.side == "BUY"}
         shadow_decisions = {row.opportunity_id: row for row in reversed(decisions) if row.account_id == account_id and row.action == "ENTER"}
         shadow_nav = (base["accounts"].get(account_id) or {}).get("nav")
@@ -403,6 +422,67 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
             if any(x.get("exit_regret_pct") is not None for x in exit_payloads) else None),
         "review_gate": {"calendar_days": 90, "completed_matched_groups": 60,
             "unique_signal_dates": 30, "represented_strategies": 3, "capacity_divergence_events": 20}}
+    risk_payloads = defaultdict(list)
+    for row in portfolio_risk_telemetry:
+        risk_payloads[row.account_id].append(_json(row.payload))
+    risk_accounts = {}
+    for account_id, policy, meaning in (("SHADOW_RISK_BUDGET", "B1", "Explicit risk budget"),
+            ("SHADOW_RISK_DIVERSIFIED", "B2", "Risk budget + redundancy")):
+        telemetry = risk_payloads[account_id]
+        latest = telemetry[-1] if telemetry else {}
+        account_decisions = [row for row in portfolio_risk_decisions if row.account_id == account_id]
+        risk_reason_codes = {"PORTFOLIO_RISK_BUDGET", "MIN_EXECUTABLE_SIZE_EXCEEDS_RISK",
+            "CORRELATION_RISK_BUDGET", "SECTOR_RISK_CONCENTRATION",
+            "SIGNAL_DATE_RISK_CONCENTRATION"}
+        deferred_ids = {row.opportunity_id for row in account_decisions
+            if row.final_decision == "DEFER" and row.reason_code in risk_reason_codes}
+        links_for_account = [row for row in links if row.account_id == account_id]
+        entered_ids_for_account = {row.opportunity_id for row in links_for_account if row.entered}
+        expired_ids_for_account = {row.opportunity_id for row in links_for_account if row.terminal_reason == "EXPIRED"}
+        risk_accounts[account_id] = {"policy": policy, "meaning": meaning,
+            "metrics": base["accounts"].get(account_id), "latest": latest,
+            "risk_deferred": len(deferred_ids),
+            "downsized": sum(row.final_decision == "ADMIT_DOWNSIZED" for row in account_decisions),
+            "redundancy_deferred": sum(row.reason_code in {"SECTOR_RISK_CONCENTRATION",
+                "SIGNAL_DATE_RISK_CONCENTRATION", "CORRELATION_RISK_BUDGET"} for row in account_decisions),
+            "risk_deferred_then_entered": len(deferred_ids & entered_ids_for_account),
+            "risk_deferred_then_expired": len(deferred_ids & expired_ids_for_account),
+            "capital_days": sum(float(payload.get("capital_days") or 0) for payload in telemetry)}
+    groups = defaultdict(set)
+    completed = defaultdict(set)
+    for row in portfolio_risk_matches:
+        groups[row.match_id].add(row.account_id)
+        if row.exit_date:
+            completed[row.match_id].add(row.account_id)
+    risk_reason_codes = {"PORTFOLIO_RISK_BUDGET", "MIN_EXECUTABLE_SIZE_EXCEEDS_RISK",
+        "CORRELATION_RISK_BUDGET", "SECTOR_RISK_CONCENTRATION",
+        "SIGNAL_DATE_RISK_CONCENTRATION"}
+    risk_interventions = sum(row.final_decision == "ADMIT_DOWNSIZED" or
+        (row.final_decision == "DEFER" and row.reason_code in risk_reason_codes)
+        for row in portfolio_risk_decisions)
+    redundancy_interventions = sum(row.reason_code in {"SECTOR_RISK_CONCENTRATION",
+        "SIGNAL_DATE_RISK_CONCENTRATION", "CORRELATION_RISK_BUDGET"} for row in portfolio_risk_decisions)
+    risk_dates = {row.market_date for row in portfolio_risk_decisions}
+    activation_risk_payload = _json(portfolio_risk_activation.payload) if portfolio_risk_activation else {}
+    base["portfolio_risk"] = {"activation": activation_risk_payload or {"status": "NOT_ACTIVATED"},
+        "control": {"policy": "B0", "meaning": "Rolling + C3 control",
+            "metrics": base["accounts"].get("SHADOW_ROLLING")},
+        "accounts": risk_accounts, "matched_groups": len(groups),
+        "completed_matched_groups": sum(len(completed[key]) >= 3 for key in groups),
+        "unique_signal_dates": len(risk_dates), "risk_interventions": risk_interventions,
+        "redundancy_interventions": redundancy_interventions,
+        "review_gate": {"calendar_days": 90, "completed_b1_trades": 75,
+            "completed_b2_trades": 75, "unique_signal_dates": 40,
+            "risk_interventions": 30, "redundancy_interventions": 20,
+            "completed_matched_groups": 60},
+        "latest_decisions": [{"account_id": row.account_id, "opportunity_id": row.opportunity_id,
+            "market_date": row.market_date.isoformat(), "decision": row.final_decision,
+            "reason_code": row.reason_code, "reason": humanize_reason(row.reason_code),
+            **{key: value for key, value in _json(row.payload).items() if key in {
+                "risk_proxy_pct", "risk_proxy_coverage", "final_allocation", "current_heat_pct",
+                "remaining_normal_heat_rupees", "sector", "sector_heat_share_of_normal_budget",
+                "signal_date_heat_share_of_normal_budget", "weighted_avg_corr",
+                "correlation_multiplier"}}} for row in portfolio_risk_decisions[:100]]}
     latest_rolling_by_opportunity = {}
     for row in rolling_decisions:
         if row.opportunity_id not in latest_rolling_by_opportunity:

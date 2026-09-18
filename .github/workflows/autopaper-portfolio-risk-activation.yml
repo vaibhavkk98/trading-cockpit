@@ -1,0 +1,29 @@
+name: AutoPaper Portfolio Risk V1B Activation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: autopaper-portfolio-risk-activation-v1b
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Activate isolated Portfolio Risk shadows
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTOPAPER_PROSPECTIVE_ENABLED: "1"
+          AUTOPAPER_KILL_SWITCH: "0"
+        run: PYTHONPATH=. python scripts/run_autopaper_portfolio_risk_activation.py

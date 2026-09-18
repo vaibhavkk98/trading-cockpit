@@ -674,6 +674,7 @@ def _autopaper_shadows(state):
                 width="stretch", hide_index=True)
     _autopaper_rolling(state)
     _autopaper_edge_capture(state)
+    _autopaper_portfolio_risk(state)
 
 
 def _autopaper_rolling(state):
@@ -737,6 +738,62 @@ def _autopaper_edge_capture(state):
     st.caption("Neutral evidence collection only. Longer holding periods may legitimately change future capacity and entries.")
 
 
+def _autopaper_portfolio_risk(state):
+    risk = state.get("portfolio_risk") or {}; activation = risk.get("activation") or {}
+    render_section_header("Portfolio Risk Engine", "Counterfactual admission and sizing research · no baseline authority")
+    if activation.get("status") in {None, "NOT_ACTIVATED", "PENDING_NEXT_COHORT"}:
+        st.info(f"Portfolio Risk Engine is awaiting a causally eligible cohort ({activation.get('status', 'NOT_ACTIVATED')}).")
+        return
+    rows = []
+    control = risk.get("control") or {}; control_metrics = control.get("metrics") or {}
+    rows.append({"Policy": "B0", "Meaning": "Rolling + C3 control", "NAV": control_metrics.get("nav"),
+        "Cash": control_metrics.get("cash"), "Exposure %": control_metrics.get("invested_pct"),
+        "Positions": control_metrics.get("open_positions"), "Portfolio heat %": None,
+        "Remaining heat %": None, "Max drawdown %": control_metrics.get("max_drawdown_pct"),
+        "Completed": control_metrics.get("completed_trades"), "Turnover %": control_metrics.get("turnover_pct"),
+        "Risk deferred": None})
+    for values in (risk.get("accounts") or {}).values():
+        metrics, latest = values.get("metrics") or {}, values.get("latest") or {}
+        rows.append({"Policy": values.get("policy"), "Meaning": values.get("meaning"),
+            "NAV": metrics.get("nav"), "Cash": metrics.get("cash"),
+            "Exposure %": metrics.get("invested_pct"), "Positions": metrics.get("open_positions"),
+            "Portfolio heat %": latest.get("committed_heat_pct", latest.get("portfolio_heat_pct")),
+            "Remaining heat %": latest.get("remaining_normal_heat_pct"),
+            "Max drawdown %": metrics.get("max_drawdown_pct"), "Completed": metrics.get("completed_trades"),
+            "Turnover %": metrics.get("turnover_pct"), "Risk deferred": values.get("risk_deferred")})
+    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    gauges = st.columns(2)
+    for column, account_id in zip(gauges, ("SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED")):
+        values = (risk.get("accounts") or {}).get(account_id) or {}; latest = values.get("latest") or {}
+        with column:
+            render_context_card(f"{values.get('policy', account_id)} current heat",
+                f"{float(latest.get('committed_heat_pct') or 0):.2f}% / 3.60% target", "Hard ceiling: 4.00%")
+            st.caption(f"Largest sector heat share: {format_percent((latest.get('largest_sector_heat_share') or 0) * 100) if latest.get('largest_sector_heat_share') is not None else 'Not available'} · "
+                f"largest signal-date heat share: {format_percent((latest.get('largest_signal_date_heat_share') or 0) * 100) if latest.get('largest_signal_date_heat_share') is not None else 'Not available'} · "
+                f"average correlation multiplier: {display_value(latest.get('average_position_correlation_multiplier'))}.")
+    position_rows = []
+    for account_id in ("SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED"):
+        policy = ((risk.get("accounts") or {}).get(account_id) or {}).get("policy", account_id)
+        nav = (((risk.get("accounts") or {}).get(account_id) or {}).get("metrics") or {}).get("nav")
+        for position in (state.get("shadow_positions") or {}).get(account_id, []):
+            contribution = position.get("risk_contribution")
+            position_rows.append({"Policy": policy, "Symbol": position.get("symbol"),
+                "Allocation": position.get("market_value"), "Weight %": position.get("portfolio_weight_pct"),
+                "ATR %": position.get("atr_pct"), "RV20 %": position.get("rv20_pct"),
+                "Risk proxy %": position.get("risk_proxy_pct"), "Risk contribution": contribution,
+                "% of portfolio heat": contribution / (nav * .036) * 100 if contribution is not None and nav else None,
+                "Sector": position.get("sector"), "Signal date": position.get("signal_date")})
+    if position_rows:
+        with st.expander("Portfolio Risk positions", expanded=False):
+            st.dataframe(pd.DataFrame(position_rows), width="stretch", hide_index=True)
+    decisions = risk.get("latest_decisions") or []
+    if decisions:
+        with st.expander("Recent risk admissions and deferrals", expanded=False):
+            decision_frame = pd.DataFrame(decisions).replace({"NOT_EVALUATED": None, "NOT_AVAILABLE": None})
+            st.dataframe(decision_frame, width="stretch", hide_index=True)
+    st.caption("Risk budget and redundancy are prospective research controls only. They do not rank stocks, replace holdings, or alter baseline/Phase-A execution.")
+
+
 def _autopaper_health(state):
     health = state.get("health") or {}
     render_section_header("System health", "Persisted operational telemetry")
@@ -744,7 +801,8 @@ def _autopaper_health(state):
             {"Layer": "Data freshness", "Status": health.get("market_date") or "NOT YET RUN"},
             {"Layer": "Portfolio reconciliation", "Status": health.get("reconciliation") or "NOT AVAILABLE"}]
     for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING",
-                       "SHADOW_EDGE_H20", "SHADOW_EDGE_H20_CATASTROPHE", "SHADOW_EDGE_H20_THESIS"):
+                       "SHADOW_EDGE_H20", "SHADOW_EDGE_H20_CATASTROPHE", "SHADOW_EDGE_H20_THESIS",
+                       "SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED"):
         payload = (health.get("accounts") or {}).get(account_id) or {}
         rows.append({"Layer": account_id, "Status": payload.get("status") or ("HEALTHY" if payload else "NOT AVAILABLE")})
     rows.append({"Layer": "ROLE linkage", "Status": state.get("role_linkage_status") or "NOT AVAILABLE"})
@@ -1347,6 +1405,29 @@ def _render_learning():
             st.caption(f"Catastrophe exits {edge.get('catastrophe_exits', 0)} · thesis exits {edge.get('thesis_exits', 0)} · "
                        f"mature early-exit regret observations {edge.get('mature_early_exits', 0)} · median regret {format_percent(edge.get('mean_exit_regret_pct'))}.")
             st.info("The Edge Capture review gate is not a promotion decision. Wait for the later of the existing baseline gate and the separate Edge gate.")
+        with st.expander("Portfolio Risk Engine prospective evidence", expanded=False):
+            _autopaper_portfolio_risk(auto)
+            risk = auto.get("portfolio_risk") or {}; accounts = risk.get("accounts") or {}
+            b0 = (risk.get("control") or {}).get("metrics") or {}
+            comparison = [{"Policy": "B0", "Return %": b0.get("net_return_pct"),
+                "Drawdown %": b0.get("max_drawdown_pct"), "Exposure %": b0.get("invested_pct"),
+                "Heat %": None, "Cash utilization %": 100 - b0.get("cash", 0) / b0.get("nav", 1) * 100 if b0.get("nav") else None,
+                "Trades": b0.get("completed_trades"), "Sector heat share": None,
+                "Date heat share": None, "Correlation": None}]
+            for values in accounts.values():
+                metrics, latest = values.get("metrics") or {}, values.get("latest") or {}
+                comparison.append({"Policy": values.get("policy"), "Return %": metrics.get("net_return_pct"),
+                    "Drawdown %": metrics.get("max_drawdown_pct"), "Exposure %": metrics.get("invested_pct"),
+                    "Heat %": latest.get("portfolio_heat_pct"),
+                    "Cash utilization %": latest.get("cash_utilization") * 100 if latest.get("cash_utilization") is not None else None,
+                    "Trades": metrics.get("completed_trades"),
+                    "Sector heat share": latest.get("largest_sector_heat_share"),
+                    "Date heat share": latest.get("largest_signal_date_heat_share"),
+                    "Correlation": latest.get("average_position_correlation_multiplier")})
+            st.dataframe(pd.DataFrame(comparison), width="stretch", hide_index=True)
+            st.caption(f"Risk interventions {risk.get('risk_interventions', 0)} · redundancy interventions {risk.get('redundancy_interventions', 0)} · "
+                f"matched opportunities {risk.get('matched_groups', 0)} · completed matched groups {risk.get('completed_matched_groups', 0)}.")
+            st.info("No Phase-B promotion conclusion is available before every frozen review-gate minimum is met.")
         with st.expander("Execution realism, concentration & common factor", expanded=False):
             _autopaper_observability(auto)
             execution = auto.get("execution_quality") or {}
