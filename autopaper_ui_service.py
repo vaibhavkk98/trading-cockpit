@@ -17,6 +17,7 @@ SHADOWS = ("SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING")
 EDGE_ACCOUNTS = ("SHADOW_EDGE_H20", "SHADOW_EDGE_H20_CATASTROPHE", "SHADOW_EDGE_H20_THESIS")
 RISK_ACCOUNTS = ("SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED")
 SELECTION_ACCOUNTS = ("SHADOW_SELECT_QUALITY", "SHADOW_SELECT_RISK_ADJ")
+EXPOSURE_ACCOUNTS = ("SHADOW_EXPOSURE_PORTFOLIO", "SHADOW_EXPOSURE_COMBINED")
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 METHODOLOGY_HASH = "3ed64bac9138d36cc1c582c78803215e0142cd12bf8c9db3c50bfc05e3f43d79"
 CONFIG_HASH = "86ed4f1153186874330f62e0c8bb4ad80aef7972a20188952af3697aced1d9c2"
@@ -47,6 +48,7 @@ REASON_TEXT = {
     "CORRELATION_RISK_BUDGET": "Correlation-adjusted risk exceeds the remaining portfolio heat budget.",
     "MIN_EXECUTABLE_SIZE_EXCEEDS_RISK": "One whole share would exceed the remaining risk budget.",
     "RISK_BUDGET_DOWNSIZE": "Position was downsized to fit the frozen portfolio risk budget.",
+    "DYNAMIC_EXPOSURE_DEFERRED": "The opportunity remains queued because the current dynamic normal-heat budget cannot admit one whole share.",
 }
 
 
@@ -244,6 +246,12 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
                 database.OpportunitySelectionCandidateSnapshot.market_date.desc(),
                 database.OpportunitySelectionCandidateSnapshot.selection_rank.asc()).all()
             selection_random = session.query(database.OpportunitySelectionRandomOrdering).all()
+            exposure_activation = session.query(database.DynamicExposureActivation).order_by(
+                database.DynamicExposureActivation.created_at.desc()).first()
+            exposure_decisions = session.query(database.DynamicExposureDecisionSnapshot).order_by(
+                database.DynamicExposureDecisionSnapshot.market_date.desc()).all()
+            exposure_telemetry = session.query(database.DynamicExposureTelemetry).order_by(
+                database.DynamicExposureTelemetry.market_date.asc()).all()
         finally: session.close()
     except Exception as exc:
         base["health"] = {"status": "NOT AVAILABLE", "reason": type(exc).__name__}
@@ -254,7 +262,8 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
     for row in all_orders: by_orders[row.account_id].append(row)
     for row in all_trades: by_trades[row.account_id].append(row)
     for row in all_snapshots: by_snapshots[row.account_id].append(row)
-    for account_id in (BASELINE, *SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS, *SELECTION_ACCOUNTS):
+    for account_id in (BASELINE, *SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS,
+                       *SELECTION_ACCOUNTS, *EXPOSURE_ACCOUNTS):
         account = accounts.get(account_id); positions = [p for p in by_positions[account_id] if p.status == "OPEN"]
         base["accounts"][account_id] = _account_metrics(account, positions, by_trades[account_id], by_snapshots[account_id]) if account else None
         base["snapshots"][account_id] = [{"date": x.market_date.isoformat(), "nav": x.nav, "cash": x.cash} for x in by_snapshots[account_id]]
@@ -266,7 +275,8 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
     nav = (base["accounts"].get(BASELINE) or {}).get("nav")
     base["positions"] = [_position_row(row, order_by_opportunity.get(row.opportunity_id), entry_decisions.get(row.opportunity_id), nav, metadata.get(row.opportunity_id))
                          for row in by_positions[BASELINE] if row.status == "OPEN"]
-    for account_id in (*SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS, *SELECTION_ACCOUNTS):
+    for account_id in (*SHADOWS, *EDGE_ACCOUNTS, *RISK_ACCOUNTS,
+                       *SELECTION_ACCOUNTS, *EXPOSURE_ACCOUNTS):
         shadow_orders = {row.opportunity_id: row for row in reversed(by_orders[account_id]) if row.side == "BUY"}
         shadow_decisions = {row.opportunity_id: row for row in reversed(decisions) if row.account_id == account_id and row.action == "ENTER"}
         shadow_nav = (base["accounts"].get(account_id) or {}).get("nav")
@@ -597,6 +607,78 @@ def load_autopaper_ui_state(opportunity_ids: Iterable[str] = ()) -> dict[str, An
             "mature_comparisons": {"value": sum(v["mature_comparisons"] for v in selection_accounts.values()), "target": 100},
             "completed_matched_events": {"value": completed_matched_events, "target": 60},
             "random_seeds": {"value": len({row.seed for row in selection_random}), "target": 20}},
+    }
+    exposure_payloads = defaultdict(list)
+    for row in exposure_telemetry:
+        exposure_payloads[row.account_id].append(_json(row.payload))
+    exposure_accounts = {}
+    for account_id, policy, meaning in (
+            ("SHADOW_EXPOSURE_PORTFOLIO", "D1", "Portfolio-stress throttle"),
+            ("SHADOW_EXPOSURE_COMBINED", "D2", "Portfolio + market-stress throttle")):
+        telemetry = exposure_payloads[account_id]
+        latest = telemetry[-1] if telemetry else {}
+        decisions_for_account = [row for row in exposure_decisions if row.account_id == account_id]
+        deferred_ids = {row.opportunity_id for row in decisions_for_account
+                        if row.reason_code == "DYNAMIC_EXPOSURE_DEFERRED"}
+        links_for_account = [row for row in links if row.account_id == account_id]
+        entered_ids = {row.opportunity_id for row in links_for_account if row.entered}
+        expired_ids = {row.opportunity_id for row in links_for_account
+                       if row.terminal_reason == "EXPIRED"}
+        reduced = [payload for payload in telemetry
+                   if float(payload.get("combined_multiplier") or 1.) < 1.]
+        low_multiplier = [payload for payload in telemetry
+                          if float(payload.get("combined_multiplier") or 1.) <= .75]
+        exposure_accounts[account_id] = {"policy": policy, "meaning": meaning,
+            "metrics": base["accounts"].get(account_id), "latest": latest,
+            "days_full_exposure": len(telemetry) - len(reduced),
+            "days_reduced": len(reduced),
+            "multiplier_distribution": [payload.get("combined_multiplier") for payload in telemetry],
+            "interventions": sum(row.reason_code == "DYNAMIC_EXPOSURE_DEFERRED" or
+                                 row.final_decision == "ADMIT_DOWNSIZED"
+                                 for row in decisions_for_account),
+            "multiplier_at_or_below_075_events": len(low_multiplier),
+            "deferred": len(deferred_ids),
+            "deferred_then_entered": len(deferred_ids & entered_ids),
+            "deferred_then_expired": len(deferred_ids & expired_ids),
+            "deferred_outcomes": [{"opportunity_id": opportunity_id,
+                "lifecycle": "LATER_ENTERED" if opportunity_id in entered_ids else
+                    ("EXPIRED" if opportunity_id in expired_ids else "PENDING"),
+                "outcome": outcome_by_opportunity.get(opportunity_id)}
+                for opportunity_id in sorted(deferred_ids)]}
+    matched_completed = set.intersection(*[
+        {row.opportunity_id for row in by_trades[account_id]}
+        for account_id in ("SHADOW_RISK_BUDGET", *EXPOSURE_ACCOUNTS)
+    ]) if all(by_trades[account_id] for account_id in ("SHADOW_RISK_BUDGET", *EXPOSURE_ACCOUNTS)) else set()
+    exposure_dates = {row.market_date for row in exposure_decisions}
+    exposure_interventions = sum(row.reason_code == "DYNAMIC_EXPOSURE_DEFERRED" or
+                                 row.final_decision == "ADMIT_DOWNSIZED"
+                                 for row in exposure_decisions)
+    below_075 = sum(float(_json(row.payload).get("combined_multiplier") or 1.) <= .75
+                    for row in exposure_telemetry)
+    first_exposure_date = min((row.market_date for row in exposure_telemetry), default=None)
+    exposure_calendar_days = ((dt.date.today() - first_exposure_date).days + 1
+                              if first_exposure_date else 0)
+    base["dynamic_exposure"] = {
+        "activation": _json(exposure_activation.payload) if exposure_activation else {"status": "NOT_ACTIVATED"},
+        "explanation": "Dynamic Exposure changes how much new risk may enter. It does not force existing positions to exit.",
+        "control": {"policy": "D0", "meaning": "B1 + P0 freshness control",
+                    "metrics": base["accounts"].get("SHADOW_RISK_BUDGET")},
+        "accounts": exposure_accounts, "unique_signal_dates": len(exposure_dates),
+        "intervention_events": exposure_interventions,
+        "multiplier_at_or_below_075_events": below_075,
+        "matched_completed_opportunities": len(matched_completed),
+        "review_gate": {
+            "calendar_days": {"value": exposure_calendar_days, "target": 90},
+            "unique_signal_dates": {"value": len(exposure_dates), "target": 40},
+            "d1_completed_trades": {"value": len(by_trades["SHADOW_EXPOSURE_PORTFOLIO"]), "target": 75},
+            "d2_completed_trades": {"value": len(by_trades["SHADOW_EXPOSURE_COMBINED"]), "target": 75},
+            "intervention_events": {"value": exposure_interventions, "target": 30},
+            "multiplier_at_or_below_075_events": {"value": below_075, "target": 20},
+            "matched_completed_opportunities": {"value": len(matched_completed), "target": 60}},
+        "latest_decisions": [{"account_id": row.account_id,
+            "opportunity_id": row.opportunity_id, "market_date": row.market_date.isoformat(),
+            "decision": row.final_decision, "reason_code": row.reason_code,
+            "reason": humanize_reason(row.reason_code)} for row in exposure_decisions[:100]],
     }
     latest_rolling_by_opportunity = {}
     for row in rolling_decisions:

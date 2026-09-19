@@ -749,6 +749,47 @@ class PortfolioRiskTelemetry(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class DynamicExposureActivation(Base):
+    """Causal activation boundary for isolated V1D D1/D2 accounts."""
+    __tablename__ = "dynamic_exposure_activation"
+    activation_id = Column(String(80), primary_key=True)
+    status = Column(String(30), nullable=False, index=True)
+    activation_mode = Column(String(40), nullable=False)
+    activation_timestamp = Column(DateTime(timezone=True), nullable=False)
+    activation_signal_date = Column(Date, nullable=True, index=True)
+    after_market_date = Column(Date, nullable=True)
+    provenance = Column(String(60), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class DynamicExposureDecisionSnapshot(Base):
+    """Immutable V1D admission evidence for one account/candidate/session."""
+    __tablename__ = "dynamic_exposure_decision_snapshots"
+    snapshot_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    final_decision = Column(String(40), nullable=False, index=True)
+    reason_code = Column(String(60), nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class DynamicExposureTelemetry(Base):
+    """Immutable daily V1D multiplier, exposure and intervention telemetry."""
+    __tablename__ = "dynamic_exposure_telemetry"
+    telemetry_id = Column(String(64), primary_key=True)
+    account_id = Column(String(40), nullable=False, index=True)
+    market_date = Column(Date, nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 class OpportunitySelectionActivation(Base):
     """Causal activation boundary for the two isolated Phase-C shadows."""
     __tablename__ = "opportunity_selection_activation"

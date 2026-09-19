@@ -1,0 +1,46 @@
+{
+  "version": "SYSTEMATIC_ENGINE_DYNAMIC_EXPOSURE_V1D",
+  "control": {
+    "account_id": "SHADOW_RISK_BUDGET",
+    "policy": "D0_B1_P0",
+    "normal_heat": 0.036,
+    "hard_heat": 0.04,
+    "target_position_risk": 0.004
+  },
+  "accounts": {
+    "SHADOW_EXPOSURE_PORTFOLIO": {
+      "policy": "D1",
+      "config_hash": "9e07e59506833572d90454ac9f28a10effd96f0317d6bbc65726c04640777d87",
+      "methodology_hash": "7b3f39ab10db1637a8c6f9bee6b30376a68f6894a289c4eae83af6bc8b760d24",
+      "market_layer": false
+    },
+    "SHADOW_EXPOSURE_COMBINED": {
+      "policy": "D2",
+      "config_hash": "80948a8c13584c39da2707dedebe3855b1fbcdc03a92003c0ab7a3c329b0dcc1",
+      "methodology_hash": "fa5b1eff622da88ff6c2f26f150cec1009aee00ae7a55870a2d07e0228d310b0",
+      "market_layer": true,
+      "market_missing_fallback": "PORTFOLIO_MULTIPLIER_ONLY"
+    }
+  },
+  "portfolio_multiplier": {
+    "drawdown_at_or_above_minus_5pct": 1.0,
+    "minus_5_to_minus_10pct": "LINEAR_1.00_TO_0.80",
+    "minus_10_to_minus_15pct": "LINEAR_0.80_TO_0.50",
+    "minus_15_to_minus_20pct": "LINEAR_0.50_TO_0.25",
+    "drawdown_at_or_below_minus_20pct": 0.25
+  },
+  "market_multiplier": {
+    "benchmark": "NIFTY500",
+    "trend": "CLOSE_OVER_EMA50_MINUS_1",
+    "trend_schedule": "1.00_AT_OR_ABOVE_EMA50__LINEAR_TO_0.75_AT_MINUS_5PCT__FLOOR_0.75",
+    "volatility": "ANNUALIZED_RV20_MIDRANK_PERCENTILE_OVER_CAUSAL_252_RV20_VALUES",
+    "volatility_schedule": "1.00_THROUGH_P70__LINEAR_TO_0.80_AT_P90__FLOOR_0.80",
+    "combination": "MIN_TREND_VOLATILITY"
+  },
+  "effective_heat": "0.036 * MAX(0.20, portfolio_multiplier * market_multiplier)",
+  "existing_positions": "UNCHANGED_H10",
+  "defer_reason": "DYNAMIC_EXPOSURE_DEFERRED",
+  "decision_authority": false,
+  "historical_backfill": false,
+  "baseline_fingerprint": "b93e8c2dd1a99fba712f89a38ba3a5689595891a47375e5c4f20a31d567d3640"
+}

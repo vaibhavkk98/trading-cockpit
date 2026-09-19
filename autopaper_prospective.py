@@ -21,6 +21,7 @@ from autopaper_observability import (
 from provider_symbols import yahoo_nse_symbol
 import portfolio_risk_engine as portfolio_risk
 import opportunity_selection_engine as opportunity_selection
+import dynamic_exposure_engine as dynamic_exposure
 
 VERSION = "AUTOPAPER_PROSPECTIVE_BASELINE_V1"
 ACTIVATION_TIMESTAMP = dt.datetime(2026, 9, 13, 12, 21, 55, tzinfo=dt.timezone.utc)
@@ -163,6 +164,22 @@ ACCOUNT_CONFIGS.update({account_id: {"volatility_sizing": False, "date_cap": Non
     "authority": "SHADOW_ONLY", "rolling": True, "hold_sessions": 10,
     "portfolio_risk": True, "selection_policy": cfg["policy"], "redundancy": False}
     for account_id, cfg in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS.items()})
+DYNAMIC_EXPOSURE_VERSION = dynamic_exposure.VERSION
+DYNAMIC_EXPOSURE_ACCOUNT_CONFIGS = {
+    "SHADOW_EXPOSURE_PORTFOLIO": {"policy": "D1", "market_layer": False},
+    "SHADOW_EXPOSURE_COMBINED": {"policy": "D2", "market_layer": True},
+}
+DYNAMIC_EXPOSURE_CONFIGS = dynamic_exposure.CONFIGS
+DYNAMIC_EXPOSURE_CONFIG_HASHES = dynamic_exposure.CONFIG_HASHES
+DYNAMIC_EXPOSURE_METHODOLOGY_HASHES = dynamic_exposure.METHODOLOGY_HASHES
+ACCOUNT_CONFIGS.update({account_id: {"volatility_sizing": False, "date_cap": None,
+    "authority": "SHADOW_ONLY", "rolling": True, "hold_sessions": 10,
+    "portfolio_risk": True, "dynamic_exposure": True, "redundancy": False, **cfg}
+    for account_id, cfg in DYNAMIC_EXPOSURE_ACCOUNT_CONFIGS.items()})
+DYNAMIC_EXPOSURE_REVIEW_GATE = {"calendar_days": 90, "unique_signal_dates": 40,
+    "completed_trades_per_account": 75, "intervention_events": 30,
+    "multiplier_at_or_below_075_events": 20,
+    "matched_d0_d1_d2_completed_opportunities": 60, "automatic_promotion": False}
 OPPORTUNITY_SELECTION_REVIEW_GATE = {"calendar_days": 90, "unique_signal_dates": 40,
     "constrained_selection_events": 50, "competitive_events": 30,
     "mature_comparisons": 100, "completed_matched_events": 60,
@@ -407,6 +424,39 @@ def ensure_portfolio_risk_accounts(activation_timestamp, activation_market_date)
         session.close()
 
 
+def ensure_dynamic_exposure_accounts(activation_timestamp, activation_market_date):
+    """Create fresh isolated D1/D2 accounts; never clone the evolved B1 control."""
+    database._require_database(); timestamp = _utc(activation_timestamp)
+    session = database.SessionLocal()
+    try:
+        for account_id, config in DYNAMIC_EXPOSURE_CONFIGS.items():
+            method_hash = DYNAMIC_EXPOSURE_METHODOLOGY_HASHES[account_id]
+            config_hash = DYNAMIC_EXPOSURE_CONFIG_HASHES[account_id]
+            manifest = session.get(database.AutoPaperManifest, method_hash)
+            if manifest is None:
+                session.add(database.AutoPaperManifest(
+                    methodology_hash=method_hash,
+                    version=f"{DYNAMIC_EXPOSURE_VERSION}_{DYNAMIC_EXPOSURE_ACCOUNT_CONFIGS[account_id]['policy']}",
+                    activation_timestamp=timestamp, activation_market_date=activation_market_date,
+                    config_payload=_json(config), config_hash=config_hash,
+                    code_identity="dynamic_exposure_engine.py:v1"))
+            elif manifest.config_hash != config_hash:
+                raise RuntimeError("DYNAMIC_EXPOSURE_MANIFEST_CONFLICT")
+            account = session.get(database.AutoPaperAccount, account_id)
+            if account is None:
+                session.add(database.AutoPaperAccount(
+                    account_id=account_id, methodology_hash=method_hash,
+                    initial_capital=CONFIG["capital"], cash=CONFIG["capital"], status="ACTIVE",
+                    state_version=0, created_at=timestamp, updated_at=timestamp))
+            elif account.methodology_hash != method_hash:
+                raise RuntimeError("DYNAMIC_EXPOSURE_ACCOUNT_CONFLICT")
+        session.commit()
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
 def ensure_opportunity_selection_accounts(activation_timestamp, activation_market_date):
     """Create only the isolated Phase-C manifests/accounts."""
     database._require_database(); timestamp = _utc(activation_timestamp)
@@ -441,6 +491,8 @@ def ensure_opportunity_selection_accounts(activation_timestamp, activation_marke
 
 
 def _risk_methodology_hash(account_id):
+    if account_id in DYNAMIC_EXPOSURE_METHODOLOGY_HASHES:
+        return DYNAMIC_EXPOSURE_METHODOLOGY_HASHES[account_id]
     if account_id in OPPORTUNITY_SELECTION_METHODOLOGY_HASHES:
         return OPPORTUNITY_SELECTION_METHODOLOGY_HASHES[account_id]
     return PORTFOLIO_RISK_METHODOLOGY_HASHES[account_id]
@@ -1118,6 +1170,18 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
         risk_mode = bool(account_cfg.get("portfolio_risk"))
         risk_rows = [portfolio_risk.frozen_position_risk(position) for position in positions] if risk_mode else []
         virtual_heat = sum(float(row["risk_rupees"]) for row in risk_rows)
+        dynamic_mode = bool(account_cfg.get("dynamic_exposure"))
+        prior_peak_nav = current_nav
+        if dynamic_mode:
+            prior_snapshots = session.query(database.AutoPaperPortfolioSnapshot).filter(
+                database.AutoPaperPortfolioSnapshot.account_id == account_id,
+                database.AutoPaperPortfolioSnapshot.market_date < market_date).all()
+            prior_peak_nav = max([current_nav] + [float(row.nav) for row in prior_snapshots])
+        exposure_state = (dynamic_exposure.exposure_state(
+            current_nav, prior_peak_nav, histories, market_date,
+            bool(account_cfg.get("market_layer"))) if dynamic_mode else None)
+        normal_heat_fraction = (float(exposure_state["dynamic_normal_heat_fraction"])
+                                if exposure_state else portfolio_risk.NORMAL_HEAT_LIMIT)
         sector_heat, signal_heat = {}, {}
         for row in risk_rows:
             sector_heat[row["sector"]] = sector_heat.get(row["sector"], 0.) + float(row["risk_rupees"])
@@ -1168,7 +1232,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                     correlation = portfolio_risk.weighted_average_correlation(
                         histories, candidate["symbol"], risk_rows, market_date)
                 corr_multiplier = float(correlation["correlation_multiplier"])
-                normal_remaining = max(0., current_nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat)
+                base_normal_remaining = max(0., current_nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat)
+                normal_remaining = max(0., current_nav * normal_heat_fraction - virtual_heat)
                 heat_allocation_cap = normal_remaining / (risk_fraction * corr_multiplier)
                 budget = min(ordinary_cap, raw_allocation, heat_allocation_cap)
                 cap_reason = ("CORRELATION_RISK_BUDGET" if corr_multiplier > 1. and
@@ -1187,7 +1252,10 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                     budget = min(budget, date_cap)
                 minimum_allocation = float(candidate["reference_price"])
                 if budget < minimum_allocation:
-                    if virtual_heat + minimum_allocation * risk_fraction * corr_multiplier > current_nav * portfolio_risk.HARD_HEAT_LIMIT:
+                    base_heat_allocation_cap = base_normal_remaining / (risk_fraction * corr_multiplier)
+                    if dynamic_mode and heat_allocation_cap < minimum_allocation <= base_heat_allocation_cap:
+                        reason = "DYNAMIC_EXPOSURE_DEFERRED"
+                    elif virtual_heat + minimum_allocation * risk_fraction * corr_multiplier > current_nav * portfolio_risk.HARD_HEAT_LIMIT:
                         reason = "PORTFOLIO_RISK_BUDGET"
                     elif cap_reason:
                         reason = cap_reason
@@ -1204,6 +1272,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                     "current_heat_rupees": virtual_heat,
                     "current_heat_pct": virtual_heat / current_nav * 100 if current_nav else None,
                     "remaining_normal_heat_rupees": normal_remaining,
+                    "base_normal_heat_rupees": current_nav * portfolio_risk.NORMAL_HEAT_LIMIT,
+                    "effective_normal_heat_rupees": current_nav * normal_heat_fraction,
                     "atr_pct": candidate.get("atr_pct"), "rv20_pct": rv["rv20_pct"],
                     "risk_proxy_pct": candidate["risk_proxy_pct"],
                     "risk_proxy_coverage": candidate["risk_proxy_coverage"],
@@ -1222,6 +1292,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                         "RISK_BUDGET_DOWNSIZE" if downsized else "ORDER_SUBMITTED_T1"),
                     "decision_authority": False, "path_risk_authority": False,
                     "pb_r2_authority": False, "market_regime_authority": False}
+                if exposure_state:
+                    risk_snapshot["dynamic_exposure"] = exposure_state
                 snapshot_id = _hash([PORTFOLIO_RISK_VERSION, account_id, oid, market_date.isoformat()])
                 candidate.update({"target_risk_rupees": target_risk,
                     "correlation_multiplier": corr_multiplier, "weighted_avg_corr": correlation["weighted_avg_corr"],
@@ -1255,7 +1327,7 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                     "account_id": account_id, "opportunity_id": oid, "market_date": market_date.isoformat(),
                     "account_nav": current_nav, "cash": virtual_cash, "open_positions": virtual_positions,
                     "current_heat_rupees": virtual_heat,
-                    "remaining_normal_heat_rupees": max(0., current_nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat),
+                    "remaining_normal_heat_rupees": max(0., current_nav * normal_heat_fraction - virtual_heat),
                     "risk_proxy_pct": "NOT_EVALUATED", "risk_proxy_coverage": "NOT_EVALUATED",
                     "target_risk_rupees": current_nav * portfolio_risk.TARGET_POSITION_RISK,
                     "requested_allocation": ordinary_cap, "final_allocation": 0.,
@@ -1264,12 +1336,43 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                         "DATA_UNAVAILABLE", "LIQUIDITY_FAIL", "POSITION_ALREADY_EXISTS"} else "REJECT",
                     "reason": reason or "NO_CAPACITY", "decision_authority": False,
                     "path_risk_authority": False, "pb_r2_authority": False, "market_regime_authority": False}
+                if exposure_state:
+                    risk_snapshot["dynamic_exposure"] = exposure_state
                 if session.get(database.PortfolioRiskDecisionSnapshot, snapshot_id) is None:
                     session.add(database.PortfolioRiskDecisionSnapshot(
                         snapshot_id=snapshot_id, account_id=account_id, opportunity_id=oid,
                         market_date=market_date, final_decision=risk_snapshot["final_decision"],
                         reason_code=risk_snapshot["reason"], payload=_json(risk_snapshot),
                         payload_hash=_hash(risk_snapshot)))
+            if dynamic_mode and risk_snapshot is not None:
+                dynamic_payload = {"version": DYNAMIC_EXPOSURE_VERSION,
+                    "methodology_hash": DYNAMIC_EXPOSURE_METHODOLOGY_HASHES[account_id],
+                    "config_hash": DYNAMIC_EXPOSURE_CONFIG_HASHES[account_id],
+                    "account_id": account_id, "policy": account_cfg["policy"],
+                    "opportunity_id": oid, "symbol": candidate.get("symbol"),
+                    "signal_date": candidate.get("signal_date"),
+                    "market_date": market_date.isoformat(), **exposure_state,
+                    "current_portfolio_heat_rupees": virtual_heat,
+                    "current_portfolio_heat_pct": virtual_heat / current_nav * 100 if current_nav else None,
+                    "remaining_dynamic_heat_rupees": max(0., current_nav * normal_heat_fraction - virtual_heat),
+                    "requested_allocation": ordinary_cap,
+                    "final_allocation": float(risk_snapshot.get("final_allocation") or 0.),
+                    "final_decision": risk_snapshot["final_decision"],
+                    "reason": risk_snapshot["reason"], "decision_authority": False,
+                    "existing_position_action": "UNCHANGED_H10"}
+                dynamic_snapshot_id = _hash([DYNAMIC_EXPOSURE_VERSION, account_id, oid,
+                                             market_date.isoformat()])
+                existing_dynamic = session.get(database.DynamicExposureDecisionSnapshot,
+                                               dynamic_snapshot_id)
+                if existing_dynamic is None:
+                    session.add(database.DynamicExposureDecisionSnapshot(
+                        snapshot_id=dynamic_snapshot_id, account_id=account_id,
+                        opportunity_id=oid, market_date=market_date,
+                        final_decision=dynamic_payload["final_decision"],
+                        reason_code=dynamic_payload["reason"], payload=_json(dynamic_payload),
+                        payload_hash=_hash(dynamic_payload)))
+                elif existing_dynamic.payload_hash != _hash(dynamic_payload):
+                    raise RuntimeError("DYNAMIC_EXPOSURE_DECISION_IMMUTABILITY_CONFLICT")
             if reason in ("DATA_UNAVAILABLE", "LIQUIDITY_FAIL", "POSITION_ALREADY_EXISTS"):
                 item.status = "REJECTED"; item.updated_at = now
                 link = session.get(database.AutoPaperCounterfactualLink, _hash([account_id, oid]))
@@ -1355,12 +1458,15 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 "rolling_deferred": rolling_deferred})
         if risk_mode:
             snapshot_payload.update({"portfolio_heat_pct": virtual_heat / nav * 100 if nav else None,
-                "normal_heat_limit_pct": portfolio_risk.NORMAL_HEAT_LIMIT * 100,
+                "normal_heat_limit_pct": normal_heat_fraction * 100,
+                "base_normal_heat_limit_pct": portfolio_risk.NORMAL_HEAT_LIMIT * 100,
                 "hard_heat_limit_pct": portfolio_risk.HARD_HEAT_LIMIT * 100,
-                "remaining_normal_heat_pct": max(0., nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat) /
+                "remaining_normal_heat_pct": max(0., nav * normal_heat_fraction - virtual_heat) /
                     nav * 100 if nav else None,
                 "risk_deferred": risk_deferred, "risk_downsized": risk_downsized,
                 "redundancy_deferred": redundancy_deferred})
+        if exposure_state:
+            snapshot_payload["dynamic_exposure"] = exposure_state
         fingerprint = _hash(snapshot_payload)
         if not session.query(database.AutoPaperPortfolioSnapshot).filter_by(
                 account_id=account_id, market_date=market_date, state_fingerprint=fingerprint).first():
@@ -1436,7 +1542,9 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 session.add(database.EdgeCaptureTelemetry(
                     telemetry_id=telemetry_id, account_id=account_id, market_date=market_date,
                     payload=_json(telemetry), payload_hash=_hash(telemetry)))
-        if account_id in PORTFOLIO_RISK_ACCOUNT_CONFIGS or account_id in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS:
+        if (account_id in PORTFOLIO_RISK_ACCOUNT_CONFIGS or
+                account_id in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS or
+                account_id in DYNAMIC_EXPOSURE_ACCOUNT_CONFIGS):
             current_state = portfolio_risk.portfolio_heat_state(_active_positions(session, account_id), nav)
             prior_rows = session.query(database.PortfolioRiskTelemetry).filter_by(account_id=account_id).all()
             prior_payloads = [json.loads(row.payload) for row in prior_rows]
@@ -1459,7 +1567,8 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 if row.get("weighted_avg_corr") not in {None, "NOT_AVAILABLE"}]
             telemetry = {"version": PORTFOLIO_RISK_VERSION, "account_id": account_id,
                 "policy": (PORTFOLIO_RISK_ACCOUNT_CONFIGS.get(account_id) or
-                           OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS[account_id])["policy"],
+                           OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS.get(account_id) or
+                           DYNAMIC_EXPOSURE_ACCOUNT_CONFIGS[account_id])["policy"],
                 "methodology_hash": _risk_methodology_hash(account_id),
                 "market_date": market_date.isoformat(), "decision_authority": False,
                 "nav": nav, "cash": account.cash,
@@ -1467,9 +1576,10 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 "cash_utilization": (nav - account.cash) / nav if nav else None,
                 "open_positions": len(positions), "portfolio_heat_pct": current_state["portfolio_heat_pct"],
                 "committed_heat_pct": virtual_heat / nav * 100 if nav else None,
-                "remaining_normal_heat_pct": max(0., nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat) /
+                "remaining_normal_heat_pct": max(0., nav * normal_heat_fraction - virtual_heat) /
                     nav * 100 if nav else None,
-                "normal_heat_limit_pct": portfolio_risk.NORMAL_HEAT_LIMIT * 100,
+                "normal_heat_limit_pct": normal_heat_fraction * 100,
+                "base_normal_heat_limit_pct": portfolio_risk.NORMAL_HEAT_LIMIT * 100,
                 "hard_heat_limit_pct": portfolio_risk.HARD_HEAT_LIMIT * 100,
                 "peak_heat_pct": max([float(p.get("portfolio_heat_pct") or 0) for p in prior_payloads] +
                     [float(current_state["portfolio_heat_pct"] or 0)]),
@@ -1488,11 +1598,47 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                 "risk_deferred_then_entered": len(deferred_ids & entered_ids),
                 "risk_deferred_then_expired": len(deferred_ids & expired_ids),
                 "capital_days": sum(position.age * position.quantity * position.current_mark for position in positions)}
+            if exposure_state:
+                telemetry["dynamic_exposure"] = exposure_state
             telemetry_id = _hash([PORTFOLIO_RISK_VERSION, account_id, market_date.isoformat()])
             if session.get(database.PortfolioRiskTelemetry, telemetry_id) is None:
                 session.add(database.PortfolioRiskTelemetry(
                     telemetry_id=telemetry_id, account_id=account_id, market_date=market_date,
                     payload=_json(telemetry), payload_hash=_hash(telemetry)))
+            if dynamic_mode:
+                dynamic_decisions = session.query(database.DynamicExposureDecisionSnapshot).filter_by(
+                    account_id=account_id, market_date=market_date).all()
+                all_dynamic = session.query(database.DynamicExposureDecisionSnapshot).filter_by(
+                    account_id=account_id).all()
+                dynamic_deferred_ids = {row.opportunity_id for row in all_dynamic
+                    if row.reason_code == "DYNAMIC_EXPOSURE_DEFERRED"}
+                dynamic_links = session.query(database.AutoPaperCounterfactualLink).filter_by(
+                    account_id=account_id).all()
+                dynamic_payload = {"version": DYNAMIC_EXPOSURE_VERSION,
+                    "methodology_hash": DYNAMIC_EXPOSURE_METHODOLOGY_HASHES[account_id],
+                    "config_hash": DYNAMIC_EXPOSURE_CONFIG_HASHES[account_id],
+                    "account_id": account_id, "policy": account_cfg["policy"],
+                    "market_date": market_date.isoformat(), **exposure_state,
+                    "portfolio_heat_pct": current_state["portfolio_heat_pct"],
+                    "committed_heat_pct": virtual_heat / nav * 100 if nav else None,
+                    "gross_exposure": sum(position.quantity * position.current_mark for position in positions),
+                    "cash_utilization": (nav - account.cash) / nav if nav else None,
+                    "deferred_today": sum(row.reason_code == "DYNAMIC_EXPOSURE_DEFERRED"
+                                          for row in dynamic_decisions),
+                    "admissions_allowed_today": sum(str(row.final_decision).startswith("ADMIT")
+                                                    for row in dynamic_decisions),
+                    "deferred_then_entered": len(dynamic_deferred_ids & {
+                        row.opportunity_id for row in dynamic_links if row.entered}),
+                    "deferred_then_expired": len(dynamic_deferred_ids & {
+                        row.opportunity_id for row in dynamic_links if row.terminal_reason == "EXPIRED"}),
+                    "queue_reconciled": True, "account_isolated": True,
+                    "decision_authority": False}
+                telemetry_id = _hash([DYNAMIC_EXPOSURE_VERSION, account_id, market_date.isoformat()])
+                if session.get(database.DynamicExposureTelemetry, telemetry_id) is None:
+                    session.add(database.DynamicExposureTelemetry(
+                        telemetry_id=telemetry_id, account_id=account_id,
+                        market_date=market_date, payload=_json(dynamic_payload),
+                        payload_hash=_hash(dynamic_payload)))
         session.commit()
         if telemetry_attempts:
             telemetry_session = database.SessionLocal()
@@ -1517,9 +1663,15 @@ def _process_account(account_id, decisions, histories, market_date, timestamp):
                          rolling_deferred=rolling_deferred, target_occupancy=9, hard_capacity=10)
         if risk_mode:
             stats.update(portfolio_heat_pct=virtual_heat / nav * 100 if nav else None,
-                remaining_heat_pct=max(0., nav * portfolio_risk.NORMAL_HEAT_LIMIT - virtual_heat) / nav * 100 if nav else None,
+                remaining_heat_pct=max(0., nav * normal_heat_fraction - virtual_heat) / nav * 100 if nav else None,
                 risk_deferred=risk_deferred, downsized=risk_downsized,
                 redundancy_deferred=redundancy_deferred)
+        if exposure_state:
+            stats.update(exposure_multiplier=exposure_state["combined_multiplier"],
+                portfolio_multiplier=exposure_state["portfolio_multiplier"],
+                market_multiplier=exposure_state["market_multiplier"],
+                market_state=exposure_state["market"]["status"],
+                dynamic_heat_pct=exposure_state["dynamic_normal_heat_pct"])
         if account_id in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS:
             stats.update(selection_policy=OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS[account_id]["policy"],
                 selection_event_id=selection_event["selection_event_id"],
@@ -1693,6 +1845,91 @@ def _process_portfolio_risk_if_activated(decisions, histories, market_date, time
     return results
 
 
+def ensure_dynamic_exposure_activation(market_date, timestamp):
+    """Freeze V1D at the first cohort not already consumed by the D0 control."""
+    session = database.SessionLocal()
+    try:
+        activation = session.get(database.DynamicExposureActivation,
+                                 "DYNAMIC_EXPOSURE_V1D_ACTIVATION")
+        if activation is not None:
+            return json.loads(activation.payload)
+        phase_b = session.query(database.PortfolioRiskActivation).order_by(
+            database.PortfolioRiskActivation.created_at.desc()).first()
+        if phase_b is None or phase_b.status not in {"ACTIVE", "PENDING_NEXT_COHORT"}:
+            return {"status": "WAITING_FOR_B1", "decision_authority": False}
+        d0 = session.get(database.AutoPaperAccount, "SHADOW_RISK_BUDGET")
+        consumed = bool(d0 and d0.last_market_date and d0.last_market_date >= market_date)
+        status = "PENDING_NEXT_COHORT" if consumed else "ACTIVE"
+        signal_date = None if consumed else market_date
+        after_date = d0.last_market_date if consumed else None
+        payload = {"activation_id": "DYNAMIC_EXPOSURE_V1D_ACTIVATION", "status": status,
+            "activation_mode": "NEXT_FINALIZED_COHORT" if consumed else "SAME_D0_COHORT",
+            "activation_timestamp": timestamp.isoformat(),
+            "activation_signal_date": signal_date.isoformat() if signal_date else None,
+            "after_market_date": after_date.isoformat() if after_date else None,
+            "provenance": "DYNAMIC_EXPOSURE_PROSPECTIVE",
+            "control": {"account_id": "SHADOW_RISK_BUDGET", "policy": "D0_B1_P0"},
+            "methodology_hashes": DYNAMIC_EXPOSURE_METHODOLOGY_HASHES,
+            "config_hashes": DYNAMIC_EXPOSURE_CONFIG_HASHES,
+            "market_missing_fallback": "PORTFOLIO_MULTIPLIER_ONLY",
+            "historical_backfill": False, "decision_authority": False}
+        session.add(database.DynamicExposureActivation(
+            activation_id=payload["activation_id"], status=status,
+            activation_mode=payload["activation_mode"], activation_timestamp=timestamp,
+            activation_signal_date=signal_date, after_market_date=after_date,
+            provenance=payload["provenance"], payload=_json(payload),
+            payload_hash=_hash(payload)))
+        session.commit(); return payload
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+
+
+def _process_dynamic_exposure_if_activated(decisions, histories, market_date, timestamp, killed):
+    """Advance D1/D2 independently; never interrupts D0 or prior phases."""
+    session = database.SessionLocal()
+    try:
+        activation = session.get(database.DynamicExposureActivation,
+                                 "DYNAMIC_EXPOSURE_V1D_ACTIVATION")
+        if activation is None:
+            return {}
+        if activation.status == "PENDING_NEXT_COHORT":
+            if activation.after_market_date is not None and market_date <= activation.after_market_date:
+                return {key: {"account_id": key, "status": "PENDING_NEXT_COHORT"}
+                        for key in DYNAMIC_EXPOSURE_ACCOUNT_CONFIGS}
+            activation.status = "ACTIVE"; activation.activation_signal_date = market_date
+            payload = json.loads(activation.payload); payload.update({"status": "ACTIVE",
+                "activation_signal_date": market_date.isoformat()})
+            activation.payload = _json(payload); activation.payload_hash = _hash(payload)
+            session.commit()
+        signal_date, provenance, activated_at = (activation.activation_signal_date,
+            activation.provenance, activation.activation_timestamp)
+    except Exception:
+        session.rollback(); raise
+    finally:
+        session.close()
+    if signal_date is None or market_date < signal_date:
+        return {}
+    ensure_dynamic_exposure_accounts(activated_at, signal_date)
+    stream = [{**row, "prospective_origin": provenance}
+              for row in ([] if killed else decisions)]
+    results = {}
+    for account_id in DYNAMIC_EXPOSURE_ACCOUNT_CONFIGS:
+        try:
+            results[account_id] = _process_account(
+                account_id, stream, histories, market_date, timestamp)
+            try:
+                persist_risk_snapshot(account_id, market_date, histories, decisions)
+            except Exception as exc:
+                results[account_id].setdefault("warnings", []).append(
+                    f"RISK_TELEMETRY:{type(exc).__name__}")
+        except Exception as exc:
+            results[account_id] = {"account_id": account_id, "status": "FAILED",
+                                   "error": type(exc).__name__}
+    return results
+
+
 def ensure_opportunity_selection_activation(market_date, timestamp):
     """Freeze Phase-C at the first not-yet-consumed B1 cohort, otherwise next cohort."""
     session = database.SessionLocal()
@@ -1793,6 +2030,10 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
         ensure_opportunity_selection_activation(market_date, timestamp)
     except Exception as exc:
         observability_warnings.append(f"OPPORTUNITY_SELECTION_ACTIVATION:{type(exc).__name__}")
+    try:
+        ensure_dynamic_exposure_activation(market_date, timestamp)
+    except Exception as exc:
+        observability_warnings.append(f"DYNAMIC_EXPOSURE_ACTIVATION:{type(exc).__name__}")
     metadata_session = database.SessionLocal()
     try:
         capture_sector_metadata(metadata_session, decisions, timestamp)
@@ -1842,6 +2083,15 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
         # Phase-B research is isolated from baseline, rolling and Phase A.
         observability_warnings.append(f"PORTFOLIO_RISK:{type(exc).__name__}")
     try:
+        exposure_results = _process_dynamic_exposure_if_activated(
+            decisions, histories, market_date, timestamp, killed)
+        results.update(exposure_results)
+        for account_id, value in exposure_results.items():
+            if value.get("status") == "FAILED":
+                observability_warnings.append(f"{account_id}:{value.get('error')}")
+    except Exception as exc:
+        observability_warnings.append(f"DYNAMIC_EXPOSURE:{type(exc).__name__}")
+    try:
         selection_results = _process_opportunity_selection_if_activated(
             decisions, histories, market_date, timestamp, killed)
         results.update(selection_results)
@@ -1859,6 +2109,8 @@ def run_prospective_autopaper(decisions, histories, market_date, run_timestamp, 
             for key in EDGE_ACCOUNT_CONFIGS) else "DEGRADED"),
         "portfolio_risk_status": ("HEALTHY" if all((results.get(key) or {}).get("status") != "FAILED"
             for key in PORTFOLIO_RISK_ACCOUNT_CONFIGS) else "DEGRADED"),
+        "dynamic_exposure_status": ("HEALTHY" if all((results.get(key) or {}).get("status") != "FAILED"
+            for key in DYNAMIC_EXPOSURE_ACCOUNT_CONFIGS) else "DEGRADED"),
         "opportunity_selection_status": ("HEALTHY" if all((results.get(key) or {}).get("status") != "FAILED"
             for key in OPPORTUNITY_SELECTION_ACCOUNT_CONFIGS) else "DEGRADED"),
         "errors": errors, "warnings": [w for value in results.values() for w in value.get("warnings", [])] + observability_warnings,

@@ -691,6 +691,7 @@ def _autopaper_shadows(state):
     _autopaper_rolling(state)
     _autopaper_edge_capture(state)
     _autopaper_portfolio_risk(state)
+    _autopaper_dynamic_exposure(state)
     _autopaper_opportunity_selection(state)
 
 
@@ -843,6 +844,51 @@ def _autopaper_portfolio_risk(state):
     st.caption("Risk budget and redundancy are prospective research controls only. They do not rank stocks, replace holdings, or alter baseline/Phase-A execution.")
 
 
+def _autopaper_dynamic_exposure(state):
+    exposure = state.get("dynamic_exposure") or {}; activation = exposure.get("activation") or {}
+    render_section_header("Dynamic Exposure Engine", "D0/D1/D2 prospective risk-admission research")
+    st.info(exposure.get("explanation") or
+            "Dynamic Exposure changes how much new risk may enter. It does not force existing positions to exit.")
+    if activation.get("status") in {None, "NOT_ACTIVATED", "PENDING_NEXT_COHORT"}:
+        st.caption(f"Awaiting the next causally eligible D0 cohort ({activation.get('status', 'NOT_ACTIVATED')}).")
+        return
+    control = exposure.get("control") or {}; control_metrics = control.get("metrics") or {}
+    rows = [{"Policy": "D0", "Meaning": control.get("meaning"),
+        "Multiplier": 1., "Portfolio multiplier": 1., "Market multiplier": 1.,
+        "Normal heat %": 3.6, "Actual heat %": control_metrics.get("portfolio_heat_pct"),
+        "Drawdown %": control_metrics.get("current_drawdown_pct"),
+        "Exposure %": control_metrics.get("invested_pct"), "NAV": control_metrics.get("nav"),
+        "Return %": control_metrics.get("net_return_pct"),
+        "Max drawdown %": control_metrics.get("max_drawdown_pct"), "Deferred": None}]
+    for values in (exposure.get("accounts") or {}).values():
+        metrics, latest = values.get("metrics") or {}, values.get("latest") or {}
+        market = latest.get("market") or {}
+        rows.append({"Policy": values.get("policy"), "Meaning": values.get("meaning"),
+            "Multiplier": latest.get("combined_multiplier"),
+            "Portfolio multiplier": latest.get("portfolio_multiplier"),
+            "Market multiplier": latest.get("market_multiplier"),
+            "Normal heat %": latest.get("dynamic_normal_heat_pct"),
+            "Actual heat %": latest.get("committed_heat_pct", latest.get("portfolio_heat_pct")),
+            "Drawdown %": (float(latest["current_drawdown"]) * 100
+                           if latest.get("current_drawdown") is not None else None),
+            "Exposure %": metrics.get("invested_pct"), "NAV": metrics.get("nav"),
+            "Return %": metrics.get("net_return_pct"),
+            "Max drawdown %": metrics.get("max_drawdown_pct"),
+            "Benchmark trend %": (float(market["trend"]) * 100 if market.get("trend") is not None else None),
+            "Market RV20 %": market.get("benchmark_rv20"),
+            "Vol percentile": market.get("volatility_percentile"),
+            "Market state": market.get("status"), "Deferred": values.get("deferred")})
+    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    st.caption(f"Interventions {exposure.get('intervention_events', 0)} · multiplier ≤0.75 events "
+               f"{exposure.get('multiplier_at_or_below_075_events', 0)} · matched completed opportunities "
+               f"{exposure.get('matched_completed_opportunities', 0)}. Missing D2 market state explicitly falls back to D1.")
+    gate = exposure.get("review_gate") or {}
+    if gate:
+        with st.expander("Dynamic Exposure review gate", expanded=False):
+            st.dataframe(pd.DataFrame([{"Measure": key.replace("_", " ").title(), **value}
+                for key, value in gate.items()]), width="stretch", hide_index=True)
+
+
 def _autopaper_health(state):
     health = state.get("health") or {}
     render_section_header("System health", "Persisted operational telemetry")
@@ -852,7 +898,8 @@ def _autopaper_health(state):
     for account_id in ("BASELINE_C3", "SHADOW_C0", "SHADOW_D1", "SHADOW_CATASTROPHE", "SHADOW_ROLLING",
                        "SHADOW_EDGE_H20", "SHADOW_EDGE_H20_CATASTROPHE", "SHADOW_EDGE_H20_THESIS",
                        "SHADOW_RISK_BUDGET", "SHADOW_RISK_DIVERSIFIED",
-                       "SHADOW_SELECT_QUALITY", "SHADOW_SELECT_RISK_ADJ"):
+                       "SHADOW_SELECT_QUALITY", "SHADOW_SELECT_RISK_ADJ",
+                       "SHADOW_EXPOSURE_PORTFOLIO", "SHADOW_EXPOSURE_COMBINED"):
         payload = (health.get("accounts") or {}).get(account_id) or {}
         rows.append({"Layer": account_id, "Status": payload.get("status") or ("HEALTHY" if payload else "NOT AVAILABLE")})
     rows.append({"Layer": "ROLE linkage", "Status": state.get("role_linkage_status") or "NOT AVAILABLE"})
@@ -1478,6 +1525,25 @@ def _render_learning():
             st.caption(f"Risk interventions {risk.get('risk_interventions', 0)} · redundancy interventions {risk.get('redundancy_interventions', 0)} · "
                 f"matched opportunities {risk.get('matched_groups', 0)} · completed matched groups {risk.get('completed_matched_groups', 0)}.")
             st.info("No Phase-B promotion conclusion is available before every frozen review-gate minimum is met.")
+        with st.expander("Dynamic Exposure Engine prospective evidence", expanded=False):
+            _autopaper_dynamic_exposure(auto)
+            exposure = auto.get("dynamic_exposure") or {}
+            evidence_rows = []
+            for values in (exposure.get("accounts") or {}).values():
+                metrics, latest = values.get("metrics") or {}, values.get("latest") or {}
+                evidence_rows.append({"Policy": values.get("policy"),
+                    "Days full": values.get("days_full_exposure"),
+                    "Days reduced": values.get("days_reduced"),
+                    "Current multiplier": latest.get("combined_multiplier"),
+                    "Return %": metrics.get("net_return_pct"),
+                    "Max drawdown %": metrics.get("max_drawdown_pct"),
+                    "Interventions": values.get("interventions"),
+                    "Deferred": values.get("deferred"),
+                    "Later entered": values.get("deferred_then_entered"),
+                    "Expired": values.get("deferred_then_expired")})
+            if evidence_rows:
+                st.dataframe(pd.DataFrame(evidence_rows), width="stretch", hide_index=True)
+            st.info("Neutral prospective evidence only. Dynamic Exposure has no qualification, ranking, exit, sizing, or live-trading authority.")
         with st.expander("Selection evidence", expanded=False):
             _autopaper_opportunity_selection(auto)
             selection = auto.get("opportunity_selection") or {}
