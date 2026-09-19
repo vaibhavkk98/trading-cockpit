@@ -295,6 +295,130 @@ class RolePipelineHealth(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
 
 
+class RolePolicyActivation(Base):
+    """One-way prospective boundary for the observational V1E ledger."""
+    __tablename__ = "role_policy_activation"
+    activation_id = Column(String(80), primary_key=True)
+    status = Column(String(30), nullable=False, index=True)
+    activation_timestamp = Column(DateTime(timezone=True), nullable=False)
+    activation_market_date = Column(Date, nullable=False, index=True)
+    methodology_version = Column(String(80), nullable=False)
+    methodology_hash = Column(String(64), nullable=False, index=True)
+    schema_hash = Column(String(64), nullable=False)
+    provenance = Column(String(80), nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PolicyDecisionEpisode(Base):
+    """Immutable, causal snapshot of one policy decision event."""
+    __tablename__ = "policy_decision_episodes"
+    __table_args__ = (UniqueConstraint("source_decision_id", "methodology_hash",
+                                       name="uq_policy_episode_source_method"),)
+    episode_id = Column(String(64), primary_key=True)
+    source_decision_id = Column(String(64), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    decision_date = Column(Date, nullable=False, index=True)
+    decision_timestamp = Column(DateTime(timezone=True), nullable=False)
+    account_id = Column(String(40), nullable=False, index=True)
+    policy_family = Column(String(40), nullable=False, index=True)
+    policy_code = Column(String(40), nullable=False, index=True)
+    policy_version = Column(String(80), nullable=False)
+    normalized_action = Column(String(30), nullable=False, index=True)
+    reason_code = Column(String(80), nullable=False)
+    methodology_hash = Column(String(64), nullable=False, index=True)
+    config_hash = Column(String(64), nullable=False)
+    activation_provenance = Column(String(80), nullable=False)
+    opportunity_state = Column(Text, nullable=False)
+    portfolio_state = Column(Text, nullable=False)
+    market_state = Column(Text, nullable=False)
+    action_state = Column(Text, nullable=False)
+    source_provenance = Column(Text, nullable=False)
+    snapshot_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PolicyMatchGroup(Base):
+    """Deterministic links between actually observed comparable policy legs."""
+    __tablename__ = "policy_match_groups"
+    group_id = Column(String(64), primary_key=True)
+    policy_family = Column(String(40), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    signal_date = Column(Date, nullable=False, index=True)
+    evidence_class = Column(String(40), nullable=False, index=True)
+    counterfactual_class = Column(String(40), nullable=False, index=True)
+    comparison_status = Column(String(40), nullable=False, index=True)
+    member_payload = Column(Text, nullable=False)
+    consistency_payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), onupdate=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PolicyComparisonSnapshot(Base):
+    """Immutable mature comparison; contains observed alternatives only."""
+    __tablename__ = "policy_comparison_snapshots"
+    __table_args__ = (UniqueConstraint("group_id", "horizon_sessions", "comparison_version",
+                                       name="uq_policy_comparison_version"),)
+    comparison_id = Column(String(64), primary_key=True)
+    group_id = Column(String(64), nullable=False, index=True)
+    policy_family = Column(String(40), nullable=False, index=True)
+    horizon_sessions = Column(Integer, nullable=False)
+    comparison_version = Column(String(40), nullable=False)
+    evidence_class = Column(String(40), nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class PolicyMatureOutcomeLink(Base):
+    """Immutable ROLE-D1 horizon attached to an immutable policy episode."""
+    __tablename__ = "policy_mature_outcome_links"
+    __table_args__ = (UniqueConstraint("episode_id", "horizon_sessions",
+                                       name="uq_policy_episode_mature_horizon"),)
+    link_id = Column(String(64), primary_key=True)
+    episode_id = Column(String(64), nullable=False, index=True)
+    opportunity_id = Column(String(180), nullable=False, index=True)
+    horizon_sessions = Column(Integer, nullable=False, index=True)
+    observation_date = Column(Date, nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    linked_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class RolePolicyReviewGateSnapshot(Base):
+    """Persisted review-gate/evidence-count view for one EOD run."""
+    __tablename__ = "role_policy_review_gate_snapshots"
+    run_id = Column(String(80), primary_key=True)
+    market_date = Column(Date, nullable=False, index=True)
+    gate_passed = Column(Boolean, nullable=False, default=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
+class RolePolicyHealth(Base):
+    """Non-blocking V1E ingestion/reconciliation health per EOD run."""
+    __tablename__ = "role_policy_health"
+    run_id = Column(String(80), primary_key=True)
+    market_date = Column(Date, nullable=False, index=True)
+    status = Column(String(30), nullable=False, index=True)
+    episodes_created = Column(Integer, nullable=False, default=0)
+    idempotent_existing = Column(Integer, nullable=False, default=0)
+    match_groups = Column(Integer, nullable=False, default=0)
+    direct_matches = Column(Integer, nullable=False, default=0)
+    duplicate_conflicts = Column(Integer, nullable=False, default=0)
+    outcome_link_status = Column(String(40), nullable=False)
+    policy_coverage_payload = Column(Text, nullable=False)
+    failure_reasons_payload = Column(Text, nullable=False)
+    payload = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    completed_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: dt.datetime.now(dt.timezone.utc), nullable=False)
+
+
 class PBAsymmetryShadow(Base):
     """Immutable prospective PB-R2/PB-R3 advisory snapshot; never a decision input."""
     __tablename__ = "pb_asymmetry_shadows"

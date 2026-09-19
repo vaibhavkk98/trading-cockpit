@@ -10,6 +10,7 @@ from performance_timing import timed
 from portfolio_analytics import get_portfolio_pnl
 from role_learning_analytics import load_live_role_r1_analytics
 from role_opportunity_evidence import ROLE_R2_METHOD_HASH, load_role_r2_report
+from role_policy_learning import load_policy_learning_state
 from autopaper_ui_service import load_autopaper_ui_state
 
 
@@ -52,6 +53,13 @@ def load_role_learning_analytics() -> dict[str, Any]:
     """Read persisted ROLE state; never fetch market data or write outcomes."""
     with timed("db.role_learning_analytics"):
         return load_live_role_r1_analytics()
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_role_policy_learning() -> dict[str, Any]:
+    """Read the persisted V1E ledger projection; never runs policy learning."""
+    with timed("db.role_policy_learning"):
+        return load_policy_learning_state()
 
 
 @st.cache_data(ttl=300, show_spinner=False)

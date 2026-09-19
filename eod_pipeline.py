@@ -252,6 +252,19 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
             role_outcomes.setdefault("failure_reasons", []).append(
                 f"HealthPersistence{type(exc).__name__}: {str(exc)[:120]}"
             )
+        # V1E is a strictly downstream observer.  It activates prospectively,
+        # reads only already-persisted policy decisions/outcomes, and can never
+        # block trading, marking, or the canonical EOD run.
+        try:
+            from role_policy_learning import ingest_policy_learning
+            role_policy_learning = ingest_policy_learning(
+                analysis_date, run_id, dt.datetime.now(dt.timezone.utc)
+            )
+        except Exception as exc:
+            role_policy_learning = {
+                "status": "DEGRADED", "active": False, "decision_authority": False,
+                "error": f"{type(exc).__name__}: {str(exc)[:160]}",
+            }
         mark_result = execution.refresh_portfolio_positions(source_run_id=run_id)
         snapshot_reason = "AUTOMATED_EOD" if source == "AUTOMATED_EOD" else "ANALYSIS_COMPLETED"
         execution.save_portfolio_snapshot(snapshot_reason)
@@ -262,6 +275,7 @@ def execute_eod_pipeline(analysis_date: Optional[dt.date] = None, source: str = 
                 "autopaper": autopaper,
                 "pb_asymmetry_shadow": pb_asymmetry_shadow,
                 "role_outcomes": role_outcomes,
+                "role_policy_learning": role_policy_learning,
                 "mark_count": mark_result.get("successful_marks", 0), "mark_refresh": {key: mark_result.get(key) for key in (
                     "open_positions", "unique_symbols", "provider_calls", "successful_marks", "failed_marks", "elapsed_seconds")},
                 "snapshot_reason": snapshot_reason}

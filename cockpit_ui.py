@@ -15,6 +15,7 @@ from cockpit_cache import (
     load_market_context_bundle,
     load_open_positions, load_portfolio_pnl, load_portfolio_snapshots,
     load_portfolio_summary, load_role_evidence, load_role_learning_analytics,
+    load_role_policy_learning,
 )
 from historical_analogs_service import HistoricalAnalogService, METHODOLOGY_HASH
 from market_context import NOT_AVAILABLE, summarize_context
@@ -913,6 +914,12 @@ def _render_portfolio(execution_factory, portfolio_summary_loader, positions_loa
     render_page_header("Portfolio", "AutoPaper operational cockpit · prospective research only")
     state = load_autopaper_cockpit()
     _autopaper_status(state)
+    role_policy = load_role_policy_learning()
+    if role_policy.get("episode_count"):
+        st.caption(
+            f"ROLE evidence available · {role_policy.get('mature_episode_count', 0)} mature episodes · "
+            "open Learning for prospective policy evidence"
+        )
     _autopaper_kpis(state)
     tabs = ["Overview", "Positions", "Orders & Decisions", "Performance", "Shadows"]
     if st.session_state.get("portfolio_view") not in {None, *tabs}:
@@ -1390,6 +1397,67 @@ def _render_learning():
         st.warning(f"{freshness}. {reasons}" if reasons else freshness)
     else:
         st.caption(freshness)
+
+    policy_learning = load_role_policy_learning()
+    has_policy_episodes = bool(policy_learning.get("episode_count"))
+    render_section_header("ROLE Policy Learning", "Prospective policy evidence · observational only")
+    activation = policy_learning.get("activation") or {}
+    p1, p2, p3, p4 = st.columns(4)
+    with p1: render_metric_card("Decision episodes", policy_learning.get("episode_count", 0), "Immutable prospective snapshots")
+    with p2: render_metric_card("Mature episodes", policy_learning.get("mature_episode_count", 0), "10D ROLE outcome linked")
+    with p3: render_metric_card("Matched comparisons", policy_learning.get("direct_match_count", 0), "Direct observed evidence")
+    with p4: render_metric_card("Review gate", "MET" if (policy_learning.get("review_gate") or {}).get("passed") else "COLLECTING", "Offline research only")
+    if activation:
+        st.caption(
+            f"Activated {activation.get('timestamp')} · boundary {activation.get('provenance')} · "
+            f"methodology {str(policy_learning.get('methodology_hash') or '')[:12]}… · zero trading authority"
+        )
+    else:
+        st.info("ROLE Policy Learning will activate at the next EOD run. Historical decisions are not backfilled.")
+    evidence = policy_learning.get("evidence_mix") or {}
+    if evidence:
+        st.caption("Evidence mix · " + " · ".join(f"{key.replace('_', ' ').title()} {value}" for key, value in sorted(evidence.items())))
+    with st.expander("Decision learning", expanded=False):
+        rows = policy_learning.get("phase_comparisons") or []
+        if rows and has_policy_episodes:
+            st.dataframe(pd.DataFrame(rows).rename(columns={
+                "family": "Policy family", "match_groups": "Match groups", "direct": "Direct",
+                "partial": "Partial", "not_mature": "Not mature", "comparisons": "Mature comparisons",
+            }), width="stretch", hide_index=True)
+        else:
+            st.caption("No prospective matched policy events have been observed yet.")
+        value_rows = policy_learning.get("phase_value_summaries") or []
+        if value_rows and has_policy_episodes:
+            st.dataframe(pd.DataFrame(value_rows), width="stretch", hide_index=True)
+        st.caption("Exit, sizing, ranking and exposure comparisons use observed policy legs only. Unsupported counterfactuals remain unsupported.")
+    with st.expander("Supported observed regret", expanded=False):
+        regret = policy_learning.get("supported_regret") or []
+        if regret:
+            st.dataframe(pd.DataFrame(regret), width="stretch", hide_index=True)
+        else:
+            st.caption("No mature direct match currently supports regret. NOT MATURE is never treated as zero or loss.")
+    with st.expander("Portfolio attribution", expanded=False):
+        attribution = policy_learning.get("portfolio_attribution") or {}
+        selected_attribution = st.segmented_control(
+            "Attribution", ["security", "strategy", "signal_date", "sector", "policy_intervention"],
+            default="policy_intervention", key="role_policy_attribution",
+        )
+        attribution_rows = attribution.get(selected_attribution) or []
+        if attribution_rows:
+            st.dataframe(pd.DataFrame(attribution_rows), width="stretch", hide_index=True)
+        else:
+            st.caption("No realized prospective trades are available for attribution.")
+        st.caption("Descriptive accounting only; this does not assert causal contribution.")
+    with st.expander("ROLE review gate and health", expanded=False):
+        gate = (policy_learning.get("review_gate") or {}).get("rows") or []
+        if gate and has_policy_episodes:
+            st.dataframe(pd.DataFrame(gate), width="stretch", hide_index=True)
+        health_v1e = policy_learning.get("health") or {}
+        st.caption(
+            f"Ingestion {health_v1e.get('status', 'NOT AVAILABLE')} · outcome link "
+            f"{health_v1e.get('outcome_link_status', 'NOT AVAILABLE')} · duplicate conflicts "
+            f"{health_v1e.get('duplicate_conflicts', 0)}. Gate completion permits offline policy research only."
+        )
 
     st.caption(
         f"{total} recommendations · {int(maturity.get('10d') or 0)} mature at 10D · "

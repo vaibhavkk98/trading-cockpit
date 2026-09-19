@@ -1,0 +1,50 @@
+{
+  "methodology_version": "ROLE_POLICY_LEARNING_V1E",
+  "origin": "PROSPECTIVE_ONLY",
+  "historical_backfill": false,
+  "decision_authority": false,
+  "row_unit": "IMMUTABLE_POLICY_DECISION_EPISODE",
+  "actions": [
+    "DEFER",
+    "ENTER",
+    "EXIT_CATASTROPHE",
+    "EXIT_THESIS",
+    "EXIT_TIME",
+    "EXPIRE",
+    "HOLD",
+    "REJECT"
+  ],
+  "state_groups": [
+    "opportunity_state",
+    "portfolio_state",
+    "market_state",
+    "action_state"
+  ],
+  "counterfactual_classes": [
+    "OBSERVED_COUNTERFACTUAL",
+    "OUTCOME_ONLY_COUNTERFACTUAL",
+    "UNSUPPORTED"
+  ],
+  "evidence_classes": [
+    "DIRECT_MATCH",
+    "PARTIAL_MATCH",
+    "OUTCOME_COUNTERFACTUAL",
+    "INSUFFICIENT",
+    "NOT_MATURE"
+  ],
+  "review_gate": {
+    "mature_decision_episodes": 100,
+    "direct_matched_comparisons": 60,
+    "signal_dates": 40,
+    "strategies": 3,
+    "policy_families": 3,
+    "calendar_days": 90,
+    "effect": "OFFLINE_POLICY_RESEARCH_ONLY"
+  },
+  "unsupported_future_actions": [
+    "actions not actually represented by current frozen policies",
+    "hindsight-optimal exits",
+    "unobserved allocations",
+    "unobserved portfolio substitutions"
+  ]
+}
